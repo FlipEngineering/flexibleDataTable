@@ -31,30 +31,30 @@ const getSupabaseClient = () => {
   console.log(`- URL defined: ${supabaseUrl ? 'Yes' : 'No'}`);
   console.log(`- Key defined: ${supabaseKey ? 'Yes' : 'No'}`);
   
-  // Explicitly set demo credentials for live demos if needed
-  // IMPORTANT: Only use public demo credentials here, never production keys
-  const demoUrl = 'https://zfprvvlfftvbblodcszk.supabase.co';
-  const demoKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpmcHJ2dmxmZnR2YmJsb2Rjc3prIiwicm9sZSI6ImFub24iLCJpYXQiOjE2MDc2MjM3NzcsImV4cCI6MTc3MDE5NTc3N30.C_lKKjnY_palw5SaXXW1Gl6UMhXBZB_KM33sWw8kJvI';
+  // CONFIGURE YOUR ACTUAL SUPABASE DATABASE HERE
+  // For a real project, use environment variables instead of hardcoding
+  const productionUrl = 'https://qejtrhdvnkxdftxmhjhi.supabase.co';
+  const productionKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFlanRyaGR2bmt4ZGZ0eG1oamhpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MDkwNjc4MzIsImV4cCI6MjAyNDY0MzgzMn0.KVFWYAgH6t4qWZonxFXIEJwYL_AYu6R6XkhgGfTlKhw';
   
-  // Use configured Supabase credentials if available
+  // Use configured environment variables if available
   if (supabaseUrl && supabaseKey) {
-    console.log('✅ Using configured Supabase client with provided credentials');
+    console.log('✅ Using configured Supabase client from environment variables');
     return createClient(supabaseUrl, supabaseKey);
   }
   
-  // Check if we should use the demo database
-  const useDemoDatabase = true; // Set to true to use the demo database
+  // Use the actual production database
+  const useProductionDatabase = true; // Set to true to use the real database
   
-  if (useDemoDatabase) {
-    console.log('⚠️ Using demo Supabase database (for demonstration purposes only)');
+  if (useProductionDatabase) {
+    console.log('✅ Using production Supabase database');
     try {
-      return createClient(demoUrl, demoKey);
+      return createClient(productionUrl, productionKey);
     } catch (error) {
-      console.error('Failed to connect to demo database:', error);
+      console.error('Failed to connect to production database:', error);
     }
   }
   
-  // Fallback to mock implementation if no credentials or demo fails
+  // Fallback to mock implementation if no credentials or connections fail
   console.log('⚠️ Using mock Supabase client with DUMMY DATA (no working credentials)');
   return mockSupabase;
 };
@@ -478,68 +478,35 @@ export const recordTransaction = async (transaction) => {
  */
 export const fetchAvailableTables = async () => {
   try {
-    // First try to list available tables using system tables
-    // This approach works with PostgreSQL databases
-    const { data: pgTables, error: pgError } = await supabase
-      .from('pg_tables')
-      .select('schemaname, tablename')
-      .eq('schemaname', 'public')
-      .order('tablename');
+    // For Supabase, we need to use RPC to get metadata about tables
+    // or use known tables since direct access to pg_tables is restricted
+    // in some Supabase projects
     
-    // If pg_tables query worked, use it
-    if (!pgError && pgTables && pgTables.length > 0) {
-      console.log('Found database tables via pg_tables:', pgTables.length);
-      
-      // Map the raw table data to our table format
-      return pgTables.map(table => ({
-        id: table.tablename,
-        name: table.tablename
-          .split('_')
-          .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-          .join(' '),
-        description: `${table.schemaname}.${table.tablename} database table`
-      }));
-    }
-    
-    // If pg_tables didn't work, try an alternative approach
-    // Try to use PostgreSQL's information_schema (another approach)
-    const { data: infoSchemaTables, error: infoSchemaError } = await supabase
-      .from('information_schema.tables')
-      .select('table_schema, table_name')
-      .eq('table_schema', 'public')
-      .order('table_name');
-    
-    if (!infoSchemaError && infoSchemaTables && infoSchemaTables.length > 0) {
-      console.log('Found database tables via information_schema:', infoSchemaTables.length);
-      
-      return infoSchemaTables.map(table => ({
-        id: table.table_name,
-        name: table.table_name
-          .split('_')
-          .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-          .join(' '),
-        description: `${table.table_schema}.${table.table_name} database table`
-      }));
-    }
-    
-    // If neither method works, try one more approach - query a specific
-    // list of tables that we know should exist
-    const expectedTables = [
-      'products', 'product_summary', 'categories', 'transactions', 
-      'suppliers', 'customers', 'orders'
+    // Define the tables we know should exist in our Supabase project
+    const knownTables = [
+      'todos',
+      'users',
+      'profiles',
+      'products',
+      'categories',
+      'transactions',
+      'suppliers',
+      'customers',
+      'orders',
+      'product_summary'
     ];
     
     // Test each table by querying for a single row
     const existingTables = [];
     
-    for (const tableName of expectedTables) {
+    for (const tableName of knownTables) {
       try {
         const { data, error } = await supabase
           .from(tableName)
           .select('*')
           .limit(1);
           
-        // If query succeeds, add to existing tables
+        // Only add tables that we can successfully query (i.e., they exist)
         if (!error) {
           existingTables.push({
             id: tableName,
@@ -547,28 +514,52 @@ export const fetchAvailableTables = async () => {
               .split('_')
               .map(word => word.charAt(0).toUpperCase() + word.slice(1))
               .join(' '),
-            description: `${tableName} database table`,
+            description: `${tableName} table`,
             // Add flag to indicate if table has data
             hasData: data && data.length > 0
           });
-          console.log(`Table "${tableName}" exists`);
+          console.log(`✅ Found table: "${tableName}"`);
+        } else {
+          console.log(`❌ Table not accessible: "${tableName}" - ${error.message}`);
         }
       } catch (e) {
-        console.log(`Table "${tableName}" not found:`, e.message);
+        console.log(`❌ Error checking table "${tableName}":`, e.message);
       }
     }
     
     if (existingTables.length > 0) {
-      console.log('Found existing tables by testing:', existingTables.length);
+      console.log('✅ Successfully found tables in database:', existingTables.length);
       return existingTables;
+    }
+    
+    // If we can't directly check tables, try to query general schema info
+    // (this is a last resort since it might be restricted in some Supabase projects)
+    try {
+      const { data: schemaInfo, error: schemaError } = await supabase
+        .rpc('get_schema_info');
+        
+      if (!schemaError && schemaInfo && schemaInfo.length > 0) {
+        console.log('Found tables via RPC get_schema_info:', schemaInfo.length);
+        return schemaInfo.map(table => ({
+          id: table.name,
+          name: table.name
+            .split('_')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' '),
+          description: table.description || `${table.name} table`
+        }));
+      }
+    } catch (rpcError) {
+      console.log('RPC get_schema_info not available:', rpcError.message);
     }
     
     throw new Error('No tables found in database using any method');
   } catch (error) {
-    console.log('Using mock tables due to error:', error.message);
+    console.log('⚠️ Using mock tables due to error:', error.message);
     
     // Fall back to mock tables
     return [
+      { id: 'todos', name: 'Todos', description: 'Task tracking table' },
       { id: 'product_summary', name: 'Products (DUMMY)', description: 'DUMMY DATA: Product inventory data' },
       { id: 'categories', name: 'Categories (DUMMY)', description: 'DUMMY DATA: Product categories' },
       { id: 'transactions', name: 'Transactions (DUMMY)', description: 'DUMMY DATA: Inventory transactions' },
