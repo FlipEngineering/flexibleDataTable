@@ -1,3 +1,22 @@
+# FlexibleDataTable Demo
+
+A live demo of this project is available at:
+
+[https://flexible-data-table.vercel.app](https://flexible-data-table.vercel.app)
+
+## Deployment Instructions
+
+This project is configured for easy deployment on Vercel:
+
+1. Fork or clone this repository
+2. Import the project in the Vercel dashboard
+3. Vercel will automatically detect the build settings
+4. Deploy!
+
+No additional configuration is required.
+
+---
+
 # React Dynamic DataTable Demo
 
 A flexible React table component with SQL database integration, featuring dynamic columns, multiple data types, and formula support.
@@ -21,8 +40,8 @@ A flexible React table component with SQL database integration, featuring dynami
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/react-dynamic-datatable.git
-cd react-dynamic-datatable
+git clone https://github.com/FlipEngineering/flexibleDataTable.git
+cd flexibleDataTable
 ```
 
 2. Install dependencies:
