@@ -19,6 +19,7 @@ jobs:
       - name: Create basic pages structure
         run: |
           mkdir -p public_deploy
+          touch public_deploy/.nojekyll
           echo "<!DOCTYPE html>
           <html>
             <head>
@@ -52,4 +53,4 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./public_deploy
-          enable_jekyll: false
+          cname: ""
