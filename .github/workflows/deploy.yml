@@ -18,14 +18,14 @@ jobs:
 
       - name: Copy files to public
         run: |
-          mkdir -p public
-          cp -r src public/
-          cp -r index.html public/
-          cp -r public/favicon.svg public/
+          mkdir -p public_deploy
+          cp -r src public_deploy/
+          cp index.html public_deploy/
+          cp public/favicon.svg public_deploy/
           
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./public
+          publish_dir: ./public_deploy
           force_orphan: true
