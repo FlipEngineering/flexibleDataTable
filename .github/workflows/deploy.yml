@@ -22,16 +22,9 @@ jobs:
           node-version: "18"
           cache: 'npm'
 
-      - name: Create .npmrc to fix permissions issues
-        run: |
-          echo "ignore-scripts=true" > .npmrc
-
-      - name: Install Dependencies
-        run: npm ci --ignore-scripts
+      # Skip npm installation completely
         
-      - name: Manually Copy Vite Files
-        run: |
-          mkdir -p node_modules/.vite
+      # Skip Vite files handling
           
       - name: Build
         run: |
