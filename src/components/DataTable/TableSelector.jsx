@@ -164,8 +164,73 @@ const TableSelector = ({ selectedTable, onSelectTable }) => {
                 No accessible tables found in your Supabase database.
               </p>
               <p style={{ margin: '4px 0', padding: '0 16px', fontSize: '12px' }}>
-                Please create tables in your Supabase project first, or check your database permissions.
+                Please create the required tables in your Supabase project or check CORS settings.
               </p>
+              
+              <div style={{ 
+                margin: '12px 8px',
+                padding: '8px',
+                backgroundColor: 'rgba(24, 144, 255, 0.1)',
+                borderRadius: '4px',
+                border: '1px solid #1890ff',
+                fontSize: '12px'
+              }}>
+                <h4 style={{ margin: '0 0 8px 0', color: '#1890ff' }}>Troubleshooting Steps:</h4>
+                <ol style={{ margin: '0', paddingLeft: '20px', textAlign: 'left' }}>
+                  <li style={{ marginBottom: '4px' }}>
+                    <strong>CORS Settings:</strong> Add <code>{window.location.origin}</code> to your Supabase allowed origins
+                  </li>
+                  <li style={{ marginBottom: '4px' }}>
+                    <strong>Create Tables:</strong> Run SQL to create required tables in Supabase
+                  </li>
+                  <li style={{ marginBottom: '4px' }}>
+                    <strong>Permissions:</strong> Ensure anon role can access your tables
+                  </li>
+                  <li style={{ marginBottom: '4px' }}>
+                    <strong>Environment Variables:</strong> Make sure your build includes VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY
+                  </li>
+                </ol>
+              </div>
+              
+              <div style={{ margin: '12px 8px' }}>
+                <div style={{ fontWeight: 'bold', marginBottom: '4px', color: '#1890ff' }}>
+                  Quick Setup SQL:
+                </div>
+                <div style={{ 
+                  padding: '8px', 
+                  background: '#f5f5f5', 
+                  borderRadius: '4px',
+                  fontSize: '11px',
+                  textAlign: 'left',
+                  overflow: 'auto',
+                  maxHeight: '100px'
+                }}>
+                  <pre style={{ margin: 0 }}>
+{`-- Run this SQL in your Supabase SQL Editor
+CREATE TABLE IF NOT EXISTS product_summary (
+  id SERIAL PRIMARY KEY,
+  sku TEXT,
+  name TEXT,
+  description TEXT,
+  category TEXT,
+  price NUMERIC,
+  cost NUMERIC,
+  quantity INTEGER,
+  reorder_level INTEGER,
+  status TEXT,
+  profit_margin NUMERIC GENERATED ALWAYS AS (price - cost) STORED,
+  needs_reorder BOOLEAN GENERATED ALWAYS AS (quantity <= reorder_level) STORED
+);
+
+CREATE TABLE IF NOT EXISTS categories (
+  id SERIAL PRIMARY KEY,
+  name TEXT,
+  description TEXT
+);`}
+                  </pre>
+                </div>
+              </div>
+              
               <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginTop: '12px' }}>
                 <button 
                   style={{

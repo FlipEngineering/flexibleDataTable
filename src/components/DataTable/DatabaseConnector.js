@@ -36,7 +36,39 @@ const getSupabaseClient = () => {
   if (supabaseUrl && supabaseKey) {
     console.log('✅ Using Supabase client from GitHub secrets');
     try {
-      return createClient(supabaseUrl, supabaseKey);
+      const client = createClient(supabaseUrl, supabaseKey, {
+        // Enable debug logs to diagnose issues
+        debug: true,
+        
+        // Add custom headers to check CORS issues
+        headers: {
+          // Recommended for CORS
+          'x-client-info': 'flexibleDataTable'
+        },
+        
+        // Add global error handler for debug
+        global: {
+          fetch: (...args) => {
+            console.log('🔍 Supabase fetch call:', args[0]);
+            return fetch(...args).then(response => {
+              if (!response.ok) {
+                console.error(`❌ Supabase fetch error: ${response.status} - ${response.statusText}`);
+              }
+              return response;
+            });
+          }
+        }
+      });
+      
+      // Log the origin of the request to diagnose CORS issues
+      console.log('🌐 Request origin:', window.location.origin);
+      
+      // Test the connection with a simple ping
+      client.from('ping').select('*').limit(1)
+        .then(() => console.log('✅ Supabase connection tested successfully'))
+        .catch(error => console.error('❌ Supabase connection test failed:', error.message));
+      
+      return client;
     } catch (error) {
       console.error('Failed to connect with GitHub secrets:', error);
     }
@@ -195,8 +227,59 @@ const mockData = {
   ]
 };
 
+/**
+ * Function to test CORS configuration with Supabase
+ * @param {string} url - Supabase URL
+ * @param {string} key - Supabase anon key
+ */
+const testSupabaseCors = async (url, key) => {
+  if (!url || !key) {
+    console.log('⚠️ Cannot test CORS without URL and key');
+    return;
+  }
+
+  console.log('🔍 Testing CORS configuration...');
+  console.log(`🌐 Current origin: ${window.location.origin}`);
+  
+  try {
+    // Make a simple fetch request (not using Supabase client) to test raw CORS
+    const response = await fetch(`${url}/rest/v1/`, {
+      method: 'GET',
+      headers: {
+        'apikey': key,
+        'Content-Type': 'application/json',
+        'Origin': window.location.origin
+      }
+    });
+    
+    if (response.ok) {
+      console.log('✅ CORS pre-flight check passed');
+    } else {
+      console.error('❌ CORS check failed:', response.status, response.statusText);
+      console.log('ℹ️ Make sure your Supabase project allows requests from:', window.location.origin);
+    }
+    
+    // Check response headers for CORS-related info
+    const corsHeaders = {
+      'access-control-allow-origin': response.headers.get('access-control-allow-origin'),
+      'access-control-allow-methods': response.headers.get('access-control-allow-methods'),
+      'access-control-allow-headers': response.headers.get('access-control-allow-headers')
+    };
+    
+    console.log('CORS headers:', corsHeaders);
+  } catch (error) {
+    console.error('❌ CORS test failed with error:', error);
+    console.log('ℹ️ This suggests a CORS configuration issue. Add your origin to Supabase allowed origins.');
+  }
+};
+
 // Get the Supabase client using our secure function
 const supabase = getSupabaseClient();
+
+// Test CORS configuration
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+testSupabaseCors(supabaseUrl, supabaseKey);
 
 /**
  * Fetches product categories from the database
