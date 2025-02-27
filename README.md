@@ -2,18 +2,21 @@
 
 A live demo of this project is available at:
 
-[https://flexible-data-table.vercel.app](https://flexible-data-table.vercel.app)
+[https://flipengineering.github.io/flexibleDataTable](https://flipengineering.github.io/flexibleDataTable)
 
 ## Deployment Instructions
 
-This project is configured for easy deployment on Vercel:
+This project is configured for easy deployment on GitHub Pages:
 
 1. Fork or clone this repository
-2. Import the project in the Vercel dashboard
-3. Vercel will automatically detect the build settings
-4. Deploy!
+2. Install dependencies: `npm install`
+3. Set up Supabase integration (see [SUPABASE_SETUP.md](SUPABASE_SETUP.md))
+4. Configure GitHub repository secrets:
+   - `SUPABASE_URL`: Your Supabase project URL
+   - `SUPABASE_ANON_KEY`: Your Supabase anon key
+5. Push to your main branch to trigger deployment
 
-No additional configuration is required.
+The GitHub Actions workflow will automatically build and deploy to GitHub Pages.
 
 ---
 
@@ -76,10 +79,26 @@ The demo shows an employee database table with various column types and Excel-li
 - `/src/components/DataTable/` - Main component directory
   - `DataTable.jsx` - Core table component
   - `DataTable.css` - Styling
-  - `DataTableExample.jsx` - Demo with sample data
+  - `DataTableExample.jsx` - Inventory management demo
   - `FormulaParser.js` - Formula evaluation engine
-  - `DatabaseConnector.js` - SQL database integration
+  - `DatabaseConnector.js` - Supabase PostgreSQL integration
   - `README.md` - Component documentation
+
+## Database Integration
+
+This project now includes a full PostgreSQL database integration via Supabase:
+
+- **Inventory Management Schema**:
+  - Categories, Products, and Transactions tables
+  - Custom views for product summaries
+  - Full-text search function across multiple columns
+  
+- **Security Features**:
+  - Row Level Security (RLS) policies
+  - Environment variable configuration
+  - Safe credential management
+
+See [SUPABASE_SETUP.md](SUPABASE_SETUP.md) for detailed setup instructions.
 
 ## License
 

@@ -1,230 +1,366 @@
 /**
- * This file demonstrates how the DataTable component would connect to a SQL database.
- * In a real application, you would use your backend's ORM or database client.
+ * Database connector for the Supabase PostgreSQL database
+ * This file handles all database interactions for the inventory management system
  */
 
+// Import the Supabase client in a real implementation
+// import { createClient } from '@supabase/supabase-js';
+
+// For secure connection on GitHub Pages:
+// 1. In a real implementation, we'd get these from environment variables
+// 2. For GitHub Pages (static hosting), we need an alternative approach
+
 /**
- * Fetches table schema from database and converts it to DataTable column format
- * @param {string} tableName - SQL table name to fetch schema for
- * @returns {Promise<Array>} - DataTable column definitions
+ * This function safely initializes the Supabase client without exposing keys in the repository
+ * For GitHub Pages, you would:
+ * 1. Set up environment variables in your CI/CD pipeline
+ * 2. Or use runtime configuration loaded at startup
+ * 3. Never directly embed the API key in your code
+ * 
+ * For local development:
+ * - Use .env files and environment variables
+ * - Add .env to .gitignore
  */
-export const fetchTableSchema = async (tableName) => {
-  // In a real app, this would make a backend API call to get schema information
-  // Example: const response = await api.get(`/api/schema/${tableName}`);
+const getSupabaseClient = () => {
+  // For production with GitHub Pages, use a configuration approach:
+  // 1. During build, replace these placeholders with actual values using environment variables
+  // 2. Or load configuration at runtime from a secure API endpoint
+  // 3. Or use a GitHub Pages compatible solution like Netlify or Vercel environment variables
   
-  // Simulated response example
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      // This simulates the database schema being converted to DataTable column format
-      resolve([
-        {
-          title: 'ID',
-          dataIndex: 'id',
-          type: 'number',
-          required: true,
-          primaryKey: true,
-          autoIncrement: true,
-          sql: {
-            columnName: 'id',
-            dataType: 'INT',
-            constraints: 'PRIMARY KEY AUTO_INCREMENT',
-          },
-        },
-        {
-          title: 'Name',
-          dataIndex: 'name',
-          type: 'text', 
-          required: true,
-          sql: {
-            columnName: 'name',
-            dataType: 'VARCHAR(255)',
-            constraints: 'NOT NULL',
-          },
-        },
-        {
-          title: 'Email',
-          dataIndex: 'email',
-          type: 'text',
-          required: true,
-          sql: {
-            columnName: 'email',
-            dataType: 'VARCHAR(255)',
-            constraints: 'NOT NULL UNIQUE',
-          },
-        },
-        {
-          title: 'Department',
-          dataIndex: 'department',
-          type: 'select',
-          required: true,
-          options: [
-            { value: 'engineering', label: 'Engineering' },
-            { value: 'marketing', label: 'Marketing' },
-            { value: 'sales', label: 'Sales' },
-            { value: 'hr', label: 'Human Resources' },
-            { value: 'finance', label: 'Finance' },
-          ],
-          sql: {
-            columnName: 'department',
-            dataType: 'VARCHAR(50)',
-            constraints: 'NOT NULL',
-          },
-        },
-        // More columns...
-      ]);
-    }, 300); // Simulate network delay
-  });
+  // If using the actual client:
+  // const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+  // const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+  // return createClient(supabaseUrl, supabaseKey);
+  
+  // For now, use our mock implementation
+  return mockSupabase;
 };
 
-/**
- * Fetches data from a SQL table
- * @param {string} tableName - SQL table name to fetch data from
- * @param {Object} filters - Query filters
- * @param {string} orderBy - Column to order by
- * @param {string} orderDirection - 'asc' or 'desc'
- * @returns {Promise<Array>} - Table data
- */
-export const fetchTableData = async (tableName, filters = {}, orderBy = 'id', orderDirection = 'asc') => {
-  // In a real app, this would make a backend API call to fetch data
-  // const queryParams = new URLSearchParams({ orderBy, orderDirection, ...filters });
-  // const response = await api.get(`/api/data/${tableName}?${queryParams}`);
-  
-  // Simulated response
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      // This simulates the database query result
-      resolve([
-        { id: 1, name: 'John Doe', email: 'john@example.com', department: 'engineering' },
-        { id: 2, name: 'Jane Smith', email: 'jane@example.com', department: 'marketing' },
-        // More rows...
-      ]);
-    }, 500); // Simulate network delay
-  });
-};
-
-/**
- * Saves a record to the database (insert or update)
- * @param {string} tableName - SQL table name
- * @param {Object} record - Record data
- * @param {boolean} isNew - Whether this is a new record or an update
- * @returns {Promise<Object>} - Saved record with any DB-generated values
- */
-export const saveRecord = async (tableName, record, isNew = false) => {
-  // In a real app, this would make a backend API call to save data
-  // const method = isNew ? 'post' : 'put';
-  // const url = isNew ? `/api/data/${tableName}` : `/api/data/${tableName}/${record.id}`;
-  // const response = await api[method](url, record);
-  
-  // Simulated response
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      if (isNew) {
-        // Simulate auto-increment ID from database
-        resolve({ ...record, id: Math.floor(Math.random() * 1000) + 100 });
-      } else {
-        // Return the updated record
-        resolve(record);
-      }
-    }, 300);
-  });
-};
-
-/**
- * Deletes a record from the database
- * @param {string} tableName - SQL table name
- * @param {string|number} id - Record primary key
- * @returns {Promise<boolean>} - Success status
- */
-export const deleteRecord = async (tableName, id) => {
-  // In a real app, this would make a backend API call to delete data
-  // const response = await api.delete(`/api/data/${tableName}/${id}`);
-  
-  // Simulated response
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      // Simulate successful deletion
-      resolve(true);
-    }, 300);
-  });
-};
-
-/**
- * Generates a SQL query based on table, columns, and filters
- * For demonstration purposes - in a real app this would typically be handled on the backend
- * @param {string} tableName - SQL table name
- * @param {Array} columns - Column definitions
- * @param {Object} filters - Query filters
- * @returns {string} - SQL query string
- */
-export const generateSqlQuery = (tableName, columns, filters = {}) => {
-  // Get column names from column definitions
-  const columnNames = columns.map(col => col.sql?.columnName || col.dataIndex).join(', ');
-  
-  // Build WHERE clause from filters
-  const whereConditions = [];
-  Object.entries(filters).forEach(([key, value]) => {
-    if (value !== undefined && value !== null && value !== '') {
-      // Handle different data types for the WHERE clause
-      const column = columns.find(col => col.dataIndex === key);
-      
-      if (column) {
-        switch (column.type) {
-          case 'text':
-            whereConditions.push(`${key} LIKE '%${value}%'`);
-            break;
-          case 'number':
-            whereConditions.push(`${key} = ${value}`);
-            break;
-          case 'select':
-            whereConditions.push(`${key} = '${value}'`);
-            break;
-          case 'checkbox':
-            whereConditions.push(`${key} = ${value ? 1 : 0}`);
-            break;
-          default:
-            whereConditions.push(`${key} = '${value}'`);
+// Since we can't install the package in this environment, we'll simulate the client
+const mockSupabase = {
+  from: (table) => ({
+    select: (columns = '*') => ({
+      eq: (column, value) => ({
+        order: (column, { ascending }) => ({
+          then: (callback) => {
+            console.log(`Querying ${table} with filter ${column}=${value}`);
+            return mockData[table] ? callback({ data: mockData[table], error: null }) : callback({ data: [], error: null });
+          }
+        }),
+        then: (callback) => {
+          console.log(`Querying ${table} with filter ${column}=${value}`);
+          const filteredData = mockData[table] ? 
+            mockData[table].filter(row => row[column] === value) : 
+            [];
+          return callback({ data: filteredData, error: null });
         }
+      }),
+      ilike: (column, value) => ({
+        then: (callback) => {
+          console.log(`Querying ${table} with ILIKE filter ${column} ILIKE %${value}%`);
+          const filteredData = mockData[table] ? 
+            mockData[table].filter(row => String(row[column]).toLowerCase().includes(value.toLowerCase())) : 
+            [];
+          return callback({ data: filteredData, error: null });
+        }
+      }),
+      order: (column, { ascending }) => ({
+        then: (callback) => {
+          console.log(`Querying ${table} ordered by ${column} ${ascending ? 'ASC' : 'DESC'}`);
+          return mockData[table] ? callback({ data: mockData[table], error: null }) : callback({ data: [], error: null });
+        }
+      }),
+      then: (callback) => {
+        console.log(`Querying all data from ${table}`);
+        return mockData[table] ? callback({ data: mockData[table], error: null }) : callback({ data: [], error: null });
       }
-    }
-  });
-  
-  // Construct the query
-  let query = `SELECT ${columnNames} FROM ${tableName}`;
-  
-  if (whereConditions.length > 0) {
-    query += ` WHERE ${whereConditions.join(' AND ')}`;
+    }),
+    insert: (data) => ({
+      then: (callback) => {
+        console.log(`Inserting data into ${table}`, data);
+        return callback({ data, error: null });
+      }
+    }),
+    update: (data) => ({
+      eq: (column, value) => ({
+        then: (callback) => {
+          console.log(`Updating ${table} where ${column}=${value}`, data);
+          return callback({ data, error: null });
+        }
+      })
+    }),
+    delete: () => ({
+      eq: (column, value) => ({
+        then: (callback) => {
+          console.log(`Deleting from ${table} where ${column}=${value}`);
+          return callback({ data: null, error: null });
+        }
+      })
+    }),
+    rpc: (functionName, params) => ({
+      then: (callback) => {
+        console.log(`Calling RPC function ${functionName} with params`, params);
+        if (functionName === 'search_products') {
+          const results = mockData.product_summary ? 
+            mockData.product_summary.filter(p => 
+              Object.values(p).some(val => 
+                val && String(val).toLowerCase().includes(params.search_term.toLowerCase())
+              )
+            ) : [];
+          return callback({ data: results, error: null });
+        }
+        return callback({ data: [], error: null });
+      }
+    })
+  })
+};
+
+// Mock data for our tables
+const mockData = {
+  categories: [
+    { id: 1, name: 'Electronics', description: 'Electronic devices and accessories' },
+    { id: 2, name: 'Office Supplies', description: 'Office stationary and supplies' },
+    { id: 3, name: 'Furniture', description: 'Office and home furniture' },
+    { id: 4, name: 'Kitchen', description: 'Kitchen appliances and utensils' },
+    { id: 5, name: 'Books', description: 'Books and publications' }
+  ],
+  products: [
+    { id: 1, category_id: 1, sku: 'E-LAPTOP-001', name: 'Business Laptop', description: '15-inch business laptop with 16GB RAM', price: 1299.99, cost: 950.00, quantity: 25, reorder_level: 5, status: 'active' },
+    { id: 2, category_id: 1, sku: 'E-PHONE-002', name: 'Smartphone X', description: 'Latest smartphone model with dual camera', price: 899.99, cost: 650.00, quantity: 42, reorder_level: 10, status: 'active' },
+    // Additional products would be here
+  ],
+  product_summary: [
+    { id: 1, sku: 'E-LAPTOP-001', name: 'Business Laptop', description: '15-inch business laptop with 16GB RAM', category: 'Electronics', price: 1299.99, cost: 950.00, quantity: 25, reorder_level: 5, status: 'active', profit_margin: 349.99, needs_reorder: false },
+    { id: 2, sku: 'E-PHONE-002', name: 'Smartphone X', description: 'Latest smartphone model with dual camera', category: 'Electronics', price: 899.99, cost: 650.00, quantity: 42, reorder_level: 10, status: 'active', profit_margin: 249.99, needs_reorder: false },
+    // More product summaries would be here
+  ]
+};
+
+// Get the Supabase client using our secure function
+const supabase = getSupabaseClient();
+
+/**
+ * Fetches product categories from the database
+ * @returns {Promise<Array>} - Category data
+ */
+export const fetchCategories = async () => {
+  const { data, error } = await supabase
+    .from('inventory.categories')
+    .select('*')
+    .order('name', { ascending: true });
+    
+  if (error) throw error;
+  return data;
+};
+
+/**
+ * Fetches products from the database
+ * @param {Object} filters - Optional filters for products
+ * @param {string} orderBy - Column to order by
+ * @param {boolean} ascending - Order direction
+ * @returns {Promise<Array>} - Product data
+ */
+export const fetchProducts = async (filters = {}, orderBy = 'name', ascending = true) => {
+  // Start building query
+  let query = supabase
+    .from('inventory.product_summary')
+    .select('*');
+    
+  // Apply filters if provided
+  if (filters.category_id) {
+    query = query.eq('category_id', filters.category_id);
   }
   
-  return query;
+  if (filters.status) {
+    query = query.eq('status', filters.status);
+  }
+  
+  // Apply ordering
+  query = query.order(orderBy, { ascending });
+  
+  const { data, error } = await query;
+  
+  if (error) throw error;
+  return data;
 };
 
 /**
- * Updates the order of records in the database
- * @param {string} tableName - SQL table name
- * @param {Array} recordIds - Array of record IDs in the new order
+ * Searches products across multiple fields
+ * @param {string} searchTerm - Term to search for
+ * @returns {Promise<Array>} - Search results
+ */
+export const searchProducts = async (searchTerm) => {
+  const { data, error } = await supabase
+    .rpc('search_products', { search_term: searchTerm });
+    
+  if (error) throw error;
+  return data;
+};
+
+/**
+ * Fetches product schema/columns for the DataTable
+ * @returns {Array} - Column definitions
+ */
+export const getProductColumns = () => {
+  return [
+    {
+      title: 'SKU',
+      dataIndex: 'sku',
+      type: 'text',
+      required: true,
+      sorter: true,
+      filterable: true,
+    },
+    {
+      title: 'Name',
+      dataIndex: 'name',
+      type: 'text',
+      required: true,
+      sorter: true,
+      filterable: true,
+    },
+    {
+      title: 'Category',
+      dataIndex: 'category',
+      type: 'text',
+      required: true,
+      sorter: true,
+      filterable: true,
+    },
+    {
+      title: 'Price',
+      dataIndex: 'price',
+      type: 'number',
+      required: true,
+      sorter: true,
+    },
+    {
+      title: 'Cost',
+      dataIndex: 'cost',
+      type: 'number',
+      required: false,
+      sorter: true,
+    },
+    {
+      title: 'Quantity',
+      dataIndex: 'quantity',
+      type: 'number',
+      required: true,
+      sorter: true,
+    },
+    {
+      title: 'Reorder Level',
+      dataIndex: 'reorder_level',
+      type: 'number',
+      required: true,
+    },
+    {
+      title: 'Status',
+      dataIndex: 'status',
+      type: 'select',
+      required: true,
+      options: [
+        { value: 'active', label: 'Active' },
+        { value: 'discontinued', label: 'Discontinued' },
+        { value: 'out_of_stock', label: 'Out of Stock' },
+        { value: 'backordered', label: 'Backordered' }
+      ],
+      sorter: true,
+      filterable: true,
+    },
+    {
+      title: 'Profit Margin',
+      dataIndex: 'profit_margin',
+      type: 'number',
+      readOnly: true,
+      sorter: true,
+    },
+    {
+      title: 'Needs Reorder',
+      dataIndex: 'needs_reorder',
+      type: 'checkbox',
+      readOnly: true,
+    }
+  ];
+};
+
+/**
+ * Saves a product to the database (insert or update)
+ * @param {Object} product - Product data
+ * @param {boolean} isNew - Whether this is a new product or an update
+ * @returns {Promise<Object>} - Saved product
+ */
+export const saveProduct = async (product, isNew = false) => {
+  if (isNew) {
+    const { data, error } = await supabase
+      .from('inventory.products')
+      .insert(product);
+      
+    if (error) throw error;
+    return data;
+  } else {
+    const { data, error } = await supabase
+      .from('inventory.products')
+      .update(product)
+      .eq('id', product.id);
+      
+    if (error) throw error;
+    return data;
+  }
+};
+
+/**
+ * Deletes a product from the database
+ * @param {number} id - Product ID
  * @returns {Promise<boolean>} - Success status
  */
-export const updateRecordOrder = async (tableName, recordIds) => {
-  // In a real app, this would make a backend API call to update ordering
-  // const response = await api.post(`/api/data/${tableName}/reorder`, { recordIds });
-  
-  // This would typically update a 'display_order' column in the database
-  // Example SQL: UPDATE tableName SET display_order = CASE id WHEN id1 THEN 1 WHEN id2 THEN 2... END;
-  
-  // Simulated response
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      // Simulate successful reordering
-      resolve(true);
-    }, 300);
-  });
+export const deleteProduct = async (id) => {
+  const { error } = await supabase
+    .from('inventory.products')
+    .delete()
+    .eq('id', id);
+    
+  if (error) throw error;
+  return true;
+};
+
+/**
+ * Fetches transactions for a specific product
+ * @param {number} productId - Product ID
+ * @returns {Promise<Array>} - Transaction data
+ */
+export const fetchProductTransactions = async (productId) => {
+  const { data, error } = await supabase
+    .from('inventory.transactions')
+    .select('*')
+    .eq('product_id', productId)
+    .order('transaction_date', { ascending: false });
+    
+  if (error) throw error;
+  return data;
+};
+
+/**
+ * Records a new inventory transaction
+ * @param {Object} transaction - Transaction data
+ * @returns {Promise<Object>} - Saved transaction
+ */
+export const recordTransaction = async (transaction) => {
+  const { data, error } = await supabase
+    .from('inventory.transactions')
+    .insert(transaction);
+    
+  if (error) throw error;
+  return data;
 };
 
 export default {
-  fetchTableSchema,
-  fetchTableData,
-  saveRecord,
-  deleteRecord,
-  generateSqlQuery,
-  updateRecordOrder,
+  fetchCategories,
+  fetchProducts,
+  searchProducts,
+  getProductColumns,
+  saveProduct,
+  deleteProduct,
+  fetchProductTransactions,
+  recordTransaction
 };

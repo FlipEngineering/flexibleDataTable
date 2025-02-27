@@ -17,7 +17,8 @@ const DataTable = ({
   onDelete,
   onAdd,
   onUpdate,
-  formulaEnabled = true
+  formulaEnabled = true,
+  loading = false
 }) => {
   const [dataSource, setDataSource] = useState([]);
   const [columns, setColumns] = useState([]);
@@ -359,6 +360,7 @@ const DataTable = ({
         // Remove horizontal scrolling to use full width
         bordered
         size="middle"
+        loading={loading}
       />
       
       {/* Delete Confirmation Modal */}

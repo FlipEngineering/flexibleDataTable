@@ -1,205 +1,207 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { Input, Select, Button, message } from 'antd';
+import { SearchOutlined } from '@ant-design/icons';
 import DataTable from './DataTable';
+import { 
+  fetchProducts, 
+  searchProducts, 
+  getProductColumns, 
+  saveProduct, 
+  deleteProduct,
+  fetchCategories 
+} from './DatabaseConnector';
+
+const { Option } = Select;
 
 const DataTableExample = () => {
-  // Sample column definitions
-  const [columns] = useState([
-    {
-      title: 'ID',
-      dataIndex: 'id',
-      type: 'number',
-      required: true,
-    },
-    {
-      title: 'Name',
-      dataIndex: 'name',
-      type: 'text',
-      required: true,
-    },
-    {
-      title: 'Email',
-      dataIndex: 'email',
-      type: 'text',
-      required: true,
-    },
-    {
-      title: 'Age',
-      dataIndex: 'age',
-      type: 'number',
-      required: false,
-    },
-    {
-      title: 'Department',
-      dataIndex: 'department',
-      type: 'select',
-      required: true,
-      options: [
-        { value: 'engineering', label: 'Engineering' },
-        { value: 'marketing', label: 'Marketing' },
-        { value: 'sales', label: 'Sales' },
-        { value: 'hr', label: 'Human Resources' },
-        { value: 'finance', label: 'Finance' },
-      ],
-    },
-    {
-      title: 'Active',
-      dataIndex: 'active',
-      type: 'checkbox',
-      required: false,
-    },
-    {
-      title: 'Salary',
-      dataIndex: 'salary',
-      type: 'number',
-      required: false,
-    },
-    {
-      title: 'Bonus',
-      dataIndex: 'bonus',
-      type: 'number',
-      required: false,
-    },
-    {
-      title: 'Total Compensation',
-      dataIndex: 'totalComp',
-      type: 'formula',
-      formula: '=SUM(salary,bonus)',
-      required: false,
-    },
-  ]);
+  const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [selectedStatus, setSelectedStatus] = useState(null);
+  
+  // Get the column definitions from our database connector
+  const columns = getProductColumns();
 
-  // Sample data
-  const [data] = useState([
-    {
-      id: 1,
-      name: 'John Doe',
-      email: 'john.doe@example.com',
-      age: 32,
-      department: 'engineering',
-      active: true,
-      salary: 85000,
-      bonus: 10000,
-    },
-    {
-      id: 2,
-      name: 'Jane Smith',
-      email: 'jane.smith@example.com',
-      age: 28,
-      department: 'marketing',
-      active: true,
-      salary: 72000,
-      bonus: 8000,
-    },
-    {
-      id: 3,
-      name: 'Bob Johnson',
-      email: 'bob.johnson@example.com',
-      age: 45,
-      department: 'sales',
-      active: true,
-      salary: 95000,
-      bonus: 15000,
-    },
-    {
-      id: 4,
-      name: 'Alice Williams',
-      email: 'alice.williams@example.com',
-      age: 36,
-      department: 'hr',
-      active: false,
-      salary: 68000,
-      bonus: 5000,
-    },
-    {
-      id: 5,
-      name: 'Charlie Brown',
-      email: 'charlie.brown@example.com',
-      age: 41,
-      department: 'finance',
-      active: true,
-      salary: 110000,
-      bonus: 20000,
-    },
-    {
-      id: 6,
-      name: 'Diana Lee',
-      email: 'diana.lee@example.com',
-      age: 29,
-      department: 'engineering',
-      active: true,
-      salary: 78000,
-      bonus: 8000,
-    },
-    {
-      id: 7,
-      name: 'Edward Miller',
-      email: 'edward.miller@example.com',
-      age: 33,
-      department: 'sales',
-      active: true,
-      salary: 88000,
-      bonus: 12000,
-    },
-    {
-      id: 8,
-      name: 'Fiona Davis',
-      email: 'fiona.davis@example.com',
-      age: 27,
-      department: 'marketing',
-      active: false,
-      salary: 65000,
-      bonus: 6000,
-    },
-  ]);
+  // Load initial data
+  useEffect(() => {
+    const loadData = async () => {
+      setLoading(true);
+      try {
+        // Load categories for filtering
+        const categoriesData = await fetchCategories();
+        setCategories(categoriesData);
+        
+        // Load products
+        const productsData = await fetchProducts();
+        setProducts(productsData);
+      } catch (error) {
+        console.error('Error loading data:', error);
+        message.error('Failed to load data');
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    loadData();
+  }, []);
 
-  // Event handlers
-  const handleSave = (values, key, newData) => {
-    console.log('Saved:', values);
-    console.log('Updated data:', newData);
-    // In a real app, this would send an update to the database
+  // Filter products when category or status changes
+  useEffect(() => {
+    const applyFilters = async () => {
+      setLoading(true);
+      try {
+        const filters = {};
+        if (selectedCategory) filters.category_id = selectedCategory;
+        if (selectedStatus) filters.status = selectedStatus;
+        
+        const filteredProducts = await fetchProducts(filters);
+        setProducts(filteredProducts);
+      } catch (error) {
+        console.error('Error applying filters:', error);
+        message.error('Failed to filter products');
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    applyFilters();
+  }, [selectedCategory, selectedStatus]);
+
+  // Handle search
+  const handleSearch = async () => {
+    if (!searchTerm.trim()) {
+      // If search is cleared, reset to all products
+      const productsData = await fetchProducts();
+      setProducts(productsData);
+      return;
+    }
+    
+    setLoading(true);
+    try {
+      const results = await searchProducts(searchTerm);
+      setProducts(results);
+    } catch (error) {
+      console.error('Error searching products:', error);
+      message.error('Search failed');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleDelete = (key, newData) => {
-    console.log('Deleted record with key:', key);
-    console.log('Updated data:', newData);
-    // In a real app, this would send a delete request to the database
+  // Event handlers for DataTable
+  const handleSave = async (values, key, newData) => {
+    try {
+      // Find the product to update
+      const product = products.find(p => p.key === key);
+      if (!product) return;
+      
+      // Update the product in database
+      await saveProduct({ ...product, ...values }, false);
+      message.success('Product updated successfully');
+      
+      // Update local state
+      setProducts(newData);
+    } catch (error) {
+      console.error('Error updating product:', error);
+      message.error('Failed to update product');
+    }
   };
 
-  const handleAdd = (record, newData) => {
-    console.log('Added new record:', record);
-    console.log('Updated data:', newData);
-    // In a real app, this would send an insert to the database
+  const handleDelete = async (key, newData) => {
+    try {
+      // Find the product to delete
+      const product = products.find(p => p.key === key);
+      if (!product) return;
+      
+      // Delete from database
+      await deleteProduct(product.id);
+      message.success('Product deleted successfully');
+      
+      // Update local state
+      setProducts(newData);
+    } catch (error) {
+      console.error('Error deleting product:', error);
+      message.error('Failed to delete product');
+    }
   };
 
-  const handleUpdate = (newData) => {
-    console.log('Updated data (reordered):', newData);
-    // In a real app, this would update row orders in the database
+  const handleAdd = async (record, newData) => {
+    try {
+      // Add to database
+      await saveProduct(record, true);
+      message.success('Product added successfully');
+      
+      // Update local state
+      setProducts(newData);
+    } catch (error) {
+      console.error('Error adding product:', error);
+      message.error('Failed to add product');
+    }
   };
 
   return (
     <div>
-      <h1>Employee Database</h1>
-      <p>This table uses dynamic columns loaded from a database with various data types and formula support.</p>
+      <h1>Inventory Management System</h1>
+      <p>This table displays your real-time inventory data from PostgreSQL database.</p>
+      
+      {/* Filters and Search */}
+      <div style={{ marginBottom: 16, display: 'flex', gap: 16 }}>
+        <Input
+          placeholder="Search products..."
+          value={searchTerm}
+          onChange={e => setSearchTerm(e.target.value)}
+          onPressEnter={handleSearch}
+          style={{ width: 250 }}
+          suffix={<Button type="text" icon={<SearchOutlined />} onClick={handleSearch} />}
+        />
+        
+        <Select
+          placeholder="Filter by Category"
+          allowClear
+          style={{ width: 200 }}
+          onChange={value => setSelectedCategory(value)}
+          value={selectedCategory}
+        >
+          {categories.map(category => (
+            <Option key={category.id} value={category.id}>{category.name}</Option>
+          ))}
+        </Select>
+        
+        <Select
+          placeholder="Filter by Status"
+          allowClear
+          style={{ width: 200 }}
+          onChange={value => setSelectedStatus(value)}
+          value={selectedStatus}
+        >
+          <Option value="active">Active</Option>
+          <Option value="discontinued">Discontinued</Option>
+          <Option value="out_of_stock">Out of Stock</Option>
+          <Option value="backordered">Backordered</Option>
+        </Select>
+      </div>
       
       <DataTable
-        tableName="Employee Records"
+        tableName="Inventory Products"
         columns={columns}
-        dataSource={data}
+        dataSource={products.map(product => ({ ...product, key: product.id }))}
         onSave={handleSave}
         onDelete={handleDelete}
         onAdd={handleAdd}
-        onUpdate={handleUpdate}
+        loading={loading}
         formulaEnabled={true}
       />
       
-      <div style={{ margin: '24px 0', padding: '16px', background: '#2a2a2a', borderRadius: '8px', border: '1px solid #444' }}>
-        <h3>Integration with Database:</h3>
-        <p>In a production environment, this table would:</p>
+      <div style={{ margin: '24px 0', padding: '16px', background: '#f0f2f5', borderRadius: '8px', border: '1px solid #d9d9d9' }}>
+        <h3>Database Integration:</h3>
+        <p>This table is now connected to our PostgreSQL database on Supabase with:</p>
         <ul>
-          <li>Load columns and data from SQL queries dynamically</li>
-          <li>Send updates back to the database on changes</li>
-          <li>Support complex formula calculations</li>
-          <li>Implement row-level permissions</li>
+          <li>Live data from the <code>inventory.product_summary</code> view</li>
+          <li>CRUD operations for inventory management</li>
+          <li>Global search using our custom <code>search_products</code> function</li>
+          <li>Category and status filtering</li>
         </ul>
       </div>
     </div>
