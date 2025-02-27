@@ -16,16 +16,40 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Copy files to public
+      - name: Create basic pages structure
         run: |
           mkdir -p public_deploy
-          cp -r src public_deploy/
-          cp index.html public_deploy/
-          cp public/favicon.svg public_deploy/
+          echo "<!DOCTYPE html>
+          <html>
+            <head>
+              <meta charset='utf-8'>
+              <meta name='viewport' content='width=device-width, initial-scale=1'>
+              <title>FlexibleDataTable Demo</title>
+              <style>
+                body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; line-height: 1.6; }
+                h1 { color: #333; }
+                pre { background: #f4f4f4; padding: 10px; border-radius: 5px; overflow-x: auto; }
+              </style>
+            </head>
+            <body>
+              <h1>FlexibleDataTable Demo</h1>
+              <p>A flexible React table component with SQL database integration, featuring dynamic columns, multiple data types, and formula support.</p>
+              <h2>Features</h2>
+              <ul>
+                <li><strong>Dynamic Columns</strong>: Generated from database schema</li>
+                <li><strong>Multiple Data Types</strong>: Text, number, select, checkbox, formula</li>
+                <li><strong>Row Operations</strong>: Add, edit, delete, reorder</li>
+                <li><strong>Filtering & Sorting</strong>: Built into all columns</li>
+                <li><strong>Formula Support</strong>: Excel-like formulas (SUM, AVG, MIN, MAX, COUNT, IF)</li>
+                <li><strong>SQL Integration</strong>: Ready to connect to database backends</li>
+              </ul>
+              <p>Visit the <a href='https://github.com/FlipEngineering/flexibleDataTable'>GitHub repository</a> to see the code.</p>
+            </body>
+          </html>" > public_deploy/index.html
           
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./public_deploy
-          force_orphan: true
+          enable_jekyll: false
