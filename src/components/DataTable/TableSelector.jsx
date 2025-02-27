@@ -158,9 +158,11 @@ const TableSelector = ({ selectedTable, onSelectTable }) => {
               margin: '8px 0'
             }}>
               <div style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '8px' }}>
-                Database Connection Failed
+                Database Connection Issue
               </div>
-              <p style={{ margin: '4px 0' }}>Could not connect to Supabase database</p>
+              <p style={{ margin: '4px 0', padding: '0 16px' }}>
+                No tables found in the Supabase database. The connection might be working, but tables need to be created.
+              </p>
               <Button 
                 type="primary" 
                 onClick={handleRefresh} 
