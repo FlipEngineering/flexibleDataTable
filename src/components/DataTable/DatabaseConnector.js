@@ -484,95 +484,112 @@ export const recordTransaction = async (transaction) => {
  */
 export const fetchAvailableTables = async () => {
   try {
-    console.log('🔍 Searching for all available tables in Supabase...');
+    console.log('🔍 Checking database connection and looking for tables...');
     
-    // Try to get all tables using PostgreSQL's information_schema
-    const { data: schemaTables, error: schemaError } = await supabase
-      .from('information_schema.tables')
-      .select('table_name')
-      .eq('table_schema', 'public')
-      .not('table_name', 'like', 'pg_%')
-      .not('table_name', 'like', '_prisma_%')
-      .not('table_name', 'like', 'schema_%')
-      .order('table_name');
+    // First, ensure we can connect to Supabase at all
+    const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
     
-    // Check if we got table list from information schema
-    if (!schemaError && schemaTables && schemaTables.length > 0) {
-      console.log(`✅ Found ${schemaTables.length} tables in database schema`);
+    if (sessionError) {
+      console.error('❌ Cannot connect to Supabase:', sessionError.message);
+      throw new Error(`Connection failed: ${sessionError.message}`);
+    }
+    
+    console.log('✅ Supabase connection works!');
+    
+    // Skip information_schema since it requires special permissions
+    // Instead, check a predefined list of tables that anon keys typically can access
+    const tablesToCheck = [
+      // Common table names in Supabase projects
+      'todos', 'users', 'profiles', 'settings', 'posts', 'comments',
+      'products', 'categories', 'orders', 'customers', 'items',
       
-      // Map tables to our format
-      const availableTables = schemaTables.map(table => ({
-        id: table.table_name,
-        name: table.table_name
-          .split('_')
-          .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-          .join(' '),
-        description: `Database table: ${table.table_name}`,
-        source: 'schema'
-      }));
-      
-      return availableTables;
-    } else {
-      console.log(`⚠️ Cannot access information_schema: ${schemaError?.message || 'No tables found'}`);
-      
-      // If information_schema doesn't work, check a list of common tables directly
-      const commonTables = [
-        'todos', 'users', 'profiles', 'auth', 'products', 'categories', 
-        'items', 'posts', 'comments', 'settings', 'data', 'stats'
-      ];
-      
-      const discoveredTables = [];
-      
-      // Check each table directly
-      for (const tableName of commonTables) {
-        try {
-          const { data, error } = await supabase
-            .from(tableName)
-            .select('count(*)', { count: 'exact', head: true });
-            
-          // If no error, the table exists
-          if (!error) {
-            discoveredTables.push({
-              id: tableName,
-              name: tableName
-                .split('_')
-                .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-                .join(' '),
-              description: `Database table: ${tableName}`,
-              source: 'direct'
-            });
-            console.log(`✅ Found table: ${tableName}`);
-          }
-        } catch (e) {
-          // Quietly skip tables that don't exist
-        }
+      // Our specific table names from earlier checks
+      'product_summary', 'transactions', 'suppliers'
+    ];
+    
+    console.log(`Checking ${tablesToCheck.length} possible tables...`);
+    
+    // Try each table with simpler permissions
+    const accessibleTables = [];
+    
+    // Create a manual pre-set of sample data for demonstration
+    const sampleTables = [
+      { 
+        id: 'product_summary', 
+        name: 'Product Summary',
+        description: 'Sample product inventory data',
+        sample: true 
+      },
+      { 
+        id: 'categories', 
+        name: 'Categories',
+        description: 'Sample product categories',
+        sample: true 
       }
-      
-      if (discoveredTables.length > 0) {
-        console.log(`✅ Discovered ${discoveredTables.length} tables directly`);
-        return discoveredTables;
-      }
-      
-      // Last resort: try to create a simple table
-      console.log('ℹ️ No tables found. Attempting to detect if database connection works...');
-      
-      // Try a simple insert to see if connection works at all
+    ];
+    
+    // First try to access each potential table directly
+    for (const tableName of tablesToCheck) {
       try {
-        const { error: authError } = await supabase.auth.getSession();
-        if (!authError) {
-          console.log('✅ Supabase connection is working, but no tables found');
-          throw new Error('Database connection works, but no tables available. Create tables in your Supabase project first.');
-        } else {
-          throw new Error('Authentication error: Possible connection issue');
+        // Just try to get a single row to see if the table exists and is accessible
+        const { data, error } = await supabase
+          .from(tableName)
+          .select('*')
+          .limit(1);
+        
+        if (!error) {
+          // Table exists and is accessible
+          accessibleTables.push({
+            id: tableName,
+            name: tableName
+              .split('_')
+              .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+              .join(' '),
+            description: `${tableName} database table`,
+            hasData: data && data.length > 0
+          });
+          
+          console.log(`✅ Found accessible table: ${tableName}`);
         }
-      } catch (authError) {
-        console.error('❌ Connection verification failed:', authError.message);
-        throw new Error('Could not connect to Supabase or no tables available');
+      } catch (e) {
+        // Skip tables we can't access
       }
     }
+    
+    // If we found real tables, use them
+    if (accessibleTables.length > 0) {
+      console.log(`✅ Found ${accessibleTables.length} accessible tables in database`);
+      return accessibleTables;
+    }
+    
+    // When development or demo mode (no real tables available)
+    console.log('⚠️ No accessible tables found. Using sample tables for demonstration.');
+    
+    return sampleTables.map(table => ({
+      ...table,
+      name: table.name + ' (SAMPLE)',
+      description: 'SAMPLE DATA: ' + table.description
+    }));
   } catch (error) {
-    console.error('❌ Error finding tables:', error.message);
-    throw new Error(`Database connection issue: ${error.message}`);
+    console.error('❌ Database connection issue:', error);
+    
+    // Provide sample tables as fallback when there's a connection issue
+    console.log('⚠️ Displaying sample tables due to connection issue');
+    
+    return [
+      { 
+        id: 'product_summary', 
+        name: 'Products (SAMPLE)', 
+        description: 'SAMPLE DATA: Product inventory for demonstration',
+        sample: true
+      },
+      { 
+        id: 'categories', 
+        name: 'Categories (SAMPLE)', 
+        description: 'SAMPLE DATA: Product categories for demonstration',
+        sample: true
+      }
+    ];
   }
 };
 
@@ -582,50 +599,74 @@ export const fetchAvailableTables = async () => {
  * @returns {Promise<Array>} - Table data
  */
 export const fetchTableData = async (tableName) => {
+  // Check if this is a sample table by looking at the name
+  const isSampleTable = tableName.includes('(SAMPLE)') || tableName === 'product_summary' || tableName === 'categories';
+  
   try {
     // Try to fetch from actual database
     const { data, error } = await supabase
       .from(tableName)
       .select('*');
       
-    if (error) throw error;
-    console.log(`Fetched ${data?.length || 0} rows from ${tableName}`);
+    if (error) {
+      console.log(`Error fetching data from ${tableName}: ${error.message}`);
+      
+      // For sample tables, use mock data
+      if (isSampleTable) {
+        throw new Error('Using sample data instead');
+      } else {
+        // For other tables with errors, return empty array
+        return [];
+      }
+    }
+    
+    console.log(`✅ Successfully fetched ${data?.length || 0} rows from ${tableName}`);
     return data;
   } catch (e) {
-    console.log(`Falling back to mock data for ${tableName}:`, e.message);
+    console.log(`⚠️ Using sample data for ${tableName}: ${e.message}`);
     
-    // Fall back to mock data
-    if (tableName === 'categories') {
+    // Extract the real table name if it's a sample table with (SAMPLE) in the name
+    const cleanTableName = tableName.replace('(SAMPLE)', '').trim().toLowerCase();
+    
+    // Return corresponding sample data based on table name
+    if (cleanTableName === 'categories' || tableName === 'categories') {
       return mockData.categories;
-    } else if (tableName === 'product_summary' || tableName === 'products') {
+    } else if (cleanTableName === 'product_summary' || cleanTableName === 'products' || 
+               tableName === 'product_summary' || tableName === 'products') {
       return mockData.product_summary;
-    } else if (tableName === 'suppliers') {
+    } else if (cleanTableName === 'suppliers' || tableName === 'suppliers') {
       return mockData.suppliers || [
         { id: 1, name: 'TechSupply Inc.', contact: 'John Smith', email: 'jsmith@techsupply.com', phone: '555-123-4567' },
         { id: 2, name: 'Office Essentials', contact: 'Sarah Johnson', email: 'sjohnson@offess.com', phone: '555-987-6543' },
         { id: 3, name: 'Furniture Depot', contact: 'Michael Brown', email: 'mbrown@furndepot.com', phone: '555-456-7890' }
       ];
-    } else if (tableName === 'customers') {
+    } else if (cleanTableName === 'customers' || tableName === 'customers') {
       return mockData.customers || [
         { id: 1, name: 'Acme Corp', contact: 'Jane Doe', email: 'jdoe@acme.com', phone: '555-111-2222' },
         { id: 2, name: 'Widget LLC', contact: 'Bob Wilson', email: 'bwilson@widget.com', phone: '555-333-4444' },
         { id: 3, name: 'Example Industries', contact: 'Carol Taylor', email: 'ctaylor@example.com', phone: '555-555-6666' }
       ];
-    } else if (tableName === 'orders') {
+    } else if (cleanTableName === 'orders' || tableName === 'orders') {
       return mockData.orders || [
         { id: 1, customer_id: 1, order_date: '2025-01-15', status: 'completed', total: 2499.97 },
         { id: 2, customer_id: 2, order_date: '2025-02-01', status: 'processing', total: 899.99 },
         { id: 3, customer_id: 1, order_date: '2025-02-20', status: 'pending', total: 1299.99 }
       ];
-    } else if (tableName === 'transactions') {
+    } else if (cleanTableName === 'transactions' || tableName === 'transactions') {
       return mockData.transactions || [
         { id: 1, product_id: 1, type: 'purchase', quantity: 10, transaction_date: '2025-01-10', note: 'Initial inventory' },
         { id: 2, product_id: 2, type: 'sale', quantity: -5, transaction_date: '2025-01-20', note: 'Customer order #135' },
         { id: 3, product_id: 1, type: 'adjustment', quantity: -1, transaction_date: '2025-02-05', note: 'Damaged product' }
       ];
+    } else if (cleanTableName === 'todos' || tableName === 'todos') {
+      return [
+        { id: 1, title: 'Welcome to the demo tables', completed: false, created_at: new Date().toISOString() },
+        { id: 2, title: 'Try selecting different tables', completed: true, created_at: new Date().toISOString() },
+        { id: 3, title: 'Explore the sample data', completed: false, created_at: new Date().toISOString() }
+      ];
     }
     
-    // If table doesn't exist in mock data, return empty array
+    // Default empty array for other tables
     return [];
   }
 };

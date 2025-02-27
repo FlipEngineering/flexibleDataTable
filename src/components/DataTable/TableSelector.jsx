@@ -161,7 +161,7 @@ const TableSelector = ({ selectedTable, onSelectTable }) => {
                 No Tables Found
               </div>
               <p style={{ margin: '4px 0', padding: '0 16px' }}>
-                Could not find any tables in your Supabase database. Please create tables in your Supabase project first.
+                No accessible tables in your Supabase database. Sample data is available for demonstration.
               </p>
               <Button 
                 type="primary" 
