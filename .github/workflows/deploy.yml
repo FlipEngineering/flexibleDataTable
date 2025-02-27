@@ -21,6 +21,9 @@ jobs:
 
       - name: Create Local Build
         run: |
+          # Create dist directory for outputs
+          mkdir -p dist
+          
           # Create prebuild directory 
           mkdir -p prebuild
           
@@ -31,9 +34,12 @@ jobs:
           cp package.json prebuild/
           cp vite.config.js prebuild/
           
+          # Debug what's in src directory
+          find src -type f | sort
+          
           # Create webpack config in prebuild to solve esbuild permission issues
           cd prebuild
-          cat > webpack.config.js << 'ENDCONFIG'
+          cat > webpack.config.cjs << 'ENDCONFIG'
           const path = require('path');
           const HtmlWebpackPlugin = require('html-webpack-plugin');
           
@@ -86,10 +92,10 @@ jobs:
             "name": "flexible-data-table",
             "private": true,
             "version": "0.1.0",
-            "type": "module",
+            "type": "commonjs",
             "homepage": "https://flipengineering.github.io/flexibleDataTable",
             "scripts": {
-              "build": "webpack --config webpack.config.js"
+              "build": "webpack --config webpack.config.cjs"
             },
             "dependencies": {
               "react": "^18.2.0",
@@ -115,7 +121,7 @@ jobs:
           npm install --no-package-lock webpack webpack-cli webpack-dev-server html-webpack-plugin babel-loader @babel/core @babel/preset-env @babel/preset-react css-loader style-loader react react-dom antd
           
           # Build with webpack
-          npx webpack --config webpack.config.js
+          npx webpack --config webpack.config.cjs
           
           # Create .nojekyll file
           touch dist/.nojekyll
