@@ -1,4 +1,4 @@
-name: Deploy React App to GitHub Pages
+name: Build and Deploy React App to GitHub Pages
 
 on:
   push:
@@ -10,8 +10,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-    concurrency:
-      group: ${{ github.workflow }}-${{ github.ref }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -20,185 +18,112 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "18"
-          cache: 'npm'
 
-      # Skip npm installation completely
-        
-      # Skip Vite files handling
-          
-      - name: Build
+      - name: Create Local Build
         run: |
-          # Create dist directory
-          mkdir -p dist
+          # Create prebuild directory 
+          mkdir -p prebuild
           
-          # Copy static assets
-          cp -r public/* dist/ || true
+          # Copy all files needed for build
+          cp -r src prebuild/
+          cp -r public prebuild/
+          cp index.html prebuild/
+          cp package.json prebuild/
+          cp vite.config.js prebuild/
           
-          # Create .nojekyll file to bypass Jekyll processing
+          # Create webpack config in prebuild to solve esbuild permission issues
+          cd prebuild
+          cat > webpack.config.js << 'ENDCONFIG'
+          const path = require('path');
+          const HtmlWebpackPlugin = require('html-webpack-plugin');
+          
+          module.exports = {
+            mode: 'development',
+            entry: './src/main.jsx',
+            output: {
+              path: path.resolve(__dirname, 'dist'),
+              filename: 'bundle.js',
+              publicPath: '/flexibleDataTable/'
+            },
+            module: {
+              rules: [
+                {
+                  test: /\.(js|jsx)$/,
+                  exclude: /node_modules/,
+                  use: {
+                    loader: 'babel-loader',
+                    options: {
+                      presets: ['@babel/preset-env', '@babel/preset-react']
+                    }
+                  }
+                },
+                {
+                  test: /\.css$/,
+                  use: ['style-loader', 'css-loader']
+                }
+              ]
+            },
+            resolve: {
+              extensions: ['.js', '.jsx']
+            },
+            plugins: [
+              new HtmlWebpackPlugin({
+                template: './index.html'
+              })
+            ],
+            devServer: {
+              static: {
+                directory: path.join(__dirname, 'public')
+              },
+              port: 3000
+            }
+          };
+          ENDCONFIG
+          
+          # Replace package.json to use webpack instead of vite
+          cat > package.json << 'ENDPACKAGE'
+          {
+            "name": "flexible-data-table",
+            "private": true,
+            "version": "0.1.0",
+            "type": "module",
+            "homepage": "https://flipengineering.github.io/flexibleDataTable",
+            "scripts": {
+              "build": "webpack --config webpack.config.js"
+            },
+            "dependencies": {
+              "react": "^18.2.0",
+              "react-dom": "^18.2.0",
+              "antd": "^5.9.0"
+            },
+            "devDependencies": {
+              "webpack": "^5.88.0",
+              "webpack-cli": "^5.1.4",
+              "webpack-dev-server": "^4.15.1", 
+              "html-webpack-plugin": "^5.5.3",
+              "babel-loader": "^9.1.3",
+              "@babel/core": "^7.22.9",
+              "@babel/preset-env": "^7.22.9",
+              "@babel/preset-react": "^7.22.5",
+              "css-loader": "^6.8.1",
+              "style-loader": "^3.3.3"
+            }
+          }
+          ENDPACKAGE
+          
+          # Install only webpack dependencies (not esbuild)
+          npm install --no-package-lock webpack webpack-cli webpack-dev-server html-webpack-plugin babel-loader @babel/core @babel/preset-env @babel/preset-react css-loader style-loader react react-dom antd
+          
+          # Build with webpack
+          npx webpack --config webpack.config.js
+          
+          # Create .nojekyll file
           touch dist/.nojekyll
           
-          # Copy index.html
-          cp index.html dist/
+          # Move the built files up
+          cp -r dist/* ../dist/
+          cd ..
           
-          # Generate minimal CSS and JS
-          cat > dist/index.js << 'ENDJS'
-          // Import React from CDN
-          const React = await import('https://esm.sh/react@18.2.0');
-          const ReactDOM = await import('https://esm.sh/react-dom@18.2.0/client');
-          
-          // Create an app without React
-          document.addEventListener('DOMContentLoaded', function() {
-            const rootDiv = document.getElementById('root');
-            
-            rootDiv.innerHTML = `
-              <div class="App">
-                <header class="App-header">
-                  <h1>React Dynamic DataTable Demo</h1>
-                  <p>A flexible table component with SQL database integration</p>
-                </header>
-                <main class="App-main">
-                  <div>
-                    <h2>Employee Database</h2>
-                    <p>This is a simplified demo of the DataTable component. For the complete interactive version, please clone the repository.</p>
-                    <table class="data-table">
-                      <thead>
-                        <tr>
-                          <th>ID</th>
-                          <th>Name</th>
-                          <th>Email</th>
-                          <th>Department</th>
-                          <th>Salary</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr>
-                          <td>1</td>
-                          <td>John Doe</td>
-                          <td>john.doe@example.com</td>
-                          <td>Engineering</td>
-                          <td>$85,000</td>
-                        </tr>
-                        <tr>
-                          <td>2</td>
-                          <td>Jane Smith</td>
-                          <td>jane.smith@example.com</td>
-                          <td>Marketing</td>
-                          <td>$72,000</td>
-                        </tr>
-                        <tr>
-                          <td>3</td>
-                          <td>Bob Johnson</td>
-                          <td>bob.johnson@example.com</td>
-                          <td>Sales</td>
-                          <td>$95,000</td>
-                        </tr>
-                      </tbody>
-                    </table>
-                    <div style="margin: 24px 0; padding: 16px; background: #f6f6f6; border-radius: 8px; border: 1px solid #ddd">
-                      <h3>Features:</h3>
-                      <ul>
-                        <li><strong>Dynamic Columns:</strong> Generated from database schema</li>
-                        <li><strong>Multiple Data Types:</strong> Text, number, select, checkbox, formula</li>
-                        <li><strong>Row Operations:</strong> Add, edit, delete, reorder</li>
-                        <li><strong>Filtering & Sorting:</strong> Built into all columns</li>
-                        <li><strong>Formula Support:</strong> Excel-like formulas (SUM, AVG, MIN, MAX, COUNT, IF)</li>
-                        <li><strong>SQL Integration:</strong> Ready to connect to database backends</li>
-                      </ul>
-                    </div>
-                  </div>
-                </main>
-                <footer class="App-footer">
-                  <p>© 2025 - Dynamic DataTable Component</p>
-                </footer>
-              </div>
-            `;
-          });
-          ENDJS
-          
-          # Create CSS
-          cat > dist/style.css << 'ENDCSS'
-          body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-            margin: 0;
-            padding: 0;
-            background: #f5f5f5;
-          }
-          
-          .App {
-            text-align: center;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-          }
-          
-          .App-header {
-            background-color: #282c34;
-            padding: 20px;
-            color: white;
-            border-radius: 8px;
-            margin-bottom: 20px;
-          }
-          
-          .App-header h1 {
-            margin: 0;
-            font-size: 2.5rem;
-          }
-          
-          .App-main {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-          }
-          
-          .App-footer {
-            margin-top: 20px;
-            color: #666;
-          }
-          
-          .data-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 20px 0;
-          }
-          
-          .data-table th {
-            background: #f0f0f0;
-            padding: 12px;
-            text-align: left;
-            font-weight: bold;
-            border-bottom: 2px solid #ddd;
-          }
-          
-          .data-table td {
-            padding: 10px 12px;
-            border-bottom: 1px solid #eee;
-          }
-          
-          .data-table tr:hover {
-            background: #f9f9f9;
-          }
-          ENDCSS
-          
-          # Create a completely new index.html file
-          cat > dist/index.html << 'ENDHTML'
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>React Dynamic DataTable Demo</title>
-    <meta name="description" content="A flexible React table component with SQL database integration" />
-    <link rel="stylesheet" href="./style.css" />
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="./index.js"></script>
-  </body>
-</html>
-ENDHTML
-
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
         with:
