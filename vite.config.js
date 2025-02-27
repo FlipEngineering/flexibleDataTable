@@ -12,7 +12,7 @@ export default defineConfig({
   base: '/',
   // Build optimization
   build: {
-    minify: 'terser',
+    minify: 'esbuild',
     cssMinify: true,
     rollupOptions: {
       output: {
