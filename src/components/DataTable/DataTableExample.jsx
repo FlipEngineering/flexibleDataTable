@@ -45,30 +45,33 @@ const DataTableExample = () => {
     }
   }, [selectedTable]);
 
+  // Function to load table data
+  const loadTableData = async (tableId) => {
+    setLoading(true);
+    try {
+      // Load categories for filtering if we're on the products table
+      if (tableId === 'product_summary' || tableId === 'products') {
+        const categoriesData = await fetchCategories();
+        setCategories(categoriesData);
+      }
+      
+      // Load data for the selected table
+      const data = await fetchTableData(tableId);
+      setTableData(data);
+      
+      console.log(`Loaded ${data?.length || 0} rows from ${tableId} table`);
+    } catch (error) {
+      console.error(`Error loading ${tableId} table data:`, error);
+      message.error(`Failed to load ${tableId} table data`);
+    } finally {
+      setLoading(false);
+    }
+  };
+  
   // Load table data when selected table changes
   useEffect(() => {
-    const loadTableData = async () => {
-      setLoading(true);
-      try {
-        // Load categories for filtering if we're on the products table
-        if (selectedTable === 'product_summary' || selectedTable === 'products') {
-          const categoriesData = await fetchCategories();
-          setCategories(categoriesData);
-        }
-        
-        // Load data for the selected table
-        const data = await fetchTableData(selectedTable);
-        setTableData(data);
-      } catch (error) {
-        console.error('Error loading table data:', error);
-        message.error('Failed to load table data');
-      } finally {
-        setLoading(false);
-      }
-    };
-    
     if (selectedTable) {
-      loadTableData();
+      loadTableData(selectedTable);
     }
   }, [selectedTable]);
 
@@ -231,17 +234,23 @@ const DataTableExample = () => {
         {/* Sidebar */}
         <div className="explorer-sidebar" style={{ 
           width: '300px', 
-          background: '#fff', 
-          borderRight: '1px solid #f0f0f0',
+          background: 'var(--component-background, #fff)', 
+          borderRight: '1px solid var(--border-color-split, #f0f0f0)',
           padding: '20px 16px',
           height: 'calc(100vh - 150px)',
           overflowY: 'auto'
         }}>
-          <h2 style={{ display: 'flex', alignItems: 'center' }}>
-            <DatabaseOutlined style={{ marginRight: 10 }} />
+          <h2 style={{ 
+            display: 'flex', 
+            alignItems: 'center',
+            color: 'var(--heading-color, rgba(0, 0, 0, 0.85))'
+          }}>
+            <DatabaseOutlined style={{ marginRight: 10, color: 'var(--primary-color, #1890ff)' }} />
             SQL Explorer
           </h2>
-          <p>View and manage all tables in your PostgreSQL database</p>
+          <p style={{ color: 'var(--text-color-secondary, rgba(0, 0, 0, 0.45))' }}>
+            View and manage all tables in your PostgreSQL database
+          </p>
           
           <TableSelector 
             selectedTable={selectedTable}
@@ -251,7 +260,7 @@ const DataTableExample = () => {
           {/* Only show filters for product tables */}
           {(selectedTable === 'product_summary' || selectedTable === 'products') && (
             <>
-              <h3>Filters</h3>
+              <h3 style={{ color: 'var(--heading-color, rgba(0, 0, 0, 0.85))' }}>Filters</h3>
               <div style={{ marginBottom: 16 }}>
                 <div style={{ marginBottom: 8 }}>
                   <Input
@@ -260,7 +269,13 @@ const DataTableExample = () => {
                     onChange={e => setSearchTerm(e.target.value)}
                     onPressEnter={handleSearch}
                     style={{ width: '100%' }}
-                    suffix={<Button type="text" icon={<SearchOutlined />} onClick={handleSearch} />}
+                    suffix={
+                      <Button 
+                        type="text" 
+                        icon={<SearchOutlined />} 
+                        onClick={handleSearch}
+                      />
+                    }
                   />
                 </div>
                 
@@ -296,8 +311,15 @@ const DataTableExample = () => {
             </>
           )}
           
-          <div style={{ margin: '24px 0', padding: '16px', background: '#f0f2f5', borderRadius: '8px', border: '1px solid #d9d9d9' }}>
-            <h3>Database Integration</h3>
+          <div style={{ 
+            margin: '24px 0', 
+            padding: '16px', 
+            background: 'var(--item-hover-bg, rgba(0, 0, 0, 0.02))', 
+            borderRadius: '8px', 
+            border: '1px solid var(--border-color-split, #f0f0f0)',
+            color: 'var(--text-color-secondary, rgba(0, 0, 0, 0.45))'
+          }}>
+            <h3 style={{ color: 'var(--heading-color, rgba(0, 0, 0, 0.85))' }}>Database Integration</h3>
             <p>This component connects to PostgreSQL database with:</p>
             <ul>
               <li>Dynamic table selection</li>
@@ -305,13 +327,29 @@ const DataTableExample = () => {
               <li>CRUD operations</li>
               <li>Filtering and search</li>
             </ul>
+            
+            <div style={{ 
+              marginTop: 16, 
+              display: 'flex', 
+              justifyContent: 'center' 
+            }}>
+              <Button 
+                type="primary" 
+                onClick={() => loadTableData(selectedTable)}
+                loading={loading}
+              >
+                Refresh Table Data
+              </Button>
+            </div>
           </div>
         </div>
         
         {/* Main content */}
         <div className="explorer-content" style={{ 
           flex: 1, 
-          padding: '20px 24px'
+          padding: '20px 24px',
+          background: 'var(--body-background, #fff)',
+          color: 'var(--text-color, rgba(0, 0, 0, 0.85))'
         }}>
           <DataTable
             tableName={getTableDisplayName()}
@@ -323,6 +361,25 @@ const DataTableExample = () => {
             loading={loading}
             formulaEnabled={selectedTable === 'product_summary'}
           />
+
+          {tableData.length === 0 && !loading && (
+            <div style={{
+              textAlign: 'center',
+              padding: '40px 0',
+              color: 'var(--text-color-secondary, rgba(0, 0, 0, 0.45))'
+            }}>
+              <div style={{ fontSize: '72px', lineHeight: '72px', marginBottom: '16px' }}>📋</div>
+              <h3 style={{ color: 'var(--heading-color, rgba(0, 0, 0, 0.85))' }}>No data found</h3>
+              <p>This table appears to be empty or not available.</p>
+              <Button 
+                type="primary" 
+                onClick={() => loadTableData(selectedTable)}
+                style={{ marginTop: '16px' }}
+              >
+                Refresh Data
+              </Button>
+            </div>
+          )}
         </div>
       </div>
     </div>

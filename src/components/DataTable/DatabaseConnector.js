@@ -455,16 +455,46 @@ export const recordTransaction = async (transaction) => {
  * @returns {Promise<Array>} - List of table names
  */
 export const fetchAvailableTables = async () => {
-  // In a real implementation, we would query the database for available tables
-  // For now, return a static list of mock tables
-  return [
-    { id: 'product_summary', name: 'Products', description: 'Product inventory data' },
-    { id: 'categories', name: 'Categories', description: 'Product categories' },
-    { id: 'transactions', name: 'Transactions', description: 'Inventory transactions' },
-    { id: 'suppliers', name: 'Suppliers', description: 'Product suppliers' },
-    { id: 'customers', name: 'Customers', description: 'Customer information' },
-    { id: 'orders', name: 'Orders', description: 'Customer orders' }
-  ];
+  try {
+    // Try to fetch actual tables from the database using Supabase
+    const { data, error } = await supabase
+      .from('pg_tables')
+      .select('schemaname, tablename')
+      .eq('schemaname', 'public')
+      .order('tablename');
+    
+    if (error) throw error;
+    
+    // If we got actual table data from the database
+    if (data && data.length > 0) {
+      console.log('Found actual database tables:', data.length);
+      
+      // Map the raw table data to our table format
+      return data.map(table => ({
+        id: table.tablename,
+        name: table.tablename
+          .split('_')
+          .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(' '),
+        description: `${table.schemaname}.${table.tablename} database table`
+      }));
+    }
+    
+    throw new Error('No tables found in database');
+  } catch (error) {
+    console.log('Using mock tables due to error:', error.message);
+    
+    // Fall back to mock tables
+    // In a production app, you might want to only show tables that have mock data
+    return [
+      { id: 'product_summary', name: 'Products', description: 'Product inventory data' },
+      { id: 'categories', name: 'Categories', description: 'Product categories' },
+      { id: 'transactions', name: 'Transactions', description: 'Inventory transactions' },
+      { id: 'suppliers', name: 'Suppliers', description: 'Product suppliers' },
+      { id: 'customers', name: 'Customers', description: 'Customer information' },
+      { id: 'orders', name: 'Orders', description: 'Customer orders' }
+    ];
+  }
 };
 
 /**
