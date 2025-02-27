@@ -483,115 +483,61 @@ export const recordTransaction = async (transaction) => {
  * @returns {Promise<Array>} - List of table names
  */
 export const fetchAvailableTables = async () => {
-  try {
-    // Since we know what tables work based on debug logs,
-    // let's just use the tables we know exist in our Supabase project
-    const realTables = [
-      'product_summary',
-      'categories'
-    ];
-    
-    const descriptions = {
-      'product_summary': 'Product inventory with pricing and stock information',
-      'categories': 'Product categories for organizational structure',
-      'todos': 'Task tracking for projects and assignments',
-      'users': 'User accounts and authentication information',
-      'profiles': 'User profile details and preferences'
-    };
-    
-    // Test each table for existence and whether it has data
-    const existingTables = [];
-    
-    for (const tableName of realTables) {
-      try {
-        const { data, error } = await supabase
-          .from(tableName)
-          .select('*')
-          .limit(1);
-          
-        // Only add tables that we can successfully query (i.e., they exist)
-        if (!error) {
-          existingTables.push({
-            id: tableName,
-            name: tableName
-              .split('_')
-              .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-              .join(' '),
-            description: descriptions[tableName] || `${tableName} table`,
-            // Add flag to indicate if table has data
-            hasData: data && data.length > 0
-          });
-          console.log(`✅ Found table: "${tableName}"`);
-        } else {
-          console.log(`❌ Table not accessible: "${tableName}" - ${error.message}`);
-        }
-      } catch (e) {
-        console.log(`❌ Error checking table "${tableName}":`, e.message);
+  // Real tables we know should be in the Supabase database
+  const knownRealTables = [
+    'product_summary',
+    'categories'
+  ];
+  
+  // Nice descriptions for the tables
+  const descriptions = {
+    'product_summary': 'Product inventory with pricing and stock information',
+    'categories': 'Product categories for organizational structure'
+  };
+  
+  // Array to store tables we can actually access
+  const accessibleTables = [];
+  
+  // Check each known table
+  console.log('🔍 Checking for known tables in Supabase database...');
+  
+  for (const tableName of knownRealTables) {
+    try {
+      console.log(`Checking table "${tableName}"...`);
+      const { data, error } = await supabase
+        .from(tableName)
+        .select('*')
+        .limit(1);
+      
+      if (error) {
+        throw new Error(`Error accessing ${tableName}: ${error.message}`);
       }
+      
+      // If we get here, the table exists and is accessible
+      accessibleTables.push({
+        id: tableName,
+        name: tableName
+          .split('_')
+          .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(' '),
+        description: descriptions[tableName] || `${tableName} database table`,
+        hasData: data && data.length > 0
+      });
+      
+      console.log(`✅ Table "${tableName}" is accessible`);
+    } catch (error) {
+      console.error(`❌ Could not access table "${tableName}": ${error.message}`);
     }
-    
-    // If we have tables that we know work, return those immediately
-    if (existingTables.length > 0) {
-      console.log('✅ Successfully found real tables in database:', existingTables.length);
-      return existingTables;
-    }
-    
-    // Try to discover more tables dynamically
-    const otherPossibleTables = [
-      'todos',
-      'users',
-      'profiles',
-      'products',
-      'transactions',
-      'suppliers',
-      'customers',
-      'orders'
-    ];
-    
-    // Test these other tables
-    for (const tableName of otherPossibleTables) {
-      try {
-        const { data, error } = await supabase
-          .from(tableName)
-          .select('*')
-          .limit(1);
-          
-        if (!error) {
-          existingTables.push({
-            id: tableName,
-            name: tableName
-              .split('_')
-              .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-              .join(' '),
-            description: descriptions[tableName] || `${tableName} table`,
-            hasData: data && data.length > 0
-          });
-          console.log(`✅ Found additional table: "${tableName}"`);
-        }
-      } catch (e) {
-        // Just skip these tables silently if they don't exist
-      }
-    }
-    
-    if (existingTables.length > 0) {
-      return existingTables;
-    }
-    
-    throw new Error('No tables found in database');
-  } catch (error) {
-    console.log('⚠️ Using mock tables due to error:', error.message);
-    
-    // Fall back to mock tables - but make it obvious they're mock
-    return [
-      { id: 'todos', name: 'Todos (DUMMY)', description: 'DUMMY DATA: Task tracking' },
-      { id: 'product_summary', name: 'Products (DUMMY)', description: 'DUMMY DATA: Product inventory data' },
-      { id: 'categories', name: 'Categories (DUMMY)', description: 'DUMMY DATA: Product categories' },
-      { id: 'transactions', name: 'Transactions (DUMMY)', description: 'DUMMY DATA: Inventory transactions' },
-      { id: 'suppliers', name: 'Suppliers (DUMMY)', description: 'DUMMY DATA: Product suppliers' },
-      { id: 'customers', name: 'Customers (DUMMY)', description: 'DUMMY DATA: Customer information' },
-      { id: 'orders', name: 'Orders (DUMMY)', description: 'DUMMY DATA: Customer orders' }
-    ];
   }
+  
+  // If we found accessible tables, return them
+  if (accessibleTables.length > 0) {
+    console.log(`✅ Found ${accessibleTables.length} accessible tables`);
+    return accessibleTables;
+  }
+  
+  // If we get here, no tables were accessible - throw an error
+  throw new Error('No database tables are accessible. Please check your database connection and permissions.');
 };
 
 /**

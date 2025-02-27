@@ -27,45 +27,36 @@ const TableSelector = ({ selectedTable, onSelectTable }) => {
     }
     
     try {
+      // Try to get tables from the real database
       const availableTables = await fetchAvailableTables();
       
-      // Check if any real tables (not mock)
-      const realTables = availableTables.filter(t => !t.name.includes('DUMMY'));
+      console.log('✅ Found database tables:', availableTables.map(t => t.id).join(', '));
+      setTables(availableTables);
       
-      if (realTables.length > 0) {
-        console.log('✅ Found real tables:', realTables.map(t => t.id).join(', '));
-        // Only use real tables if we have them
-        setTables(realTables);
-        
-        // If no table is selected and we have tables, select the first one
-        if (!selectedTable && realTables.length > 0) {
-          onSelectTable(realTables[0].id);
-        }
-        
-        // If the currently selected table is a mock one, switch to a real one
-        if (selectedTable && selectedTable.includes('DUMMY')) {
-          message.success('Connected to real database tables');
-          onSelectTable(realTables[0].id);
-        }
-      } else {
-        console.warn('⚠️ All tables appear to be mock data');
-        setTables(availableTables);
-        
-        // If no table is selected and we have tables, select the first one
-        if (!selectedTable && availableTables.length > 0) {
+      // If no table is selected and we have tables, select the first one
+      if (!selectedTable && availableTables.length > 0) {
+        onSelectTable(availableTables[0].id);
+        message.success(`Connected to ${availableTables.length} database tables`);
+      }
+      
+      // Force clear any previously selected table that no longer exists
+      if (selectedTable && !availableTables.find(t => t.id === selectedTable)) {
+        message.info('Previously selected table is no longer available');
+        if (availableTables.length > 0) {
           onSelectTable(availableTables[0].id);
-        }
-        
-        // If we've been trying without success, retry a few times
-        if (refreshCounter < 2) {
-          setTimeout(() => {
-            setRefreshCounter(prev => prev + 1);
-          }, 2000); // Wait 2 seconds before trying again
         }
       }
     } catch (error) {
-      console.error('Error loading tables:', error);
-      message.error('Failed to load database tables');
+      console.error('Database connection error:', error);
+      message.error(`Database connection failed: ${error.message}`);
+      setTables([]);
+      
+      // If we've been trying without success, retry a few times
+      if (refreshCounter < 3) {
+        setTimeout(() => {
+          setRefreshCounter(prev => prev + 1);
+        }, 2000); // Wait 2 seconds before trying again
+      }
     } finally {
       setLoading(false);
     }
@@ -134,28 +125,52 @@ const TableSelector = ({ selectedTable, onSelectTable }) => {
           <Title level={5} style={{ color: 'var(--heading-color, rgba(0, 0, 0, 0.85))' }}>
             Select Table
           </Title>
-          <Select
-            style={{ width: '100%', marginBottom: 16 }}
-            placeholder="Select a table"
-            value={selectedTable}
-            onChange={(value) => {
-              onSelectTable(value);
-              message.info(`Loading data from ${tables.find(t => t.id === value)?.name || value} table...`);
-            }}
-            loading={loading}
-            dropdownStyle={{ 
-              backgroundColor: 'var(--component-background, #fff)',
-              color: 'var(--text-color, rgba(0, 0, 0, 0.85))'
-            }}
-          >
-            {tables.map(table => (
-              <Option key={table.id} value={table.id}>
-                <Tooltip title={table.description}>
-                  <div>{table.name}</div>
-                </Tooltip>
-              </Option>
-            ))}
-          </Select>
+          {tables.length > 0 ? (
+            <Select
+              style={{ width: '100%', marginBottom: 16 }}
+              placeholder="Select a table"
+              value={selectedTable}
+              onChange={(value) => {
+                onSelectTable(value);
+                message.info(`Loading data from ${tables.find(t => t.id === value)?.name || value} table...`);
+              }}
+              loading={loading}
+              dropdownStyle={{ 
+                backgroundColor: 'var(--component-background, #fff)',
+                color: 'var(--text-color, rgba(0, 0, 0, 0.85))'
+              }}
+            >
+              {tables.map(table => (
+                <Option key={table.id} value={table.id}>
+                  <Tooltip title={table.description}>
+                    <div>{table.name}</div>
+                  </Tooltip>
+                </Option>
+              ))}
+            </Select>
+          ) : (
+            <div style={{ 
+              textAlign: 'center', 
+              padding: '20px 0', 
+              color: 'var(--error-color, #ff4d4f)',
+              border: '1px dashed var(--error-color, #ff4d4f)',
+              borderRadius: '4px',
+              margin: '8px 0'
+            }}>
+              <div style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '8px' }}>
+                Database Connection Failed
+              </div>
+              <p style={{ margin: '4px 0' }}>Could not connect to Supabase database</p>
+              <Button 
+                type="primary" 
+                onClick={handleRefresh} 
+                style={{ marginTop: '12px' }}
+                danger
+              >
+                Retry Connection
+              </Button>
+            </div>
+          )}
           
           {selectedTable && (
             <div style={{ 
