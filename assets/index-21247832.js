@@ -53297,7 +53297,7 @@ const DataTable = ({
         },
         columns,
         dataSource,
-        pagination: { pageSize: 10 },
+        pagination: { pageSize: 20, showSizeChanger: true, pageSizeOptions: ["10", "20", "50", "100"] },
         bordered: true,
         size: "middle",
         loading
@@ -55909,7 +55909,7 @@ class RealtimeClient {
         this.conn = null;
       }
     });
-    __vitePreload(() => import("./browser-5dda1aa0.js").then((n2) => n2.b), true ? [] : void 0).then(({ default: WS }) => {
+    __vitePreload(() => import("./browser-d732d14b.js").then((n2) => n2.b), true ? [] : void 0).then(({ default: WS }) => {
       this.conn = new WS(this.endpointURL(), void 0, {
         headers: this.headers
       });
@@ -60198,6 +60198,14 @@ const mockData = {
     { id: 4, name: "Kitchen", description: "Kitchen appliances and utensils" },
     { id: 5, name: "Books", description: "Books and publications" }
   ],
+  // Map categories to products for easier filtering
+  category_map: {
+    1: "Electronics",
+    2: "Office Supplies",
+    3: "Furniture",
+    4: "Kitchen",
+    5: "Books"
+  },
   products: [
     { id: 1, category_id: 1, sku: "E-LAPTOP-001", name: "Business Laptop", description: "15-inch business laptop with 16GB RAM", price: 1299.99, cost: 950, quantity: 25, reorder_level: 5, status: "active" },
     { id: 2, category_id: 1, sku: "E-PHONE-002", name: "Smartphone X", description: "Latest smartphone model with dual camera", price: 899.99, cost: 650, quantity: 42, reorder_level: 10, status: "active" }
@@ -60205,8 +60213,30 @@ const mockData = {
   ],
   product_summary: [
     { id: 1, sku: "E-LAPTOP-001", name: "Business Laptop", description: "15-inch business laptop with 16GB RAM", category: "Electronics", price: 1299.99, cost: 950, quantity: 25, reorder_level: 5, status: "active", profit_margin: 349.99, needs_reorder: false },
-    { id: 2, sku: "E-PHONE-002", name: "Smartphone X", description: "Latest smartphone model with dual camera", category: "Electronics", price: 899.99, cost: 650, quantity: 42, reorder_level: 10, status: "active", profit_margin: 249.99, needs_reorder: false }
-    // More product summaries would be here
+    { id: 2, sku: "E-PHONE-002", name: "Smartphone X", description: "Latest smartphone model with dual camera", category: "Electronics", price: 899.99, cost: 650, quantity: 42, reorder_level: 10, status: "active", profit_margin: 249.99, needs_reorder: false },
+    { id: 3, sku: "E-TABLET-003", name: "Pro Tablet", description: "10-inch tablet with stylus", category: "Electronics", price: 599.99, cost: 400, quantity: 30, reorder_level: 8, status: "active", profit_margin: 199.99, needs_reorder: false },
+    { id: 4, sku: "E-MONITOR-004", name: "4K Monitor", description: "27-inch 4K UHD monitor", category: "Electronics", price: 349.99, cost: 250, quantity: 15, reorder_level: 5, status: "active", profit_margin: 99.99, needs_reorder: false },
+    { id: 5, sku: "E-HDPHONE-005", name: "Noise Cancelling Headphones", description: "Over-ear noise cancelling headphones", category: "Electronics", price: 249.99, cost: 120, quantity: 35, reorder_level: 10, status: "active", profit_margin: 129.99, needs_reorder: false },
+    { id: 6, sku: "O-DESK-001", name: "Standing Desk", description: "Adjustable height standing desk", category: "Office Supplies", price: 499.99, cost: 300, quantity: 8, reorder_level: 3, status: "active", profit_margin: 199.99, needs_reorder: false },
+    { id: 7, sku: "O-CHAIR-002", name: "Ergonomic Chair", description: "Fully adjustable ergonomic office chair", category: "Office Supplies", price: 349.99, cost: 200, quantity: 12, reorder_level: 5, status: "active", profit_margin: 149.99, needs_reorder: false },
+    { id: 8, sku: "O-PAPER-003", name: "Premium Paper", description: "Premium white copy paper, 500 sheets", category: "Office Supplies", price: 9.99, cost: 5, quantity: 100, reorder_level: 20, status: "active", profit_margin: 4.99, needs_reorder: false },
+    { id: 9, sku: "O-PEN-004", name: "Gel Pen Set", description: "Set of 12 colored gel pens", category: "Office Supplies", price: 12.99, cost: 6, quantity: 75, reorder_level: 15, status: "active", profit_margin: 6.99, needs_reorder: false },
+    { id: 10, sku: "O-NOTE-005", name: "Sticky Notes", description: "Pack of 12 sticky note pads", category: "Office Supplies", price: 14.99, cost: 7.5, quantity: 60, reorder_level: 20, status: "active", profit_margin: 7.49, needs_reorder: false },
+    { id: 11, sku: "F-SOFA-001", name: "Office Sofa", description: "Three-seat office reception sofa", category: "Furniture", price: 899.99, cost: 600, quantity: 5, reorder_level: 2, status: "active", profit_margin: 299.99, needs_reorder: false },
+    { id: 12, sku: "F-TABLE-002", name: "Conference Table", description: "Large conference room table", category: "Furniture", price: 799.99, cost: 450, quantity: 3, reorder_level: 1, status: "active", profit_margin: 349.99, needs_reorder: false },
+    { id: 13, sku: "F-CABINET-003", name: "File Cabinet", description: "4-drawer metal file cabinet", category: "Furniture", price: 199.99, cost: 100, quantity: 18, reorder_level: 5, status: "active", profit_margin: 99.99, needs_reorder: false },
+    { id: 14, sku: "F-SHELF-004", name: "Bookshelf", description: "5-tier bookshelf", category: "Furniture", price: 149.99, cost: 80, quantity: 22, reorder_level: 7, status: "active", profit_margin: 69.99, needs_reorder: false },
+    { id: 15, sku: "F-DESK-005", name: "Executive Desk", description: "Large executive office desk", category: "Furniture", price: 649.99, cost: 400, quantity: 7, reorder_level: 2, status: "active", profit_margin: 249.99, needs_reorder: false },
+    { id: 16, sku: "K-COFFEE-001", name: "Coffee Maker", description: "Programmable 12-cup coffee maker", category: "Kitchen", price: 89.99, cost: 45, quantity: 20, reorder_level: 5, status: "active", profit_margin: 44.99, needs_reorder: false },
+    { id: 17, sku: "K-FRIDGE-002", name: "Mini Refrigerator", description: "Compact office refrigerator", category: "Kitchen", price: 159.99, cost: 90, quantity: 10, reorder_level: 3, status: "active", profit_margin: 69.99, needs_reorder: false },
+    { id: 18, sku: "K-MICRO-003", name: "Microwave Oven", description: "Countertop microwave oven", category: "Kitchen", price: 129.99, cost: 70, quantity: 12, reorder_level: 4, status: "active", profit_margin: 59.99, needs_reorder: false },
+    { id: 19, sku: "K-WATER-004", name: "Water Dispenser", description: "Hot and cold water dispenser", category: "Kitchen", price: 199.99, cost: 110, quantity: 8, reorder_level: 2, status: "active", profit_margin: 89.99, needs_reorder: false },
+    { id: 20, sku: "K-DISHES-005", name: "Dish Set", description: "16-piece dish set", category: "Kitchen", price: 49.99, cost: 25, quantity: 15, reorder_level: 5, status: "active", profit_margin: 24.99, needs_reorder: false },
+    { id: 21, sku: "B-BIZ-001", name: "Business Strategy Book", description: "Best-selling business strategy guide", category: "Books", price: 24.99, cost: 12, quantity: 45, reorder_level: 10, status: "active", profit_margin: 12.99, needs_reorder: false },
+    { id: 22, sku: "B-TECH-002", name: "Programming Manual", description: "Comprehensive programming reference", category: "Books", price: 39.99, cost: 20, quantity: 30, reorder_level: 8, status: "active", profit_margin: 19.99, needs_reorder: false },
+    { id: 23, sku: "B-SELF-003", name: "Self-Help Book", description: "Productivity and self-improvement guide", category: "Books", price: 19.99, cost: 9, quantity: 50, reorder_level: 15, status: "active", profit_margin: 10.99, needs_reorder: false },
+    { id: 24, sku: "B-FIN-004", name: "Financial Planning", description: "Personal and business finance book", category: "Books", price: 29.99, cost: 15, quantity: 35, reorder_level: 10, status: "active", profit_margin: 14.99, needs_reorder: false },
+    { id: 25, sku: "B-MKT-005", name: "Marketing Handbook", description: "Digital marketing strategies handbook", category: "Books", price: 34.99, cost: 17, quantity: 25, reorder_level: 8, status: "active", profit_margin: 17.99, needs_reorder: false }
   ]
 };
 const supabase = getSupabaseClient();
