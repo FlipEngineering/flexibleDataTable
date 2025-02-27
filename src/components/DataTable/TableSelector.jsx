@@ -158,10 +158,10 @@ const TableSelector = ({ selectedTable, onSelectTable }) => {
               margin: '8px 0'
             }}>
               <div style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '8px' }}>
-                Database Connection Issue
+                No Tables Found
               </div>
               <p style={{ margin: '4px 0', padding: '0 16px' }}>
-                No tables found in the Supabase database. The connection might be working, but tables need to be created.
+                Could not find any tables in your Supabase database. Please create tables in your Supabase project first.
               </p>
               <Button 
                 type="primary" 

@@ -483,143 +483,96 @@ export const recordTransaction = async (transaction) => {
  * @returns {Promise<Array>} - List of table names
  */
 export const fetchAvailableTables = async () => {
-  // First, try to automatically discover tables in the Supabase database
   try {
-    console.log('🔍 Checking for all public tables in Supabase...');
+    console.log('🔍 Searching for all available tables in Supabase...');
     
-    // Try to get the Supabase version to check connectivity
-    try {
-      const { data: versionData, error: versionError } = await supabase
-        .rpc('version')
-        .catch(err => {
-          console.log('RPC version check failed, trying auth.getSession instead');
-          return supabase.auth.getSession();
-        });
-        
-      if (versionError) {
-        console.log(`⚠️ Could not check Supabase version: ${versionError.message}`);
-      } else {
-        console.log('✅ Supabase connection test successful');
-      }
-    } catch (connectionError) {
-      console.error('❌ Supabase connection test failed:', connectionError.message);
-    }
+    // Try to get all tables using PostgreSQL's information_schema
+    const { data: schemaTables, error: schemaError } = await supabase
+      .from('information_schema.tables')
+      .select('table_name')
+      .eq('table_schema', 'public')
+      .not('table_name', 'like', 'pg_%')
+      .not('table_name', 'like', '_prisma_%')
+      .not('table_name', 'like', 'schema_%')
+      .order('table_name');
     
-    // Check the most common public tables that might be in Supabase
-    const defaultTables = [
-      'todos', 
-      'users', 
-      'profiles', 
-      'products', 
-      'categories',
-      'product_summary',
-      'product_inventory',
-      'items'
-    ];
-    
-    // Array to store tables we can actually access
-    const accessibleTables = [];
-    
-    // Try to access each of these tables
-    for (const tableName of defaultTables) {
-      try {
-        console.log(`Checking table "${tableName}"...`);
-        
-        // Check if table exists by attempting to query it
-        const { data, error } = await supabase
-          .from(tableName)
-          .select('*')
-          .limit(1);
-        
-        if (!error) {
+    // Check if we got table list from information schema
+    if (!schemaError && schemaTables && schemaTables.length > 0) {
+      console.log(`✅ Found ${schemaTables.length} tables in database schema`);
+      
+      // Map tables to our format
+      const availableTables = schemaTables.map(table => ({
+        id: table.table_name,
+        name: table.table_name
+          .split('_')
+          .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(' '),
+        description: `Database table: ${table.table_name}`,
+        source: 'schema'
+      }));
+      
+      return availableTables;
+    } else {
+      console.log(`⚠️ Cannot access information_schema: ${schemaError?.message || 'No tables found'}`);
+      
+      // If information_schema doesn't work, check a list of common tables directly
+      const commonTables = [
+        'todos', 'users', 'profiles', 'auth', 'products', 'categories', 
+        'items', 'posts', 'comments', 'settings', 'data', 'stats'
+      ];
+      
+      const discoveredTables = [];
+      
+      // Check each table directly
+      for (const tableName of commonTables) {
+        try {
+          const { data, error } = await supabase
+            .from(tableName)
+            .select('count(*)', { count: 'exact', head: true });
+            
           // If no error, the table exists
-          accessibleTables.push({
-            id: tableName,
-            name: tableName
-              .split('_')
-              .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-              .join(' '),
-            description: `${tableName} table`,
-            hasData: data && data.length > 0
-          });
-          
-          console.log(`✅ Table "${tableName}" is accessible, has data: ${Boolean(data && data.length > 0)}`);
+          if (!error) {
+            discoveredTables.push({
+              id: tableName,
+              name: tableName
+                .split('_')
+                .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                .join(' '),
+              description: `Database table: ${tableName}`,
+              source: 'direct'
+            });
+            console.log(`✅ Found table: ${tableName}`);
+          }
+        } catch (e) {
+          // Quietly skip tables that don't exist
         }
-      } catch (error) {
-        console.error(`❌ Error with table "${tableName}": ${error.message}`);
-      }
-    }
-    
-    // If we found accessible tables, return them
-    if (accessibleTables.length > 0) {
-      console.log(`✅ Found ${accessibleTables.length} accessible tables`);
-      return accessibleTables;
-    }
-    
-    // If no tables found, we need to check if the database is working but just empty
-    console.log('ℹ️ No predefined tables found. Checking connection directly...');
-    
-    // Create mock data that we can load if needed
-    const mockTables = [];
-    
-    // Create a basic "Todos" table if we couldn't find anything else
-    mockTables.push({
-      id: 'todos',
-      name: 'Todos',
-      description: 'Task list (auto-created)',
-      hasData: false,
-      autoCreated: true
-    });
-    
-    // If we got here, we can connect to database but no predefined tables exist
-    // We'll create an empty todos table for the user to use
-    try {
-      console.log('🔧 Creating a starter todos table...');
-      
-      // Create a basic Todo table directly via SQL
-      const { error: createError } = await supabase.rpc('create_todos_table', {}, { 
-        count: 'exact' 
-      }).catch(err => {
-        console.log('RPC not available, trying direct table creation');
-        
-        // Try direct table creation as fallback
-        return supabase
-          .from('todos')
-          .insert({
-            title: 'First todo item',
-            completed: false,
-            created_at: new Date().toISOString()
-          });
-      });
-        
-      if (!createError) {
-        console.log('✅ Successfully created todos table');
-        
-        // Try to populate it with a welcome record
-        const { error: insertError } = await supabase
-          .from('todos')
-          .insert({ 
-            title: 'Welcome to your new database!', 
-            completed: false,
-            created_at: new Date().toISOString()
-          });
-          
-        if (!insertError) {
-          console.log('✅ Added welcome record to todos table');
-          mockTables[0].hasData = true;
-        }
-      } else {
-        console.log(`⚠️ Could not create todos table: ${createError.message}`);
       }
       
-      return mockTables;
-    } catch (createError) {
-      console.error('❌ Error creating todos table:', createError.message);
-      throw new Error('Database connection works, but no tables exist and we could not create a starter table. Check your database permissions.');
+      if (discoveredTables.length > 0) {
+        console.log(`✅ Discovered ${discoveredTables.length} tables directly`);
+        return discoveredTables;
+      }
+      
+      // Last resort: try to create a simple table
+      console.log('ℹ️ No tables found. Attempting to detect if database connection works...');
+      
+      // Try a simple insert to see if connection works at all
+      try {
+        const { error: authError } = await supabase.auth.getSession();
+        if (!authError) {
+          console.log('✅ Supabase connection is working, but no tables found');
+          throw new Error('Database connection works, but no tables available. Create tables in your Supabase project first.');
+        } else {
+          throw new Error('Authentication error: Possible connection issue');
+        }
+      } catch (authError) {
+        console.error('❌ Connection verification failed:', authError.message);
+        throw new Error('Could not connect to Supabase or no tables available');
+      }
     }
   } catch (error) {
-    console.error('❌ Database connection error:', error);
-    throw new Error(`Database connection failed. ${error.message}`);
+    console.error('❌ Error finding tables:', error.message);
+    throw new Error(`Database connection issue: ${error.message}`);
   }
 };
 
