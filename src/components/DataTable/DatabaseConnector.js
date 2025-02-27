@@ -204,20 +204,20 @@ const supabase = getSupabaseClient();
  */
 export const fetchCategories = async () => {
   try {
-    // First try the public schema
+    // First try the public schema (default)
     let { data, error } = await supabase
       .from('categories')
       .select('*')
       .order('name', { ascending: true });
       
-    // If that fails, try the inventory schema
+    // If that fails, try the inventory schema with correct schema parameter
     if (error) {
       console.log('Trying inventory.categories instead...');
       
       try {
         const inventoryResult = await supabase
-          .from('inventory.categories')
-          .select('*')
+          .from('categories')  // Table name without schema
+          .select('*', { schema: 'inventory' })  // Specify schema in options
           .order('name', { ascending: true });
           
         if (!inventoryResult.error) {
@@ -246,7 +246,7 @@ export const fetchCategories = async () => {
  */
 export const fetchProducts = async (filters = {}, orderBy = 'name', ascending = true) => {
   try {
-    // First try without schema prefix (public schema)
+    // First try with public schema (default)
     let query = supabase
       .from('product_summary')
       .select('*');
@@ -265,14 +265,14 @@ export const fetchProducts = async (filters = {}, orderBy = 'name', ascending = 
     
     let { data, error } = await query;
     
-    // If that fails, try the inventory schema
+    // If that fails, try the inventory schema with correct schema parameter
     if (error) {
       console.log('Trying inventory.product_summary instead...');
       
       try {
         let inventoryQuery = supabase
-          .from('inventory.product_summary')
-          .select('*');
+          .from('product_summary')  // Table name without schema
+          .select('*', { schema: 'inventory' });  // Specify schema in options
           
         // Apply the same filters
         if (filters.category_id) {
@@ -629,17 +629,18 @@ export const fetchAvailableTables = async () => {
       'items', 'product_summary', 'transactions', 'suppliers'
     ];
     
-    // Try the inventory schema first
+    // Try the inventory schema first - using correct Supabase syntax for schemas
     for (const tableName of inventoryTables) {
-      const fullTableName = `inventory.${tableName}`;
       try {
-        // Try to get a single row to see if the table exists in inventory schema
+        // Try to get a single row using the schema parameter in Supabase client
         let data, error;
         
         try {
+          // The correct way to access schemas in Supabase is NOT using dot notation
+          // Instead we specify the schema in the options
           const result = await supabase
-            .from(fullTableName)
-            .select('*')
+            .from(tableName)
+            .select('*', { schema: 'inventory' })
             .limit(1);
           
           data = result.data;
@@ -650,20 +651,22 @@ export const fetchAvailableTables = async () => {
         
         if (!error) {
           // Table exists and is accessible in inventory schema
+          const fullTableName = `inventory.${tableName}`;
           accessibleTables.push({
-            id: fullTableName,
+            id: fullTableName,  // Use schema.table format for our internal tracking
             name: tableName
               .split('_')
               .map(word => word.charAt(0).toUpperCase() + word.slice(1))
               .join(' '),
             description: `Inventory schema`,
-            hasData: data && data.length > 0
+            hasData: data && data.length > 0,
+            schema: 'inventory'  // Store schema separately
           });
           
           console.log(`✅ Found accessible table: ${fullTableName}`);
         }
       } catch (e) {
-        console.log(`Checking table "${fullTableName}"...`);
+        console.log(`Checking inventory.${tableName}...`);
       }
     }
     
@@ -680,7 +683,7 @@ export const fetchAvailableTables = async () => {
       
       console.log(`Checking ${publicTables.length} possible tables in public schema...`);
       
-      // Try each table with simpler permissions
+      // Try each table with simpler permissions (public schema is the default)
       for (const tableName of publicTables) {
         try {
           // Just try to get a single row to see if the table exists and is accessible
@@ -707,7 +710,8 @@ export const fetchAvailableTables = async () => {
                 .map(word => word.charAt(0).toUpperCase() + word.slice(1))
                 .join(' '),
               description: `Public schema`,
-              hasData: data && data.length > 0
+              hasData: data && data.length > 0,
+              schema: 'public' // Store schema separately
             });
             
             console.log(`✅ Found accessible table: ${tableName}`);
@@ -744,43 +748,64 @@ export const fetchTableData = async (tableName) => {
     const [schema, table] = tableName.includes('.') 
       ? tableName.split('.') 
       : [null, tableName];
-      
-    let query;
-    if (schema) {
-      // If we have a schema-qualified name, use it exactly as is
-      query = supabase.from(tableName);
-    } else {
-      // For non-qualified names, first try public schema, then try inventory schema
-      query = supabase.from(tableName);
-    }
     
-    const { data, error } = await query.select('*');
+    // If no schema was specified, try public schema first (default)  
+    if (!schema) {
+      const { data, error } = await supabase
+        .from(tableName)
+        .select('*');
       
-    if (error) {
-      console.error(`❌ Error fetching data from ${tableName}: ${error.message}`);
-      
-      // If this is a non-qualified name and it failed, try inventory schema
-      if (!schema) {
-        try {
-          console.log(`Trying inventory.${tableName} as fallback...`);
-          const inventoryResult = await supabase
-            .from(`inventory.${tableName}`)
-            .select('*');
-            
-          if (!inventoryResult.error) {
-            console.log(`✅ Successfully fetched ${inventoryResult.data?.length || 0} rows from inventory.${tableName}`);
-            return inventoryResult.data;
-          }
-        } catch (inventoryError) {
-          // Just continue to the error if this also fails
-        }
+      if (!error) {
+        console.log(`✅ Successfully fetched ${data?.length || 0} rows from ${tableName} (public schema)`);
+        return data;
       }
       
-      throw new Error(`Could not access table ${tableName}: ${error.message}`);
+      // If public schema failed, try inventory schema
+      console.log(`Trying inventory.${tableName} as fallback...`);
+      try {
+        const inventoryResult = await supabase
+          .from(tableName)
+          .select('*', { schema: 'inventory' });
+          
+        if (!inventoryResult.error) {
+          console.log(`✅ Successfully fetched ${inventoryResult.data?.length || 0} rows from inventory.${tableName}`);
+          return inventoryResult.data;
+        } else {
+          throw new Error(`Could not access table in either schema: ${error.message}`);
+        }
+      } catch (inventoryError) {
+        throw new Error(`Data access error: ${inventoryError.message}`);
+      }
+    } else {
+      // Schema was explicitly specified
+      if (schema === 'inventory') {
+        // Use proper Supabase syntax for inventory schema
+        const { data, error } = await supabase
+          .from(table)
+          .select('*', { schema: 'inventory' });
+          
+        if (error) {
+          console.error(`❌ Error fetching data from ${tableName}: ${error.message}`);
+          throw new Error(`Could not access table ${tableName}: ${error.message}`);
+        }
+        
+        console.log(`✅ Successfully fetched ${data?.length || 0} rows from ${tableName}`);
+        return data;
+      } else {
+        // For other schemas (including public), use as provided
+        const { data, error } = await supabase
+          .from(table)
+          .select('*', schema === 'public' ? undefined : { schema });
+          
+        if (error) {
+          console.error(`❌ Error fetching data from ${tableName}: ${error.message}`);
+          throw new Error(`Could not access table ${tableName}: ${error.message}`);
+        }
+        
+        console.log(`✅ Successfully fetched ${data?.length || 0} rows from ${tableName}`);
+        return data;
+      }
     }
-    
-    console.log(`✅ Successfully fetched ${data?.length || 0} rows from ${tableName}`);
-    return data;
   } catch (error) {
     console.error(`❌ Failed to fetch data from ${tableName}:`, error.message);
     throw new Error(`Data access error: ${error.message}`);
@@ -803,31 +828,51 @@ export const getTableColumns = async (tableName) => {
       : [null, tableName];
     
     try {
-      // Try with the exact table name as provided
-      const result = await supabase
-        .from(tableName)
-        .select('*')
-        .limit(1);
-      
-      data = result.data;
-      error = result.error;
-      
-      // If this is a non-qualified name and it failed, try inventory schema
-      if (error && !schema) {
-        console.log(`Trying inventory.${tableName} for columns...`);
-        try {
-          const inventoryResult = await supabase
-            .from(`inventory.${tableName}`)
-            .select('*')
-            .limit(1);
-            
-          if (!inventoryResult.error && inventoryResult.data?.length > 0) {
-            data = inventoryResult.data;
-            error = null;
+      if (!schema) {
+        // Try with the public schema first (default)
+        const result = await supabase
+          .from(tableName)
+          .select('*')
+          .limit(1);
+        
+        data = result.data;
+        error = result.error;
+        
+        // If public schema failed, try inventory schema using correct syntax
+        if (error) {
+          console.log(`Trying inventory.${tableName} for columns...`);
+          try {
+            const inventoryResult = await supabase
+              .from(tableName)
+              .select('*', { schema: 'inventory' })
+              .limit(1);
+              
+            if (!inventoryResult.error && inventoryResult.data?.length > 0) {
+              data = inventoryResult.data;
+              error = null;
+            }
+          } catch (inventoryError) {
+            // Just continue with the original error
           }
-        } catch (inventoryError) {
-          // Just continue with the original error
         }
+      } else if (schema === 'inventory') {
+        // Use proper Supabase syntax for inventory schema
+        const result = await supabase
+          .from(table)
+          .select('*', { schema: 'inventory' })
+          .limit(1);
+        
+        data = result.data;
+        error = result.error;
+      } else {
+        // For other schemas, use as provided
+        const result = await supabase
+          .from(table)
+          .select('*', schema === 'public' ? undefined : { schema })
+          .limit(1);
+        
+        data = result.data;
+        error = result.error;
       }
     } catch (e) {
       error = e;
