@@ -57303,7 +57303,7 @@ class RealtimeClient {
         this.conn = null;
       }
     });
-    __vitePreload(() => import("./browser-019bde86.js").then((n2) => n2.b), true ? [] : void 0).then(({ default: WS }) => {
+    __vitePreload(() => import("./browser-ff2130c6.js").then((n2) => n2.b), true ? [] : void 0).then(({ default: WS }) => {
       this.conn = new WS(this.endpointURL(), void 0, {
         headers: this.headers
       });
@@ -61583,7 +61583,7 @@ const getSupabaseClient = () => {
   console.log(`- URL defined: ${"Yes"}`);
   console.log(`- Key defined: ${"Yes"}`);
   {
-    console.log("✅ Using configured Supabase client with provided credentials");
+    console.log("✅ Using configured Supabase client from environment variables");
     return createClient(supabaseUrl, supabaseKey);
   }
 };
@@ -61808,59 +61808,60 @@ const deleteProduct = async (id2) => {
 };
 const fetchAvailableTables = async () => {
   try {
-    const { data: pgTables, error: pgError } = await supabase.from("pg_tables").select("schemaname, tablename").eq("schemaname", "public").order("tablename");
-    if (!pgError && pgTables && pgTables.length > 0) {
-      console.log("Found database tables via pg_tables:", pgTables.length);
-      return pgTables.map((table) => ({
-        id: table.tablename,
-        name: table.tablename.split("_").map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(" "),
-        description: `${table.schemaname}.${table.tablename} database table`
-      }));
-    }
-    const { data: infoSchemaTables, error: infoSchemaError } = await supabase.from("information_schema.tables").select("table_schema, table_name").eq("table_schema", "public").order("table_name");
-    if (!infoSchemaError && infoSchemaTables && infoSchemaTables.length > 0) {
-      console.log("Found database tables via information_schema:", infoSchemaTables.length);
-      return infoSchemaTables.map((table) => ({
-        id: table.table_name,
-        name: table.table_name.split("_").map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(" "),
-        description: `${table.table_schema}.${table.table_name} database table`
-      }));
-    }
-    const expectedTables = [
+    const knownTables = [
+      "todos",
+      "users",
+      "profiles",
       "products",
-      "product_summary",
       "categories",
       "transactions",
       "suppliers",
       "customers",
-      "orders"
+      "orders",
+      "product_summary"
     ];
     const existingTables = [];
-    for (const tableName of expectedTables) {
+    for (const tableName of knownTables) {
       try {
         const { data, error } = await supabase.from(tableName).select("*").limit(1);
         if (!error) {
           existingTables.push({
             id: tableName,
             name: tableName.split("_").map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(" "),
-            description: `${tableName} database table`,
+            description: `${tableName} table`,
             // Add flag to indicate if table has data
             hasData: data && data.length > 0
           });
-          console.log(`Table "${tableName}" exists`);
+          console.log(`✅ Found table: "${tableName}"`);
+        } else {
+          console.log(`❌ Table not accessible: "${tableName}" - ${error.message}`);
         }
       } catch (e2) {
-        console.log(`Table "${tableName}" not found:`, e2.message);
+        console.log(`❌ Error checking table "${tableName}":`, e2.message);
       }
     }
     if (existingTables.length > 0) {
-      console.log("Found existing tables by testing:", existingTables.length);
+      console.log("✅ Successfully found tables in database:", existingTables.length);
       return existingTables;
+    }
+    try {
+      const { data: schemaInfo, error: schemaError } = await supabase.rpc("get_schema_info");
+      if (!schemaError && schemaInfo && schemaInfo.length > 0) {
+        console.log("Found tables via RPC get_schema_info:", schemaInfo.length);
+        return schemaInfo.map((table) => ({
+          id: table.name,
+          name: table.name.split("_").map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(" "),
+          description: table.description || `${table.name} table`
+        }));
+      }
+    } catch (rpcError) {
+      console.log("RPC get_schema_info not available:", rpcError.message);
     }
     throw new Error("No tables found in database using any method");
   } catch (error) {
-    console.log("Using mock tables due to error:", error.message);
+    console.log("⚠️ Using mock tables due to error:", error.message);
     return [
+      { id: "todos", name: "Todos", description: "Task tracking table" },
       { id: "product_summary", name: "Products (DUMMY)", description: "DUMMY DATA: Product inventory data" },
       { id: "categories", name: "Categories (DUMMY)", description: "DUMMY DATA: Product categories" },
       { id: "transactions", name: "Transactions (DUMMY)", description: "DUMMY DATA: Inventory transactions" },
