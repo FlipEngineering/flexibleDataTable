@@ -57303,7 +57303,7 @@ class RealtimeClient {
         this.conn = null;
       }
     });
-    __vitePreload(() => import("./browser-46c20333.js").then((n2) => n2.b), true ? [] : void 0).then(({ default: WS }) => {
+    __vitePreload(() => import("./browser-a235a01c.js").then((n2) => n2.b), true ? [] : void 0).then(({ default: WS }) => {
       this.conn = new WS(this.endpointURL(), void 0, {
         headers: this.headers
       });
@@ -61886,108 +61886,141 @@ const deleteProduct = async (id2) => {
 };
 const fetchAvailableTables = async () => {
   try {
-    console.log("🔍 Searching for all available tables in Supabase...");
-    const { data: schemaTables, error: schemaError } = await supabase.from("information_schema.tables").select("table_name").eq("table_schema", "public").not("table_name", "like", "pg_%").not("table_name", "like", "_prisma_%").not("table_name", "like", "schema_%").order("table_name");
-    if (!schemaError && schemaTables && schemaTables.length > 0) {
-      console.log(`✅ Found ${schemaTables.length} tables in database schema`);
-      const availableTables = schemaTables.map((table) => ({
-        id: table.table_name,
-        name: table.table_name.split("_").map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(" "),
-        description: `Database table: ${table.table_name}`,
-        source: "schema"
-      }));
-      return availableTables;
-    } else {
-      console.log(`⚠️ Cannot access information_schema: ${(schemaError == null ? void 0 : schemaError.message) || "No tables found"}`);
-      const commonTables = [
-        "todos",
-        "users",
-        "profiles",
-        "auth",
-        "products",
-        "categories",
-        "items",
-        "posts",
-        "comments",
-        "settings",
-        "data",
-        "stats"
-      ];
-      const discoveredTables = [];
-      for (const tableName of commonTables) {
-        try {
-          const { data, error } = await supabase.from(tableName).select("count(*)", { count: "exact", head: true });
-          if (!error) {
-            discoveredTables.push({
-              id: tableName,
-              name: tableName.split("_").map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(" "),
-              description: `Database table: ${tableName}`,
-              source: "direct"
-            });
-            console.log(`✅ Found table: ${tableName}`);
-          }
-        } catch (e2) {
-        }
+    console.log("🔍 Checking database connection and looking for tables...");
+    const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+    if (sessionError) {
+      console.error("❌ Cannot connect to Supabase:", sessionError.message);
+      throw new Error(`Connection failed: ${sessionError.message}`);
+    }
+    console.log("✅ Supabase connection works!");
+    const tablesToCheck = [
+      // Common table names in Supabase projects
+      "todos",
+      "users",
+      "profiles",
+      "settings",
+      "posts",
+      "comments",
+      "products",
+      "categories",
+      "orders",
+      "customers",
+      "items",
+      // Our specific table names from earlier checks
+      "product_summary",
+      "transactions",
+      "suppliers"
+    ];
+    console.log(`Checking ${tablesToCheck.length} possible tables...`);
+    const accessibleTables = [];
+    const sampleTables = [
+      {
+        id: "product_summary",
+        name: "Product Summary",
+        description: "Sample product inventory data",
+        sample: true
+      },
+      {
+        id: "categories",
+        name: "Categories",
+        description: "Sample product categories",
+        sample: true
       }
-      if (discoveredTables.length > 0) {
-        console.log(`✅ Discovered ${discoveredTables.length} tables directly`);
-        return discoveredTables;
-      }
-      console.log("ℹ️ No tables found. Attempting to detect if database connection works...");
+    ];
+    for (const tableName of tablesToCheck) {
       try {
-        const { error: authError } = await supabase.auth.getSession();
-        if (!authError) {
-          console.log("✅ Supabase connection is working, but no tables found");
-          throw new Error("Database connection works, but no tables available. Create tables in your Supabase project first.");
-        } else {
-          throw new Error("Authentication error: Possible connection issue");
+        const { data, error } = await supabase.from(tableName).select("*").limit(1);
+        if (!error) {
+          accessibleTables.push({
+            id: tableName,
+            name: tableName.split("_").map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(" "),
+            description: `${tableName} database table`,
+            hasData: data && data.length > 0
+          });
+          console.log(`✅ Found accessible table: ${tableName}`);
         }
-      } catch (authError) {
-        console.error("❌ Connection verification failed:", authError.message);
-        throw new Error("Could not connect to Supabase or no tables available");
+      } catch (e2) {
       }
     }
+    if (accessibleTables.length > 0) {
+      console.log(`✅ Found ${accessibleTables.length} accessible tables in database`);
+      return accessibleTables;
+    }
+    console.log("⚠️ No accessible tables found. Using sample tables for demonstration.");
+    return sampleTables.map((table) => ({
+      ...table,
+      name: table.name + " (SAMPLE)",
+      description: "SAMPLE DATA: " + table.description
+    }));
   } catch (error) {
-    console.error("❌ Error finding tables:", error.message);
-    throw new Error(`Database connection issue: ${error.message}`);
+    console.error("❌ Database connection issue:", error);
+    console.log("⚠️ Displaying sample tables due to connection issue");
+    return [
+      {
+        id: "product_summary",
+        name: "Products (SAMPLE)",
+        description: "SAMPLE DATA: Product inventory for demonstration",
+        sample: true
+      },
+      {
+        id: "categories",
+        name: "Categories (SAMPLE)",
+        description: "SAMPLE DATA: Product categories for demonstration",
+        sample: true
+      }
+    ];
   }
 };
 const fetchTableData = async (tableName) => {
+  const isSampleTable = tableName.includes("(SAMPLE)") || tableName === "product_summary" || tableName === "categories";
   try {
     const { data, error } = await supabase.from(tableName).select("*");
-    if (error)
-      throw error;
-    console.log(`Fetched ${(data == null ? void 0 : data.length) || 0} rows from ${tableName}`);
+    if (error) {
+      console.log(`Error fetching data from ${tableName}: ${error.message}`);
+      if (isSampleTable) {
+        throw new Error("Using sample data instead");
+      } else {
+        return [];
+      }
+    }
+    console.log(`✅ Successfully fetched ${(data == null ? void 0 : data.length) || 0} rows from ${tableName}`);
     return data;
   } catch (e2) {
-    console.log(`Falling back to mock data for ${tableName}:`, e2.message);
-    if (tableName === "categories") {
+    console.log(`⚠️ Using sample data for ${tableName}: ${e2.message}`);
+    const cleanTableName = tableName.replace("(SAMPLE)", "").trim().toLowerCase();
+    if (cleanTableName === "categories" || tableName === "categories") {
       return mockData.categories;
-    } else if (tableName === "product_summary" || tableName === "products") {
+    } else if (cleanTableName === "product_summary" || cleanTableName === "products" || tableName === "product_summary" || tableName === "products") {
       return mockData.product_summary;
-    } else if (tableName === "suppliers") {
+    } else if (cleanTableName === "suppliers" || tableName === "suppliers") {
       return mockData.suppliers || [
         { id: 1, name: "TechSupply Inc.", contact: "John Smith", email: "jsmith@techsupply.com", phone: "555-123-4567" },
         { id: 2, name: "Office Essentials", contact: "Sarah Johnson", email: "sjohnson@offess.com", phone: "555-987-6543" },
         { id: 3, name: "Furniture Depot", contact: "Michael Brown", email: "mbrown@furndepot.com", phone: "555-456-7890" }
       ];
-    } else if (tableName === "customers") {
+    } else if (cleanTableName === "customers" || tableName === "customers") {
       return mockData.customers || [
         { id: 1, name: "Acme Corp", contact: "Jane Doe", email: "jdoe@acme.com", phone: "555-111-2222" },
         { id: 2, name: "Widget LLC", contact: "Bob Wilson", email: "bwilson@widget.com", phone: "555-333-4444" },
         { id: 3, name: "Example Industries", contact: "Carol Taylor", email: "ctaylor@example.com", phone: "555-555-6666" }
       ];
-    } else if (tableName === "orders") {
+    } else if (cleanTableName === "orders" || tableName === "orders") {
       return mockData.orders || [
         { id: 1, customer_id: 1, order_date: "2025-01-15", status: "completed", total: 2499.97 },
         { id: 2, customer_id: 2, order_date: "2025-02-01", status: "processing", total: 899.99 },
         { id: 3, customer_id: 1, order_date: "2025-02-20", status: "pending", total: 1299.99 }
       ];
-    } else if (tableName === "transactions") {
+    } else if (cleanTableName === "transactions" || tableName === "transactions") {
       return mockData.transactions || [
         { id: 1, product_id: 1, type: "purchase", quantity: 10, transaction_date: "2025-01-10", note: "Initial inventory" },
         { id: 2, product_id: 2, type: "sale", quantity: -5, transaction_date: "2025-01-20", note: "Customer order #135" },
         { id: 3, product_id: 1, type: "adjustment", quantity: -1, transaction_date: "2025-02-05", note: "Damaged product" }
+      ];
+    } else if (cleanTableName === "todos" || tableName === "todos") {
+      return [
+        { id: 1, title: "Welcome to the demo tables", completed: false, created_at: (/* @__PURE__ */ new Date()).toISOString() },
+        { id: 2, title: "Try selecting different tables", completed: true, created_at: (/* @__PURE__ */ new Date()).toISOString() },
+        { id: 3, title: "Explore the sample data", completed: false, created_at: (/* @__PURE__ */ new Date()).toISOString() }
       ];
     }
     return [];
@@ -62193,7 +62226,7 @@ const TableSelector = ({ selectedTable, onSelectTable }) => {
             margin: "8px 0"
           }, children: [
             /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { fontSize: "16px", fontWeight: "bold", marginBottom: "8px" }, children: "No Tables Found" }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("p", { style: { margin: "4px 0", padding: "0 16px" }, children: "Could not find any tables in your Supabase database. Please create tables in your Supabase project first." }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("p", { style: { margin: "4px 0", padding: "0 16px" }, children: "No accessible tables in your Supabase database. Sample data is available for demonstration." }),
             /* @__PURE__ */ jsxRuntimeExports.jsx(
               Button,
               {
