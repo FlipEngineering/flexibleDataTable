@@ -5,7 +5,7 @@
   "type": "module",
   "homepage": "https://flipengineering.github.io/flexibleDataTable",
   "engines": {
-    "node": "16.x"
+    "node": ">=16.x"
   },
   "scripts": {
     "dev": "vite",
