@@ -24,16 +24,48 @@ const DataTableExample = () => {
   const [selectedStatus, setSelectedStatus] = useState(null);
   const [selectedTable, setSelectedTable] = useState('product_summary');
   const [columns, setColumns] = useState([]);
+  const [debugLogs, setDebugLogs] = useState([]);
+  const [showDebugConsole, setShowDebugConsole] = useState(true);
+  
+  // Custom debug logger function
+  const logDebug = (message, type = 'info') => {
+    const timestamp = new Date().toISOString().split('T')[1].split('.')[0];
+    const newLog = {
+      id: Date.now(),
+      timestamp,
+      message,
+      type // 'info', 'success', 'error', 'warning'
+    };
+    setDebugLogs(prevLogs => [newLog, ...prevLogs].slice(0, 50)); // Keep last 50 logs
+    
+    // Also log to browser console
+    switch(type) {
+      case 'error':
+        console.error(`[${timestamp}] ${message}`);
+        break;
+      case 'warning':
+        console.warn(`[${timestamp}] ${message}`);
+        break;
+      case 'success':
+        console.log(`%c[${timestamp}] ${message}`, 'color: green');
+        break;
+      default:
+        console.log(`[${timestamp}] ${message}`);
+    }
+  };
   
   // Load table columns when selected table changes
   useEffect(() => {
     const loadTableColumns = async () => {
       setLoading(true);
+      logDebug(`Loading columns for table: ${selectedTable}`, 'info');
       try {
         const tableColumns = await getTableColumns(selectedTable);
         setColumns(tableColumns);
+        logDebug(`Loaded ${tableColumns.length} columns for ${selectedTable}`, 'success');
       } catch (error) {
-        console.error('Error loading table columns:', error);
+        const errorMsg = `Error loading table columns: ${error.message}`;
+        logDebug(errorMsg, 'error');
         message.error('Failed to load table structure');
       } finally {
         setLoading(false);
@@ -48,20 +80,34 @@ const DataTableExample = () => {
   // Function to load table data
   const loadTableData = async (tableId) => {
     setLoading(true);
+    logDebug(`Loading data from table: ${tableId}`, 'info');
     try {
       // Load categories for filtering if we're on the products table
       if (tableId === 'product_summary' || tableId === 'products') {
+        logDebug('Fetching categories for product filtering', 'info');
         const categoriesData = await fetchCategories();
         setCategories(categoriesData);
+        logDebug(`Loaded ${categoriesData?.length || 0} categories`, 'success');
       }
       
       // Load data for the selected table
       const data = await fetchTableData(tableId);
       setTableData(data);
       
-      console.log(`Loaded ${data?.length || 0} rows from ${tableId} table`);
+      const logMsg = `Loaded ${data?.length || 0} rows from ${tableId} table`;
+      logDebug(logMsg, 'success');
+      
+      // Log schema details for debugging
+      if (data && data.length > 0) {
+        const sampleRow = data[0];
+        const fields = Object.keys(sampleRow).join(', ');
+        logDebug(`Table schema: ${fields}`, 'info');
+      } else {
+        logDebug(`Table ${tableId} is empty or inaccessible`, 'warning');
+      }
     } catch (error) {
-      console.error(`Error loading ${tableId} table data:`, error);
+      const errorMsg = `Error loading ${tableId} table data: ${error.message}`;
+      logDebug(errorMsg, 'error');
       message.error(`Failed to load ${tableId} table data`);
     } finally {
       setLoading(false);
@@ -129,11 +175,28 @@ const DataTableExample = () => {
 
   // Handle table change
   const handleTableChange = (tableId) => {
+    logDebug(`Switching to table: ${tableId}`, 'info');
     setSelectedTable(tableId);
     setSearchTerm('');
     setSelectedCategory(null);
     setSelectedStatus(null);
   };
+  
+  // Collect environment info for debugging
+  useEffect(() => {
+    // Log environment info once on component mount
+    const isDev = import.meta.env.DEV || false;
+    const mode = isDev ? 'Development' : 'Production';
+    logDebug(`Environment: ${mode} mode`, 'info');
+    
+    const hasSupabaseUrl = Boolean(import.meta.env.VITE_SUPABASE_URL);
+    const hasSupabaseKey = Boolean(import.meta.env.VITE_SUPABASE_ANON_KEY);
+    logDebug(`Supabase URL defined: ${hasSupabaseUrl}`, hasSupabaseUrl ? 'success' : 'warning');
+    logDebug(`Supabase Key defined: ${hasSupabaseKey}`, hasSupabaseKey ? 'success' : 'warning');
+    
+    // Check browser capabilities
+    logDebug(`Browser: ${navigator.userAgent}`, 'info');
+  }, []);
 
   // Event handlers for DataTable
   const handleSave = async (values, key, newData) => {
@@ -228,34 +291,47 @@ const DataTableExample = () => {
     }
   };
 
+  // Toggle debug console
+  const toggleDebugConsole = () => {
+    setShowDebugConsole(prev => !prev);
+    logDebug(`Debug console ${showDebugConsole ? 'hidden' : 'shown'}`, 'info');
+  };
+  
+  // Clear debug logs
+  const clearDebugLogs = () => {
+    setDebugLogs([]);
+    logDebug('Debug logs cleared', 'info');
+  };
+
   return (
     <div className="sql-explorer">
-      <div className="explorer-container" style={{ display: 'flex', width: '100%' }}>
-        {/* Sidebar */}
-        <div className="explorer-sidebar" style={{ 
-          width: '300px', 
-          background: 'var(--component-background, #fff)', 
-          borderRight: '1px solid var(--border-color-split, #f0f0f0)',
-          padding: '20px 16px',
-          height: 'calc(100vh - 150px)',
-          overflowY: 'auto'
-        }}>
-          <h2 style={{ 
-            display: 'flex', 
-            alignItems: 'center',
-            color: 'var(--heading-color, rgba(0, 0, 0, 0.85))'
+      <div className="explorer-container" style={{ display: 'flex', width: '100%', flexDirection: 'column' }}>
+        <div style={{ display: 'flex', flex: 1 }}>
+          {/* Sidebar */}
+          <div className="explorer-sidebar" style={{ 
+            width: '300px', 
+            background: 'var(--component-background, #fff)', 
+            borderRight: '1px solid var(--border-color-split, #f0f0f0)',
+            padding: '20px 16px',
+            height: 'calc(100vh - 250px)',
+            overflowY: 'auto'
           }}>
-            <DatabaseOutlined style={{ marginRight: 10, color: 'var(--primary-color, #1890ff)' }} />
-            SQL Explorer
-          </h2>
-          <p style={{ color: 'var(--text-color-secondary, rgba(0, 0, 0, 0.45))' }}>
-            View and manage all tables in your PostgreSQL database
-          </p>
-          
-          <TableSelector 
-            selectedTable={selectedTable}
-            onSelectTable={handleTableChange}
-          />
+            <h2 style={{ 
+              display: 'flex', 
+              alignItems: 'center',
+              color: 'var(--heading-color, rgba(0, 0, 0, 0.85))'
+            }}>
+              <DatabaseOutlined style={{ marginRight: 10, color: 'var(--primary-color, #1890ff)' }} />
+              SQL Explorer
+            </h2>
+            <p style={{ color: 'var(--text-color-secondary, rgba(0, 0, 0, 0.45))' }}>
+              View and manage all tables in your PostgreSQL database
+            </p>
+            
+            <TableSelector 
+              selectedTable={selectedTable}
+              onSelectTable={handleTableChange}
+            />
           
           {/* Only show filters for product tables */}
           {(selectedTable === 'product_summary' || selectedTable === 'products') && (
@@ -344,58 +420,145 @@ const DataTableExample = () => {
           </div>
         </div>
         
-        {/* Main content */}
-        <div className="explorer-content" style={{ 
-          flex: 1, 
-          padding: '20px 24px',
-          background: 'var(--body-background, #fff)',
-          color: 'var(--text-color, rgba(0, 0, 0, 0.85))'
-        }}>
-          <DataTable
-            tableName={getTableDisplayName()}
-            columns={columns}
-            dataSource={tableData.map(item => ({ ...item, key: item.id }))}
-            onSave={handleSave}
-            onDelete={handleDelete}
-            onAdd={handleAdd}
-            loading={loading}
-            formulaEnabled={selectedTable === 'product_summary'}
-          />
+          {/* Main content */}
+          <div className="explorer-content" style={{ 
+            flex: 1, 
+            padding: '20px 24px',
+            background: 'var(--body-background, #fff)',
+            color: 'var(--text-color, rgba(0, 0, 0, 0.85))'
+          }}>
+            <DataTable
+              tableName={getTableDisplayName()}
+              columns={columns}
+              dataSource={tableData.map(item => ({ ...item, key: item.id }))}
+              onSave={handleSave}
+              onDelete={handleDelete}
+              onAdd={handleAdd}
+              loading={loading}
+              formulaEnabled={selectedTable === 'product_summary'}
+            />
 
-          {tableData.length === 0 && !loading && (
-            <div style={{
-              textAlign: 'center',
-              padding: '40px 0',
-              color: 'var(--text-color-secondary, rgba(0, 0, 0, 0.45))'
-            }}>
-              <div style={{ fontSize: '72px', lineHeight: '72px', marginBottom: '16px' }}>📋</div>
-              <h3 style={{ color: 'var(--heading-color, rgba(0, 0, 0, 0.85))' }}>No data found</h3>
-              <p>This table appears to be empty or not available.</p>
-              <div style={{ marginBottom: '16px' }}>
-                {selectedTable && selectedTable.includes('DUMMY') && (
-                  <div style={{
-                    display: 'inline-block',
-                    margin: '8px 0',
-                    padding: '4px 12px',
-                    backgroundColor: 'var(--warning-color, #faad14)',
-                    color: 'var(--text-color-inverse, #fff)',
-                    borderRadius: '4px',
-                    fontWeight: 'bold'
-                  }}>
-                    DUMMY DATA MODE ACTIVE
-                  </div>
-                )}
+            {tableData.length === 0 && !loading && (
+              <div style={{
+                textAlign: 'center',
+                padding: '40px 0',
+                color: 'var(--text-color-secondary, rgba(0, 0, 0, 0.45))'
+              }}>
+                <div style={{ fontSize: '72px', lineHeight: '72px', marginBottom: '16px' }}>📋</div>
+                <h3 style={{ color: 'var(--heading-color, rgba(0, 0, 0, 0.85))' }}>No data found</h3>
+                <p>This table appears to be empty or not available.</p>
+                <div style={{ marginBottom: '16px' }}>
+                  {selectedTable && selectedTable.includes('DUMMY') && (
+                    <div style={{
+                      display: 'inline-block',
+                      margin: '8px 0',
+                      padding: '4px 12px',
+                      backgroundColor: 'var(--warning-color, #faad14)',
+                      color: 'var(--text-color-inverse, #fff)',
+                      borderRadius: '4px',
+                      fontWeight: 'bold'
+                    }}>
+                      DUMMY DATA MODE ACTIVE
+                    </div>
+                  )}
+                </div>
+                <Button 
+                  type="primary" 
+                  onClick={() => loadTableData(selectedTable)}
+                  style={{ marginTop: '8px' }}
+                >
+                  Refresh Data
+                </Button>
               </div>
-              <Button 
-                type="primary" 
-                onClick={() => loadTableData(selectedTable)}
-                style={{ marginTop: '8px' }}
-              >
-                Refresh Data
-              </Button>
-            </div>
-          )}
+            )}
+          </div>
         </div>
+        
+        {/* Debug Console */}
+        {showDebugConsole && (
+          <div style={{ 
+            borderTop: '1px solid var(--border-color-split, #f0f0f0)',
+            backgroundColor: 'var(--component-background, #000)',
+            color: 'var(--text-color-inverse, #fff)',
+            padding: '8px',
+            height: '150px',
+            overflowY: 'auto',
+            fontFamily: 'monospace',
+            fontSize: '12px'
+          }}>
+            <div style={{ 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              marginBottom: '8px',
+              position: 'sticky',
+              top: 0,
+              backgroundColor: 'var(--component-background, #000)',
+              padding: '4px',
+              zIndex: 1
+            }}>
+              <div>
+                <span style={{ fontWeight: 'bold' }}>Debug Console</span>
+                <span style={{ marginLeft: '12px', opacity: 0.7 }}>
+                  {debugLogs.length} logs
+                </span>
+              </div>
+              <div>
+                <Button 
+                  size="small" 
+                  onClick={clearDebugLogs} 
+                  style={{ marginRight: '8px' }}
+                >
+                  Clear
+                </Button>
+                <Button 
+                  size="small" 
+                  onClick={toggleDebugConsole}
+                >
+                  Hide
+                </Button>
+              </div>
+            </div>
+            <div>
+              {debugLogs.map(log => (
+                <div 
+                  key={log.id} 
+                  style={{ 
+                    padding: '2px 0',
+                    color: log.type === 'error' ? '#ff4d4f' :
+                          log.type === 'warning' ? '#faad14' :
+                          log.type === 'success' ? '#52c41a' : '#fff'
+                  }}
+                >
+                  <span style={{ opacity: 0.7, marginRight: '8px' }}>[{log.timestamp}]</span>
+                  <span>{log.message}</span>
+                </div>
+              ))}
+              {debugLogs.length === 0 && (
+                <div style={{ opacity: 0.5, textAlign: 'center', padding: '20px 0' }}>
+                  No logs to display
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+        
+        {/* Debug toggle button (when hidden) */}
+        {!showDebugConsole && (
+          <Button 
+            type="primary" 
+            size="small"
+            onClick={toggleDebugConsole}
+            style={{ 
+              position: 'fixed', 
+              bottom: '10px', 
+              right: '10px',
+              opacity: 0.8,
+              zIndex: 1000
+            }}
+          >
+            Show Debug Console
+          </Button>
+        )}
       </div>
     </div>
   );
