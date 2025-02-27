@@ -34,6 +34,9 @@ jobs:
           cp package.json prebuild/
           cp vite.config.js prebuild/
           
+          # Create directory for DataTable components
+          mkdir -p prebuild/src/components/DataTable
+          
           # Debug what's in src directory
           find src -type f | sort
           
@@ -59,7 +62,8 @@ jobs:
                   use: {
                     loader: 'babel-loader',
                     options: {
-                      presets: ['@babel/preset-env', '@babel/preset-react']
+                      presets: ['@babel/preset-env', '@babel/preset-react'],
+                      sourceType: 'unambiguous' // This fixes the module import/export issues
                     }
                   }
                 },
@@ -85,6 +89,17 @@ jobs:
             }
           };
           ENDCONFIG
+          
+          # Create babel config
+          cat > .babelrc << 'ENDBABEL'
+          {
+            "presets": [
+              ["@babel/preset-env", { "modules": "commonjs" }],
+              "@babel/preset-react"
+            ],
+            "sourceType": "unambiguous"
+          }
+          ENDBABEL
           
           # Replace package.json to use webpack instead of vite
           cat > package.json << 'ENDPACKAGE'
@@ -116,6 +131,23 @@ jobs:
             }
           }
           ENDPACKAGE
+          
+          # Modify index.js in DataTable to use require() instead of import
+          cat > src/components/DataTable/index.js << 'ENDINDEX'
+          const DataTable = require('./DataTable').default;
+          const DataTableExample = require('./DataTableExample').default;
+          const DatabaseConnector = require('./DatabaseConnector');
+          const FormulaParser = require('./FormulaParser');
+          
+          module.exports = {
+            DataTable,
+            DataTableExample,
+            DatabaseConnector,
+            FormulaParser,
+          };
+          
+          module.exports.default = DataTable;
+          ENDINDEX
           
           # Install only webpack dependencies (not esbuild)
           npm install --no-package-lock webpack webpack-cli webpack-dev-server html-webpack-plugin babel-loader @babel/core @babel/preset-env @babel/preset-react css-loader style-loader react react-dom antd
