@@ -8,6 +8,8 @@ on:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout 🛎️
         uses: actions/checkout@v3
@@ -18,8 +20,16 @@ jobs:
           node-version: '18'
           cache: 'npm'
 
+      - name: Update package-lock.json 🔄
+        run: npm install --package-lock-only
+
       - name: Install dependencies 📦
         run: npm ci
+
+      - name: Fix esbuild permissions 🔒
+        run: |
+          chmod +x node_modules/esbuild/bin/esbuild
+          chmod +x node_modules/.bin/esbuild
 
       - name: Build 🏗️
         run: npm run build
