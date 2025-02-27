@@ -1,0 +1,130 @@
+:root {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
+    Ubuntu, Cantarell, 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: dark;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #1e1e1e;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+h1 {
+  font-size: 2.2em;
+  line-height: 1.1;
+}
+
+/* Override Ant Design table for dark theme */
+.ant-table {
+  background-color: #2a2a2a !important;
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+.ant-table-thead > tr > th {
+  background-color: #333 !important;
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+.ant-table-tbody > tr > td {
+  border-bottom: 1px solid #444 !important;
+}
+
+.ant-table-tbody > tr:hover > td {
+  background-color: #383838 !important;
+}
+
+.ant-table-tbody > tr.ant-table-row-selected > td {
+  background-color: #11284a !important;
+}
+
+/* Dark theme for pagination */
+.ant-pagination-item a {
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+.ant-pagination-item-active {
+  background-color: #1890ff !important;
+  border-color: #1890ff !important;
+}
+
+/* Form elements for dark theme */
+.ant-form-item-label > label {
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+.ant-input, .ant-select-selector {
+  background-color: #333 !important;
+  color: rgba(255, 255, 255, 0.85) !important;
+  border-color: #444 !important;
+}
+
+/* Modal dark theme */
+.ant-modal-content, .ant-modal-header {
+  background-color: #2a2a2a !important;
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+.ant-modal-title {
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+/* Fix for white text on white background */
+.ant-form-item-explain-error {
+  color: #ff4d4f !important;
+}
+
+/* Button styles for consistency */
+.ant-btn {
+  border-color: #444 !important;
+}
+
+/* Other Ant Design elements for dark theme */
+.ant-checkbox-wrapper {
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+.ant-select-dropdown {
+  background-color: #2a2a2a !important;
+}
+
+.ant-select-item {
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+.ant-select-item-option-selected:not(.ant-select-item-option-disabled) {
+  background-color: #111b26 !important;
+}
+
+.ant-select-item-option-active:not(.ant-select-item-option-disabled) {
+  background-color: #1a222b !important;
+}
+
+/* Fix any remaining white backgrounds */
+.ant-modal-mask {
+  background-color: rgba(0, 0, 0, 0.6) !important;
+}
+
+.ant-form {
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+/* Make sure any dynamic content has dark theme */
+.dynamic-content, 
+.ant-card, 
+.ant-descriptions,
+.ant-dropdown-menu {
+  background-color: #2a2a2a !important;
+  color: rgba(255, 255, 255, 0.85) !important;
+  border-color: #444 !important;
+}

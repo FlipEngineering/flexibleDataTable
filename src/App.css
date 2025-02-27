@@ -1,0 +1,48 @@
+.App {
+  text-align: center;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.App-header {
+  background-color: #1a1a1a;
+  padding: 20px;
+  color: white;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #333;
+}
+
+.App-header h1 {
+  margin: 0;
+  font-size: 2rem;
+}
+
+.App-header p {
+  margin: 10px 0 0;
+  font-size: 1rem;
+  opacity: 0.8;
+}
+
+.App-main {
+  max-width: 1400px; /* Increased from 1200px for more table space */
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.App-footer {
+  margin-top: 50px;
+  padding: 20px;
+  background-color: #1a1a1a;
+  color: rgba(255, 255, 255, 0.7); /* Properly visible in dark theme */
+  font-size: 0.9rem;
+  border-top: 1px solid #333;
+}
+
+@media (max-width: 768px) {
+  .App-header h1 {
+    font-size: 1.5rem;
+  }
+  
+  .App-main {
+    padding: 0 10px;
+  }
+}
