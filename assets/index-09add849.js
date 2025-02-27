@@ -57303,7 +57303,7 @@ class RealtimeClient {
         this.conn = null;
       }
     });
-    __vitePreload(() => import("./browser-82f16170.js").then((n2) => n2.b), true ? [] : void 0).then(({ default: WS }) => {
+    __vitePreload(() => import("./browser-42aa62d1.js").then((n2) => n2.b), true ? [] : void 0).then(({ default: WS }) => {
       this.conn = new WS(this.endpointURL(), void 0, {
         headers: this.headers
       });
@@ -62339,18 +62339,18 @@ const TableSelector = ({ selectedTable, onSelectTable }) => {
     "div",
     {
       style: {
-        border: "1px solid var(--border-color, #d9d9d9)",
+        border: "1px solid var(--border-color, #303030)",
         borderRadius: "8px",
         marginBottom: 16,
-        backgroundColor: "var(--component-background, #fff)",
-        color: "var(--text-color, rgba(0, 0, 0, 0.85))",
+        backgroundColor: "var(--component-background, #1f1f1f)",
+        color: "var(--text-color, rgba(255, 255, 255, 0.85))",
         padding: "16px",
-        boxShadow: "0 2px 8px rgba(0, 0, 0, 0.05)"
+        boxShadow: "0 2px 8px rgba(0, 0, 0, 0.15)"
       },
       children: [
         /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: {
           marginBottom: 12,
-          borderBottom: "1px solid var(--border-color-split, #f0f0f0)",
+          borderBottom: "1px solid var(--border-color-split, #303030)",
           paddingBottom: 8,
           display: "flex",
           alignItems: "center",
@@ -62384,7 +62384,7 @@ const TableSelector = ({ selectedTable, onSelectTable }) => {
           /* @__PURE__ */ jsxRuntimeExports.jsx(Spin$1, {}),
           /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { marginTop: 8 }, children: "Loading tables..." })
         ] }) : /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Title, { level: 5, style: { color: "var(--heading-color, rgba(0, 0, 0, 0.85))" }, children: "Select Table" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Title, { level: 5, style: { color: "var(--heading-color, rgba(255, 255, 255, 0.85))" }, children: "Select Table" }),
           tables.length > 0 ? /* @__PURE__ */ jsxRuntimeExports.jsx(
             Select$1,
             {
@@ -62398,8 +62398,8 @@ const TableSelector = ({ selectedTable, onSelectTable }) => {
               },
               loading,
               dropdownStyle: {
-                backgroundColor: "var(--component-background, #fff)",
-                color: "var(--text-color, rgba(0, 0, 0, 0.85))"
+                backgroundColor: "var(--component-background, #1f1f1f)",
+                color: "var(--text-color, rgba(255, 255, 255, 0.85))"
               },
               children: tables.map((table) => /* @__PURE__ */ jsxRuntimeExports.jsx(Option$1, { value: table.id, children: /* @__PURE__ */ jsxRuntimeExports.jsx(Tooltip$1, { title: table.description, children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { children: table.name }) }) }, table.id))
             }
@@ -62537,15 +62537,15 @@ INSERT INTO product_summary (sku, name, description, category, price, cost, quan
             ] })
           ] }),
           selectedTable && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: {
-            backgroundColor: "var(--item-hover-bg, rgba(0, 0, 0, 0.02))",
+            backgroundColor: "var(--item-hover-bg, rgba(255, 255, 255, 0.08))",
             padding: "8px",
             borderRadius: "4px"
           }, children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsxs(Text, { style: { color: "var(--text-color-secondary, rgba(0, 0, 0, 0.45))" }, children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs(Text, { style: { color: "var(--text-color-secondary, rgba(255, 255, 255, 0.45))" }, children: [
               "Viewing table: ",
-              /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { strong: true, style: { color: "var(--text-color, rgba(0, 0, 0, 0.85))" }, children: ((_a = tables.find((t2) => t2.id === selectedTable)) == null ? void 0 : _a.name) || selectedTable })
+              /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { strong: true, style: { color: "var(--text-color, rgba(255, 255, 255, 0.85))" }, children: ((_a = tables.find((t2) => t2.id === selectedTable)) == null ? void 0 : _a.name) || selectedTable })
             ] }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { marginTop: 4 }, children: /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { style: { color: "var(--text-color-secondary, rgba(0, 0, 0, 0.45))" }, children: ((_b = tables.find((t2) => t2.id === selectedTable)) == null ? void 0 : _b.description) || "Table data" }) }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { marginTop: 4 }, children: /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { style: { color: "var(--text-color-secondary, rgba(255, 255, 255, 0.45))" }, children: ((_b = tables.find((t2) => t2.id === selectedTable)) == null ? void 0 : _b.description) || "Table data" }) }),
             ((_d = (_c = tables.find((t2) => t2.id === selectedTable)) == null ? void 0 : _c.name) == null ? void 0 : _d.includes("DUMMY")) && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: {
               marginTop: 8,
               padding: "4px 8px",
@@ -62823,21 +62823,22 @@ const DataTableExample = () => {
     /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { display: "flex", flex: 1 }, children: [
       /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "explorer-sidebar", style: {
         width: "300px",
-        background: "var(--component-background, #fff)",
-        borderRight: "1px solid var(--border-color-split, #f0f0f0)",
+        background: "var(--component-background, #141414)",
+        borderRight: "1px solid var(--border-color-split, #303030)",
         padding: "20px 16px",
         height: "calc(100vh - 250px)",
-        overflowY: "auto"
+        overflowY: "auto",
+        color: "var(--text-color, rgba(255, 255, 255, 0.85))"
       }, children: [
         /* @__PURE__ */ jsxRuntimeExports.jsxs("h2", { style: {
           display: "flex",
           alignItems: "center",
-          color: "var(--heading-color, rgba(0, 0, 0, 0.85))"
+          color: "var(--heading-color, rgba(255, 255, 255, 0.85))"
         }, children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx(DatabaseOutlined$1, { style: { marginRight: 10, color: "var(--primary-color, #1890ff)" } }),
           "SQL Explorer"
         ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("p", { style: { color: "var(--text-color-secondary, rgba(0, 0, 0, 0.45))" }, children: "View and manage all tables in your PostgreSQL database" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("p", { style: { color: "var(--text-color-secondary, rgba(255, 255, 255, 0.45))" }, children: "View and manage all tables in your PostgreSQL database" }),
         /* @__PURE__ */ jsxRuntimeExports.jsx(
           TableSelector,
           {
@@ -62929,8 +62930,8 @@ const DataTableExample = () => {
       /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "explorer-content", style: {
         flex: 1,
         padding: "20px 24px",
-        background: "var(--body-background, #fff)",
-        color: "var(--text-color, rgba(0, 0, 0, 0.85))"
+        background: "var(--body-background, #141414)",
+        color: "var(--text-color, rgba(255, 255, 255, 0.85))"
       }, children: [
         /* @__PURE__ */ jsxRuntimeExports.jsx(
           DataTable,
@@ -62948,10 +62949,10 @@ const DataTableExample = () => {
         tableData.length === 0 && !loading && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: {
           textAlign: "center",
           padding: "40px 0",
-          color: "var(--text-color-secondary, rgba(0, 0, 0, 0.45))"
+          color: "var(--text-color-secondary, rgba(255, 255, 255, 0.45))"
         }, children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { fontSize: "72px", lineHeight: "72px", marginBottom: "16px" }, children: "📋" }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { style: { color: "var(--heading-color, rgba(0, 0, 0, 0.85))" }, children: "No data found" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { style: { color: "var(--heading-color, rgba(255, 255, 255, 0.85))" }, children: "No data found" }),
           /* @__PURE__ */ jsxRuntimeExports.jsx("p", { children: "This table appears to be empty or not available." }),
           /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { marginBottom: "16px" }, children: selectedTable && selectedTable.includes("DUMMY") && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: {
             display: "inline-block",
@@ -62974,74 +62975,119 @@ const DataTableExample = () => {
         ] })
       ] })
     ] }),
-    showDebugConsole && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: {
-      borderTop: "1px solid var(--border-color-split, #f0f0f0)",
-      backgroundColor: "var(--component-background, #000)",
-      color: "var(--text-color-inverse, #fff)",
-      padding: "8px",
-      height: "150px",
-      overflowY: "auto",
-      fontFamily: "monospace",
-      fontSize: "12px"
-    }, children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: {
-        display: "flex",
-        justifyContent: "space-between",
-        marginBottom: "8px",
-        position: "sticky",
-        top: 0,
-        backgroundColor: "var(--component-background, #000)",
-        padding: "4px",
-        zIndex: 1
-      }, children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { style: { fontWeight: "bold" }, children: "Debug Console" }),
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { style: { marginLeft: "12px", opacity: 0.7 }, children: [
-            debugLogs.length,
-            " logs"
-          ] })
-        ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(
-            Button$2,
-            {
-              size: "small",
-              onClick: clearDebugLogs,
-              style: { marginRight: "8px" },
-              children: "Clear"
-            }
-          ),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(
-            Button$2,
-            {
-              size: "small",
-              onClick: toggleDebugConsole,
-              children: "Hide"
-            }
-          )
-        ] })
-      ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-        debugLogs.map((log) => /* @__PURE__ */ jsxRuntimeExports.jsxs(
-          "div",
-          {
-            style: {
-              padding: "2px 0",
-              color: log.type === "error" ? "#ff4d4f" : log.type === "warning" ? "#faad14" : log.type === "success" ? "#52c41a" : "#fff"
-            },
-            children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { style: { opacity: 0.7, marginRight: "8px" }, children: [
-                "[",
-                log.timestamp,
-                "]"
-              ] }),
-              /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: log.message })
-            ]
+    showDebugConsole && /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx(
+        "div",
+        {
+          style: {
+            height: "6px",
+            backgroundColor: "#444",
+            cursor: "ns-resize",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center"
           },
-          log.id
-        )),
-        debugLogs.length === 0 && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { opacity: 0.5, textAlign: "center", padding: "20px 0" }, children: "No logs to display" })
-      ] })
+          onMouseDown: (e2) => {
+            const startY = e2.clientY;
+            const startHeight = document.getElementById("debug-console").offsetHeight;
+            const handleMouseMove = (moveEvent) => {
+              const newHeight = startHeight - (moveEvent.clientY - startY);
+              const clampedHeight = Math.min(Math.max(newHeight, 50), 500);
+              document.getElementById("debug-console").style.height = `${clampedHeight}px`;
+            };
+            const handleMouseUp = () => {
+              document.removeEventListener("mousemove", handleMouseMove);
+              document.removeEventListener("mouseup", handleMouseUp);
+            };
+            document.addEventListener("mousemove", handleMouseMove);
+            document.addEventListener("mouseup", handleMouseUp);
+            e2.preventDefault();
+          },
+          children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: {
+            width: "30px",
+            height: "4px",
+            backgroundColor: "#888",
+            borderRadius: "2px"
+          } })
+        }
+      ),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs(
+        "div",
+        {
+          id: "debug-console",
+          style: {
+            borderTop: "1px solid var(--border-color-split, #303030)",
+            backgroundColor: "var(--component-background, #141414)",
+            color: "var(--text-color-inverse, #fff)",
+            padding: "8px",
+            height: "150px",
+            overflowY: "auto",
+            fontFamily: "monospace",
+            fontSize: "12px",
+            position: "relative"
+          },
+          children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: {
+              display: "flex",
+              justifyContent: "space-between",
+              marginBottom: "8px",
+              position: "sticky",
+              top: 0,
+              backgroundColor: "var(--component-background, #141414)",
+              padding: "4px",
+              zIndex: 1
+            }, children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx("span", { style: { fontWeight: "bold" }, children: "Debug Console" }),
+                /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { style: { marginLeft: "12px", opacity: 0.7 }, children: [
+                  debugLogs.length,
+                  " logs"
+                ] })
+              ] }),
+              /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx(
+                  Button$2,
+                  {
+                    size: "small",
+                    onClick: clearDebugLogs,
+                    style: { marginRight: "8px" },
+                    children: "Clear"
+                  }
+                ),
+                /* @__PURE__ */ jsxRuntimeExports.jsx(
+                  Button$2,
+                  {
+                    size: "small",
+                    onClick: toggleDebugConsole,
+                    children: "Hide"
+                  }
+                )
+              ] })
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+              debugLogs.map((log) => /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                "div",
+                {
+                  style: {
+                    padding: "2px 0",
+                    color: log.type === "error" ? "#ff4d4f" : log.type === "warning" ? "#faad14" : log.type === "success" ? "#52c41a" : "#fff"
+                  },
+                  children: [
+                    /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { style: { opacity: 0.7, marginRight: "8px" }, children: [
+                      "[",
+                      log.timestamp,
+                      "]"
+                    ] }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: log.message })
+                  ]
+                },
+                log.id
+              )),
+              debugLogs.length === 0 && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { opacity: 0.5, textAlign: "center", padding: "20px 0" }, children: "No logs to display" })
+            ] })
+          ]
+        }
+      )
     ] }),
     !showDebugConsole && /* @__PURE__ */ jsxRuntimeExports.jsx(
       Button$2,
