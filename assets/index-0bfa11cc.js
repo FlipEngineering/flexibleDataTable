@@ -57303,7 +57303,7 @@ class RealtimeClient {
         this.conn = null;
       }
     });
-    __vitePreload(() => import("./browser-96a145b7.js").then((n2) => n2.b), true ? [] : void 0).then(({ default: WS }) => {
+    __vitePreload(() => import("./browser-3e423f99.js").then((n2) => n2.b), true ? [] : void 0).then(({ default: WS }) => {
       this.conn = new WS(this.endpointURL(), void 0, {
         headers: this.headers
       });
@@ -58604,15 +58604,15 @@ const resolveHeadersConstructor = () => {
   }
   return Headers;
 };
-const fetchWithAuth = (supabaseKey, getAccessToken, customFetch) => {
+const fetchWithAuth = (supabaseKey2, getAccessToken, customFetch) => {
   const fetch2 = resolveFetch$1(customFetch);
   const HeadersConstructor = resolveHeadersConstructor();
   return (input, init) => __awaiter$2(void 0, void 0, void 0, function* () {
     var _a;
-    const accessToken = (_a = yield getAccessToken()) !== null && _a !== void 0 ? _a : supabaseKey;
+    const accessToken = (_a = yield getAccessToken()) !== null && _a !== void 0 ? _a : supabaseKey2;
     let headers = new HeadersConstructor(init === null || init === void 0 ? void 0 : init.headers);
     if (!headers.has("apikey")) {
-      headers.set("apikey", supabaseKey);
+      headers.set("apikey", supabaseKey2);
     }
     if (!headers.has("Authorization")) {
       headers.set("Authorization", `Bearer ${accessToken}`);
@@ -61385,15 +61385,15 @@ class SupabaseClient {
    * @param options.global.fetch A custom fetch implementation.
    * @param options.global.headers Any additional headers to send with each network request.
    */
-  constructor(supabaseUrl, supabaseKey, options) {
+  constructor(supabaseUrl2, supabaseKey2, options) {
     var _a, _b, _c;
-    this.supabaseUrl = supabaseUrl;
-    this.supabaseKey = supabaseKey;
-    if (!supabaseUrl)
+    this.supabaseUrl = supabaseUrl2;
+    this.supabaseKey = supabaseKey2;
+    if (!supabaseUrl2)
       throw new Error("supabaseUrl is required.");
-    if (!supabaseKey)
+    if (!supabaseKey2)
       throw new Error("supabaseKey is required.");
-    const _supabaseUrl = stripTrailingSlash(supabaseUrl);
+    const _supabaseUrl = stripTrailingSlash(supabaseUrl2);
     this.realtimeUrl = `${_supabaseUrl}/realtime/v1`.replace(/^http/i, "ws");
     this.authUrl = `${_supabaseUrl}/auth/v1`;
     this.storageUrl = `${_supabaseUrl}/storage/v1`;
@@ -61418,7 +61418,7 @@ class SupabaseClient {
         }
       });
     }
-    this.fetch = fetchWithAuth(supabaseKey, this._getAccessToken.bind(this), settings.global.fetch);
+    this.fetch = fetchWithAuth(supabaseKey2, this._getAccessToken.bind(this), settings.global.fetch);
     this.realtime = this._initRealtimeClient(Object.assign({ headers: this.headers, accessToken: this._getAccessToken.bind(this) }, settings.realtime));
     this.rest = new PostgrestClient2(`${_supabaseUrl}/rest/v1`, {
       headers: this.headers,
@@ -61573,19 +61573,42 @@ class SupabaseClient {
     }
   }
 }
-const createClient = (supabaseUrl, supabaseKey, options) => {
-  return new SupabaseClient(supabaseUrl, supabaseKey, options);
+const createClient = (supabaseUrl2, supabaseKey2, options) => {
+  return new SupabaseClient(supabaseUrl2, supabaseKey2, options);
 };
 const getSupabaseClient = () => {
-  const supabaseUrl = "https://bskffxgprfmjnmwunkck.supabase.co";
-  const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJza2ZmeGdwcmZtam5td3Vua2NrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA2OTEzMzcsImV4cCI6MjA1NjI2NzMzN30.BsxrbwLvZLS3NEkm-TK4SlGi2sw7BkmjqCPFsluvFKY";
+  const supabaseUrl2 = "https://bskffxgprfmjnmwunkck.supabase.co";
+  const supabaseKey2 = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJza2ZmeGdwcmZtam5td3Vua2NrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA2OTEzMzcsImV4cCI6MjA1NjI2NzMzN30.BsxrbwLvZLS3NEkm-TK4SlGi2sw7BkmjqCPFsluvFKY";
   console.log("Supabase connection check:");
   console.log(`- URL defined: ${"Yes"}`);
   console.log(`- Key defined: ${"Yes"}`);
   {
     console.log("✅ Using Supabase client from GitHub secrets");
     try {
-      return createClient(supabaseUrl, supabaseKey);
+      const client2 = createClient(supabaseUrl2, supabaseKey2, {
+        // Enable debug logs to diagnose issues
+        debug: true,
+        // Add custom headers to check CORS issues
+        headers: {
+          // Recommended for CORS
+          "x-client-info": "flexibleDataTable"
+        },
+        // Add global error handler for debug
+        global: {
+          fetch: (...args) => {
+            console.log("🔍 Supabase fetch call:", args[0]);
+            return fetch(...args).then((response) => {
+              if (!response.ok) {
+                console.error(`❌ Supabase fetch error: ${response.status} - ${response.statusText}`);
+              }
+              return response;
+            });
+          }
+        }
+      });
+      console.log("🌐 Request origin:", window.location.origin);
+      client2.from("ping").select("*").limit(1).then(() => console.log("✅ Supabase connection tested successfully")).catch((error) => console.error("❌ Supabase connection test failed:", error.message));
+      return client2;
     } catch (error) {
       console.error("Failed to connect with GitHub secrets:", error);
     }
@@ -61714,7 +61737,43 @@ const mockData = {
     { id: 25, sku: "B-MKT-005", name: "Marketing Handbook", description: "Digital marketing strategies handbook", category: "Books", price: 34.99, cost: 17, quantity: 25, reorder_level: 8, status: "active", profit_margin: 17.99, needs_reorder: false }
   ]
 };
+const testSupabaseCors = async (url2, key) => {
+  if (!url2 || !key) {
+    console.log("⚠️ Cannot test CORS without URL and key");
+    return;
+  }
+  console.log("🔍 Testing CORS configuration...");
+  console.log(`🌐 Current origin: ${window.location.origin}`);
+  try {
+    const response = await fetch(`${url2}/rest/v1/`, {
+      method: "GET",
+      headers: {
+        "apikey": key,
+        "Content-Type": "application/json",
+        "Origin": window.location.origin
+      }
+    });
+    if (response.ok) {
+      console.log("✅ CORS pre-flight check passed");
+    } else {
+      console.error("❌ CORS check failed:", response.status, response.statusText);
+      console.log("ℹ️ Make sure your Supabase project allows requests from:", window.location.origin);
+    }
+    const corsHeaders = {
+      "access-control-allow-origin": response.headers.get("access-control-allow-origin"),
+      "access-control-allow-methods": response.headers.get("access-control-allow-methods"),
+      "access-control-allow-headers": response.headers.get("access-control-allow-headers")
+    };
+    console.log("CORS headers:", corsHeaders);
+  } catch (error) {
+    console.error("❌ CORS test failed with error:", error);
+    console.log("ℹ️ This suggests a CORS configuration issue. Add your origin to Supabase allowed origins.");
+  }
+};
 const supabase = getSupabaseClient();
+const supabaseUrl = "https://bskffxgprfmjnmwunkck.supabase.co";
+const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJza2ZmeGdwcmZtam5td3Vua2NrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA2OTEzMzcsImV4cCI6MjA1NjI2NzMzN30.BsxrbwLvZLS3NEkm-TK4SlGi2sw7BkmjqCPFsluvFKY";
+testSupabaseCors(supabaseUrl, supabaseKey);
 const fetchCategories = async () => {
   try {
     let { data, error } = await supabase.from("categories").select("*").order("name", { ascending: true });
@@ -62341,7 +62400,69 @@ const TableSelector = ({ selectedTable, onSelectTable }) => {
           }, children: [
             /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { fontSize: "16px", fontWeight: "bold", marginBottom: "8px" }, children: "DATABASE ERROR" }),
             /* @__PURE__ */ jsxRuntimeExports.jsx("p", { style: { margin: "4px 0", padding: "0 16px" }, children: "No accessible tables found in your Supabase database." }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("p", { style: { margin: "4px 0", padding: "0 16px", fontSize: "12px" }, children: "Please create tables in your Supabase project first, or check your database permissions." }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("p", { style: { margin: "4px 0", padding: "0 16px", fontSize: "12px" }, children: "Please create the required tables in your Supabase project or check CORS settings." }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: {
+              margin: "12px 8px",
+              padding: "8px",
+              backgroundColor: "rgba(24, 144, 255, 0.1)",
+              borderRadius: "4px",
+              border: "1px solid #1890ff",
+              fontSize: "12px"
+            }, children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("h4", { style: { margin: "0 0 8px 0", color: "#1890ff" }, children: "Troubleshooting Steps:" }),
+              /* @__PURE__ */ jsxRuntimeExports.jsxs("ol", { style: { margin: "0", paddingLeft: "20px", textAlign: "left" }, children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsxs("li", { style: { marginBottom: "4px" }, children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("strong", { children: "CORS Settings:" }),
+                  " Add ",
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("code", { children: window.location.origin }),
+                  " to your Supabase allowed origins"
+                ] }),
+                /* @__PURE__ */ jsxRuntimeExports.jsxs("li", { style: { marginBottom: "4px" }, children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("strong", { children: "Create Tables:" }),
+                  " Run SQL to create required tables in Supabase"
+                ] }),
+                /* @__PURE__ */ jsxRuntimeExports.jsxs("li", { style: { marginBottom: "4px" }, children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("strong", { children: "Permissions:" }),
+                  " Ensure anon role can access your tables"
+                ] }),
+                /* @__PURE__ */ jsxRuntimeExports.jsxs("li", { style: { marginBottom: "4px" }, children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("strong", { children: "Environment Variables:" }),
+                  " Make sure your build includes VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY"
+                ] })
+              ] })
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { margin: "12px 8px" }, children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { fontWeight: "bold", marginBottom: "4px", color: "#1890ff" }, children: "Quick Setup SQL:" }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: {
+                padding: "8px",
+                background: "#f5f5f5",
+                borderRadius: "4px",
+                fontSize: "11px",
+                textAlign: "left",
+                overflow: "auto",
+                maxHeight: "100px"
+              }, children: /* @__PURE__ */ jsxRuntimeExports.jsx("pre", { style: { margin: 0 }, children: `-- Run this SQL in your Supabase SQL Editor
+CREATE TABLE IF NOT EXISTS product_summary (
+  id SERIAL PRIMARY KEY,
+  sku TEXT,
+  name TEXT,
+  description TEXT,
+  category TEXT,
+  price NUMERIC,
+  cost NUMERIC,
+  quantity INTEGER,
+  reorder_level INTEGER,
+  status TEXT,
+  profit_margin NUMERIC GENERATED ALWAYS AS (price - cost) STORED,
+  needs_reorder BOOLEAN GENERATED ALWAYS AS (quantity <= reorder_level) STORED
+);
+
+CREATE TABLE IF NOT EXISTS categories (
+  id SERIAL PRIMARY KEY,
+  name TEXT,
+  description TEXT
+);` }) })
+            ] }),
             /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { display: "flex", justifyContent: "center", gap: "8px", marginTop: "12px" }, children: [
               /* @__PURE__ */ jsxRuntimeExports.jsx(
                 "button",
