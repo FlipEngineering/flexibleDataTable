@@ -5,39 +5,27 @@ on:
     branches: [main]
   workflow_dispatch:
 
-permissions:
-  contents: write
-
 jobs:
-  build-and-deploy:
+  deploy:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: "18"
-
-      - name: Fix esbuild permissions
+      - name: Copy files to public
         run: |
-          mkdir -p node_modules/.bin
-          npm config set unsafe-perm=true
+          mkdir -p public
+          cp -r src public/
+          cp -r index.html public/
+          cp -r public/favicon.svg public/
           
-      - name: Install Dependencies
-        run: |
-          npm install -g npm@latest
-          npm install --legacy-peer-deps
-
-      - name: Build Project
-        run: |
-          npm run build
-        env:
-          CI: false
-
-      - name: Deploy to GitHub Pages
-        uses: JamesIves/github-pages-deploy-action@v4
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v3
         with:
-          folder: dist
-          branch: gh-pages
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./public
+          force_orphan: true
