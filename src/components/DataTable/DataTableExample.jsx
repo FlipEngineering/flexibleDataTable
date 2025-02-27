@@ -194,8 +194,21 @@ const DataTableExample = () => {
     logDebug(`Supabase URL defined: ${hasSupabaseUrl}`, hasSupabaseUrl ? 'success' : 'warning');
     logDebug(`Supabase Key defined: ${hasSupabaseKey}`, hasSupabaseKey ? 'success' : 'warning');
     
+    // Log the first few characters of the URL (for debugging)
+    if (hasSupabaseUrl) {
+      const url = import.meta.env.VITE_SUPABASE_URL;
+      const safeUrl = url.substring(0, 12) + '...';
+      logDebug(`Supabase URL: ${safeUrl}`, 'info');
+    }
+    
     // Check browser capabilities
     logDebug(`Browser: ${navigator.userAgent}`, 'info');
+    
+    // Force refresh tables list on initial load to make sure we get non-mock tables
+    setTimeout(() => {
+      logDebug('Refreshing available tables...', 'info');
+      setDebugLogs([]); // Clear logs for clean output
+    }, 1000);
   }, []);
 
   // Event handlers for DataTable

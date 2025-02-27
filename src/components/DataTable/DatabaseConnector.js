@@ -484,28 +484,25 @@ export const recordTransaction = async (transaction) => {
  */
 export const fetchAvailableTables = async () => {
   try {
-    // For Supabase, we need to use RPC to get metadata about tables
-    // or use known tables since direct access to pg_tables is restricted
-    // in some Supabase projects
-    
-    // Define the tables we know should exist in our Supabase project
-    const knownTables = [
-      'todos',
-      'users',
-      'profiles',
-      'products',
-      'categories',
-      'transactions',
-      'suppliers',
-      'customers',
-      'orders',
-      'product_summary'
+    // Since we know what tables work based on debug logs,
+    // let's just use the tables we know exist in our Supabase project
+    const realTables = [
+      'product_summary',
+      'categories'
     ];
     
-    // Test each table by querying for a single row
+    const descriptions = {
+      'product_summary': 'Product inventory with pricing and stock information',
+      'categories': 'Product categories for organizational structure',
+      'todos': 'Task tracking for projects and assignments',
+      'users': 'User accounts and authentication information',
+      'profiles': 'User profile details and preferences'
+    };
+    
+    // Test each table for existence and whether it has data
     const existingTables = [];
     
-    for (const tableName of knownTables) {
+    for (const tableName of realTables) {
       try {
         const { data, error } = await supabase
           .from(tableName)
@@ -520,7 +517,7 @@ export const fetchAvailableTables = async () => {
               .split('_')
               .map(word => word.charAt(0).toUpperCase() + word.slice(1))
               .join(' '),
-            description: `${tableName} table`,
+            description: descriptions[tableName] || `${tableName} table`,
             // Add flag to indicate if table has data
             hasData: data && data.length > 0
           });
@@ -533,39 +530,60 @@ export const fetchAvailableTables = async () => {
       }
     }
     
+    // If we have tables that we know work, return those immediately
     if (existingTables.length > 0) {
-      console.log('✅ Successfully found tables in database:', existingTables.length);
+      console.log('✅ Successfully found real tables in database:', existingTables.length);
       return existingTables;
     }
     
-    // If we can't directly check tables, try to query general schema info
-    // (this is a last resort since it might be restricted in some Supabase projects)
-    try {
-      const { data: schemaInfo, error: schemaError } = await supabase
-        .rpc('get_schema_info');
-        
-      if (!schemaError && schemaInfo && schemaInfo.length > 0) {
-        console.log('Found tables via RPC get_schema_info:', schemaInfo.length);
-        return schemaInfo.map(table => ({
-          id: table.name,
-          name: table.name
-            .split('_')
-            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-            .join(' '),
-          description: table.description || `${table.name} table`
-        }));
+    // Try to discover more tables dynamically
+    const otherPossibleTables = [
+      'todos',
+      'users',
+      'profiles',
+      'products',
+      'transactions',
+      'suppliers',
+      'customers',
+      'orders'
+    ];
+    
+    // Test these other tables
+    for (const tableName of otherPossibleTables) {
+      try {
+        const { data, error } = await supabase
+          .from(tableName)
+          .select('*')
+          .limit(1);
+          
+        if (!error) {
+          existingTables.push({
+            id: tableName,
+            name: tableName
+              .split('_')
+              .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+              .join(' '),
+            description: descriptions[tableName] || `${tableName} table`,
+            hasData: data && data.length > 0
+          });
+          console.log(`✅ Found additional table: "${tableName}"`);
+        }
+      } catch (e) {
+        // Just skip these tables silently if they don't exist
       }
-    } catch (rpcError) {
-      console.log('RPC get_schema_info not available:', rpcError.message);
     }
     
-    throw new Error('No tables found in database using any method');
+    if (existingTables.length > 0) {
+      return existingTables;
+    }
+    
+    throw new Error('No tables found in database');
   } catch (error) {
     console.log('⚠️ Using mock tables due to error:', error.message);
     
-    // Fall back to mock tables
+    // Fall back to mock tables - but make it obvious they're mock
     return [
-      { id: 'todos', name: 'Todos', description: 'Task tracking table' },
+      { id: 'todos', name: 'Todos (DUMMY)', description: 'DUMMY DATA: Task tracking' },
       { id: 'product_summary', name: 'Products (DUMMY)', description: 'DUMMY DATA: Product inventory data' },
       { id: 'categories', name: 'Categories (DUMMY)', description: 'DUMMY DATA: Product categories' },
       { id: 'transactions', name: 'Transactions (DUMMY)', description: 'DUMMY DATA: Inventory transactions' },
