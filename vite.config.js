@@ -8,8 +8,8 @@ export default defineConfig({
     port: 3000,
     open: true
   },
-  // Base path for deployment
-  base: '/',
+  // Base path for deployment to GitHub Pages
+  base: '/flexibleDataTable/',
   // Simple build config to minimize deployment issues
   build: {
     minify: false,
