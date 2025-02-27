@@ -356,7 +356,7 @@ const DataTable = ({
         }}
         columns={columns}
         dataSource={dataSource}
-        pagination={{ pageSize: 10 }}
+        pagination={{ pageSize: 20, showSizeChanger: true, pageSizeOptions: ['10', '20', '50', '100'] }}
         // Remove horizontal scrolling to use full width
         bordered
         size="middle"
