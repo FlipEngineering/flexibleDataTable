@@ -23,6 +23,7 @@ import { createClient } from '@supabase/supabase-js';
  */
 const getSupabaseClient = () => {
   // Check for environment variables (set during build process)
+  // These values should come from GitHub secrets during deployment
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
   const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
@@ -31,26 +32,31 @@ const getSupabaseClient = () => {
   console.log(`- URL defined: ${supabaseUrl ? 'Yes' : 'No'}`);
   console.log(`- Key defined: ${supabaseKey ? 'Yes' : 'No'}`);
   
-  // CONFIGURE YOUR ACTUAL SUPABASE DATABASE HERE
-  // For a real project, use environment variables instead of hardcoding
-  const productionUrl = 'https://qejtrhdvnkxdftxmhjhi.supabase.co';
-  const productionKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFlanRyaGR2bmt4ZGZ0eG1oamhpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MDkwNjc4MzIsImV4cCI6MjAyNDY0MzgzMn0.KVFWYAgH6t4qWZonxFXIEJwYL_AYu6R6XkhgGfTlKhw';
-  
-  // Use configured environment variables if available
+  // Use environment variables from GitHub secrets
   if (supabaseUrl && supabaseKey) {
-    console.log('✅ Using configured Supabase client from environment variables');
-    return createClient(supabaseUrl, supabaseKey);
+    console.log('✅ Using Supabase client from GitHub secrets');
+    try {
+      return createClient(supabaseUrl, supabaseKey);
+    } catch (error) {
+      console.error('Failed to connect with GitHub secrets:', error);
+    }
+  } else {
+    console.log('⚠️ GitHub secrets not available in this environment');
   }
   
-  // Use the actual production database
-  const useProductionDatabase = true; // Set to true to use the real database
-  
-  if (useProductionDatabase) {
-    console.log('✅ Using production Supabase database');
+  // Check if running in development mode (provide dev fallback)
+  const isDev = import.meta.env.DEV;
+  if (isDev) {
+    console.log('ℹ️ Running in development mode');
+    // Local development fallback (only if needed) - use .env.local file
+    // In real projects, do not hardcode these values
     try {
-      return createClient(productionUrl, productionKey);
-    } catch (error) {
-      console.error('Failed to connect to production database:', error);
+      return createClient(
+        'https://qejtrhdvnkxdftxmhjhi.supabase.co',
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFlanRyaGR2bmt4ZGZ0eG1oamhpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MDkwNjc4MzIsImV4cCI6MjAyNDY0MzgzMn0.KVFWYAgH6t4qWZonxFXIEJwYL_AYu6R6XkhgGfTlKhw'
+      );
+    } catch (devError) {
+      console.error('Failed to connect with development credentials:', devError);
     }
   }
   
