@@ -18894,10 +18894,10 @@ const InternalCompoundedButton = /* @__PURE__ */ React.forwardRef((props, ref) =
   }
   return wrapCSSVar(buttonNode);
 });
-const Button$2 = InternalCompoundedButton;
-Button$2.Group = Group$4;
-Button$2.__ANT_BUTTON = true;
-const Button$3 = Button$2;
+const Button$1 = InternalCompoundedButton;
+Button$1.Group = Group$4;
+Button$1.__ANT_BUTTON = true;
+const Button$2 = Button$1;
 function isThenable(thing) {
   return !!(thing === null || thing === void 0 ? void 0 : thing.then);
 }
@@ -18983,7 +18983,7 @@ const ActionButton = (props) => {
     }
     handlePromiseOnOk(returnValueOfOnOk);
   };
-  return /* @__PURE__ */ reactExports.createElement(Button$3, Object.assign({}, convertLegacyProps(type4), {
+  return /* @__PURE__ */ reactExports.createElement(Button$2, Object.assign({}, convertLegacyProps(type4), {
     onClick,
     loading,
     prefixCls
@@ -23566,7 +23566,7 @@ const NormalCancelBtn = () => {
     cancelTextLocale,
     onCancel
   } = reactExports.useContext(ModalContext);
-  return /* @__PURE__ */ React.createElement(Button$3, Object.assign({
+  return /* @__PURE__ */ React.createElement(Button$2, Object.assign({
     onClick: onCancel
   }, cancelButtonProps), cancelTextLocale);
 };
@@ -23579,7 +23579,7 @@ const NormalOkBtn = () => {
     okTextLocale,
     onOk
   } = reactExports.useContext(ModalContext);
-  return /* @__PURE__ */ React.createElement(Button$3, Object.assign({}, convertLegacyProps(okType), {
+  return /* @__PURE__ */ React.createElement(Button$2, Object.assign({}, convertLegacyProps(okType), {
     loading: confirmLoading,
     onClick: onOk
   }, okButtonProps), okTextLocale);
@@ -36357,9 +36357,9 @@ const RadioButton = (props, ref) => {
     ref
   })));
 };
-const Button$1 = /* @__PURE__ */ reactExports.forwardRef(RadioButton);
+const Button = /* @__PURE__ */ reactExports.forwardRef(RadioButton);
 const Radio = InternalRadio$1;
-Radio.Button = Button$1;
+Radio.Button = Button;
 Radio.Group = Group$3;
 Radio.__ANT_RADIO = true;
 const Radio$1 = Radio;
@@ -39239,7 +39239,7 @@ const DropdownButton = (props) => {
   } else {
     dropdownProps.placement = direction === "rtl" ? "bottomLeft" : "bottomRight";
   }
-  const leftButton = /* @__PURE__ */ reactExports.createElement(Button$3, {
+  const leftButton = /* @__PURE__ */ reactExports.createElement(Button$2, {
     type: type4,
     danger,
     disabled,
@@ -39249,7 +39249,7 @@ const DropdownButton = (props) => {
     href,
     title
   }, children);
-  const rightButton = /* @__PURE__ */ reactExports.createElement(Button$3, {
+  const rightButton = /* @__PURE__ */ reactExports.createElement(Button$2, {
     type: type4,
     danger,
     icon
@@ -41486,7 +41486,7 @@ const Search = /* @__PURE__ */ reactExports.forwardRef((props, ref) => {
       size
     } : {}));
   } else {
-    button = /* @__PURE__ */ reactExports.createElement(Button$3, {
+    button = /* @__PURE__ */ reactExports.createElement(Button$2, {
       className: btnClassName,
       type: enterButton ? "primary" : void 0,
       size,
@@ -50414,12 +50414,12 @@ const FilterDropdown = (props) => {
     };
     dropdownContent = /* @__PURE__ */ reactExports.createElement(reactExports.Fragment, null, getFilterComponent(), /* @__PURE__ */ reactExports.createElement("div", {
       className: `${prefixCls}-dropdown-btns`
-    }, /* @__PURE__ */ reactExports.createElement(Button$3, {
+    }, /* @__PURE__ */ reactExports.createElement(Button$2, {
       type: "link",
       size: "small",
       disabled: getResetDisabled(),
       onClick: () => onReset()
-    }, locale2.filterReset), /* @__PURE__ */ reactExports.createElement(Button$3, {
+    }, locale2.filterReset), /* @__PURE__ */ reactExports.createElement(Button$2, {
       type: "primary",
       size: "small",
       onClick: onConfirm
@@ -54434,7 +54434,7 @@ const DataTable = ({
           ),
           /* @__PURE__ */ jsxRuntimeExports.jsxs(Space$1, { children: [
             /* @__PURE__ */ jsxRuntimeExports.jsx(
-              Button$3,
+              Button$2,
               {
                 type: "primary",
                 onClick: () => confirm2(),
@@ -54444,7 +54444,7 @@ const DataTable = ({
                 children: "Search"
               }
             ),
-            /* @__PURE__ */ jsxRuntimeExports.jsx(Button$3, { onClick: () => clearFilters(), size: "small", style: { width: 90 }, children: "Reset" })
+            /* @__PURE__ */ jsxRuntimeExports.jsx(Button$2, { onClick: () => clearFilters(), size: "small", style: { width: 90 }, children: "Reset" })
           ] })
         ] }),
         onFilter: (value, record) => {
@@ -54505,7 +54505,7 @@ const DataTable = ({
       key: "actions",
       render: (_, record) => /* @__PURE__ */ jsxRuntimeExports.jsxs(Space$1, { size: "middle", children: [
         /* @__PURE__ */ jsxRuntimeExports.jsx(Tooltip$1, { title: "Edit", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
-          Button$3,
+          Button$2,
           {
             icon: /* @__PURE__ */ jsxRuntimeExports.jsx(EditOutlined$1, {}),
             onClick: () => handleEdit(record),
@@ -54513,7 +54513,7 @@ const DataTable = ({
           }
         ) }),
         /* @__PURE__ */ jsxRuntimeExports.jsx(Tooltip$1, { title: "Delete", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
-          Button$3,
+          Button$2,
           {
             icon: /* @__PURE__ */ jsxRuntimeExports.jsx(DeleteOutlined$1, {}),
             onClick: () => showDeleteConfirm(record),
@@ -54652,7 +54652,7 @@ const DataTable = ({
     /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "data-table-header", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { children: tableName }),
       /* @__PURE__ */ jsxRuntimeExports.jsx(Space$1, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(
-        Button$3,
+        Button$2,
         {
           type: "primary",
           icon: /* @__PURE__ */ jsxRuntimeExports.jsx(PlusOutlined$1, {}),
@@ -54663,7 +54663,7 @@ const DataTable = ({
     ] }),
     /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "data-table-actions", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(Space$1, { children: [
       /* @__PURE__ */ jsxRuntimeExports.jsx(
-        Button$3,
+        Button$2,
         {
           icon: /* @__PURE__ */ jsxRuntimeExports.jsx(ArrowUpOutlined$1, {}),
           onClick: () => moveRow("up"),
@@ -54672,7 +54672,7 @@ const DataTable = ({
         }
       ),
       /* @__PURE__ */ jsxRuntimeExports.jsx(
-        Button$3,
+        Button$2,
         {
           icon: /* @__PURE__ */ jsxRuntimeExports.jsx(ArrowDownOutlined$1, {}),
           onClick: () => moveRow("down"),
@@ -57303,7 +57303,7 @@ class RealtimeClient {
         this.conn = null;
       }
     });
-    __vitePreload(() => import("./browser-a235a01c.js").then((n2) => n2.b), true ? [] : void 0).then(({ default: WS }) => {
+    __vitePreload(() => import("./browser-0292ade8.js").then((n2) => n2.b), true ? [] : void 0).then(({ default: WS }) => {
       this.conn = new WS(this.endpointURL(), void 0, {
         headers: this.headers
       });
@@ -61755,7 +61755,19 @@ const fetchProducts = async (filters = {}, orderBy = "name", ascending = true) =
 };
 const searchProducts = async (searchTerm) => {
   try {
-    const { data, error } = await supabase.rpc("search_products", { search_term: searchTerm });
+    let data, error;
+    try {
+      if (typeof supabase.rpc === "function") {
+        const result = await supabase.rpc("search_products", { search_term: searchTerm });
+        data = result.data;
+        error = result.error;
+      } else {
+        throw new Error("RPC method not available in this Supabase client");
+      }
+    } catch (e2) {
+      console.log("🔍 Supabase RPC call failed:", e2.message);
+      error = e2;
+    }
     if (error)
       throw error;
     console.log("Fetched search results from Supabase RPC:", (data == null ? void 0 : data.length) || 0);
@@ -61885,9 +61897,23 @@ const deleteProduct = async (id2) => {
   }
 };
 const fetchAvailableTables = async () => {
+  var _a;
   try {
     console.log("🔍 Checking database connection and looking for tables...");
-    const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+    let sessionData, sessionError;
+    try {
+      if (typeof ((_a = supabase.auth) == null ? void 0 : _a.getSession) === "function") {
+        const session = await supabase.auth.getSession();
+        sessionData = session.data;
+        sessionError = session.error;
+      } else {
+        sessionData = { session: {} };
+        sessionError = null;
+      }
+    } catch (e2) {
+      console.error("❌ Supabase connection test failed:", e2.message);
+      sessionError = e2;
+    }
     if (sessionError) {
       console.error("❌ Cannot connect to Supabase:", sessionError.message);
       throw new Error(`Connection failed: ${sessionError.message}`);
@@ -61913,23 +61939,16 @@ const fetchAvailableTables = async () => {
     ];
     console.log(`Checking ${tablesToCheck.length} possible tables...`);
     const accessibleTables = [];
-    const sampleTables = [
-      {
-        id: "product_summary",
-        name: "Product Summary",
-        description: "Sample product inventory data",
-        sample: true
-      },
-      {
-        id: "categories",
-        name: "Categories",
-        description: "Sample product categories",
-        sample: true
-      }
-    ];
     for (const tableName of tablesToCheck) {
       try {
-        const { data, error } = await supabase.from(tableName).select("*").limit(1);
+        let data, error;
+        try {
+          const result = await supabase.from(tableName).select("*").limit(1);
+          data = result.data;
+          error = result.error;
+        } catch (e2) {
+          error = e2;
+        }
         if (!error) {
           accessibleTables.push({
             id: tableName,
@@ -61940,95 +61959,43 @@ const fetchAvailableTables = async () => {
           console.log(`✅ Found accessible table: ${tableName}`);
         }
       } catch (e2) {
+        console.log(`Checking table "${tableName}"...`);
       }
     }
     if (accessibleTables.length > 0) {
       console.log(`✅ Found ${accessibleTables.length} accessible tables in database`);
       return accessibleTables;
     }
-    console.log("⚠️ No accessible tables found. Using sample tables for demonstration.");
-    return sampleTables.map((table) => ({
-      ...table,
-      name: table.name + " (SAMPLE)",
-      description: "SAMPLE DATA: " + table.description
-    }));
+    throw new Error("No accessible tables found in the database. Please create tables in your Supabase project.");
   } catch (error) {
     console.error("❌ Database connection issue:", error);
-    console.log("⚠️ Displaying sample tables due to connection issue");
-    return [
-      {
-        id: "product_summary",
-        name: "Products (SAMPLE)",
-        description: "SAMPLE DATA: Product inventory for demonstration",
-        sample: true
-      },
-      {
-        id: "categories",
-        name: "Categories (SAMPLE)",
-        description: "SAMPLE DATA: Product categories for demonstration",
-        sample: true
-      }
-    ];
+    throw new Error(`Database connection issue: ${error.message}`);
   }
 };
 const fetchTableData = async (tableName) => {
-  const isSampleTable = tableName.includes("(SAMPLE)") || tableName === "product_summary" || tableName === "categories";
   try {
     const { data, error } = await supabase.from(tableName).select("*");
     if (error) {
-      console.log(`Error fetching data from ${tableName}: ${error.message}`);
-      if (isSampleTable) {
-        throw new Error("Using sample data instead");
-      } else {
-        return [];
-      }
+      console.error(`❌ Error fetching data from ${tableName}: ${error.message}`);
+      throw new Error(`Could not access table ${tableName}: ${error.message}`);
     }
     console.log(`✅ Successfully fetched ${(data == null ? void 0 : data.length) || 0} rows from ${tableName}`);
     return data;
-  } catch (e2) {
-    console.log(`⚠️ Using sample data for ${tableName}: ${e2.message}`);
-    const cleanTableName = tableName.replace("(SAMPLE)", "").trim().toLowerCase();
-    if (cleanTableName === "categories" || tableName === "categories") {
-      return mockData.categories;
-    } else if (cleanTableName === "product_summary" || cleanTableName === "products" || tableName === "product_summary" || tableName === "products") {
-      return mockData.product_summary;
-    } else if (cleanTableName === "suppliers" || tableName === "suppliers") {
-      return mockData.suppliers || [
-        { id: 1, name: "TechSupply Inc.", contact: "John Smith", email: "jsmith@techsupply.com", phone: "555-123-4567" },
-        { id: 2, name: "Office Essentials", contact: "Sarah Johnson", email: "sjohnson@offess.com", phone: "555-987-6543" },
-        { id: 3, name: "Furniture Depot", contact: "Michael Brown", email: "mbrown@furndepot.com", phone: "555-456-7890" }
-      ];
-    } else if (cleanTableName === "customers" || tableName === "customers") {
-      return mockData.customers || [
-        { id: 1, name: "Acme Corp", contact: "Jane Doe", email: "jdoe@acme.com", phone: "555-111-2222" },
-        { id: 2, name: "Widget LLC", contact: "Bob Wilson", email: "bwilson@widget.com", phone: "555-333-4444" },
-        { id: 3, name: "Example Industries", contact: "Carol Taylor", email: "ctaylor@example.com", phone: "555-555-6666" }
-      ];
-    } else if (cleanTableName === "orders" || tableName === "orders") {
-      return mockData.orders || [
-        { id: 1, customer_id: 1, order_date: "2025-01-15", status: "completed", total: 2499.97 },
-        { id: 2, customer_id: 2, order_date: "2025-02-01", status: "processing", total: 899.99 },
-        { id: 3, customer_id: 1, order_date: "2025-02-20", status: "pending", total: 1299.99 }
-      ];
-    } else if (cleanTableName === "transactions" || tableName === "transactions") {
-      return mockData.transactions || [
-        { id: 1, product_id: 1, type: "purchase", quantity: 10, transaction_date: "2025-01-10", note: "Initial inventory" },
-        { id: 2, product_id: 2, type: "sale", quantity: -5, transaction_date: "2025-01-20", note: "Customer order #135" },
-        { id: 3, product_id: 1, type: "adjustment", quantity: -1, transaction_date: "2025-02-05", note: "Damaged product" }
-      ];
-    } else if (cleanTableName === "todos" || tableName === "todos") {
-      return [
-        { id: 1, title: "Welcome to the demo tables", completed: false, created_at: (/* @__PURE__ */ new Date()).toISOString() },
-        { id: 2, title: "Try selecting different tables", completed: true, created_at: (/* @__PURE__ */ new Date()).toISOString() },
-        { id: 3, title: "Explore the sample data", completed: false, created_at: (/* @__PURE__ */ new Date()).toISOString() }
-      ];
-    }
-    return [];
+  } catch (error) {
+    console.error(`❌ Failed to fetch data from ${tableName}:`, error.message);
+    throw new Error(`Data access error: ${error.message}`);
   }
 };
 const getTableColumns = async (tableName) => {
   try {
-    const { data, error } = await supabase.from(tableName).select("*").limit(1);
+    let data, error;
+    try {
+      const result = await supabase.from(tableName).select("*").limit(1);
+      data = result.data;
+      error = result.error;
+    } catch (e2) {
+      error = e2;
+    }
     if (error)
       throw error;
     if (data && data.length > 0) {
@@ -62225,18 +62192,52 @@ const TableSelector = ({ selectedTable, onSelectTable }) => {
             borderRadius: "4px",
             margin: "8px 0"
           }, children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { fontSize: "16px", fontWeight: "bold", marginBottom: "8px" }, children: "No Tables Found" }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("p", { style: { margin: "4px 0", padding: "0 16px" }, children: "No accessible tables in your Supabase database. Sample data is available for demonstration." }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx(
-              Button,
-              {
-                type: "primary",
-                onClick: handleRefresh,
-                style: { marginTop: "12px" },
-                danger: true,
-                children: "Retry Connection"
-              }
-            )
+            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { fontSize: "16px", fontWeight: "bold", marginBottom: "8px" }, children: "DATABASE ERROR" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("p", { style: { margin: "4px 0", padding: "0 16px" }, children: "No accessible tables found in your Supabase database." }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("p", { style: { margin: "4px 0", padding: "0 16px", fontSize: "12px" }, children: "Please create tables in your Supabase project first, or check your database permissions." }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { display: "flex", justifyContent: "center", gap: "8px", marginTop: "12px" }, children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(
+                "button",
+                {
+                  style: {
+                    backgroundColor: "#ff4d4f",
+                    color: "white",
+                    borderRadius: "4px",
+                    padding: "4px 15px",
+                    border: "none",
+                    cursor: "pointer",
+                    boxShadow: "0 2px 0 rgba(0,0,0,0.045)",
+                    height: "32px"
+                  },
+                  onClick: handleRefresh,
+                  children: "Retry Connection"
+                }
+              ),
+              /* @__PURE__ */ jsxRuntimeExports.jsx(
+                "a",
+                {
+                  href: "https://supabase.com/dashboard",
+                  target: "_blank",
+                  rel: "noopener noreferrer",
+                  children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+                    "button",
+                    {
+                      style: {
+                        backgroundColor: "white",
+                        color: "rgba(0, 0, 0, 0.85)",
+                        borderRadius: "4px",
+                        padding: "4px 15px",
+                        border: "1px solid #d9d9d9",
+                        cursor: "pointer",
+                        boxShadow: "0 2px 0 rgba(0,0,0,0.045)",
+                        height: "32px"
+                      },
+                      children: "Go to Supabase"
+                    }
+                  )
+                }
+              )
+            ] })
           ] }),
           selectedTable && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: {
             backgroundColor: "var(--item-hover-bg, rgba(0, 0, 0, 0.02))",
@@ -62360,6 +62361,7 @@ const DataTableExample = () => {
     }
     const applyFilters = async () => {
       setLoading(true);
+      logDebug(`Applying filters to ${selectedTable}...`, "info");
       try {
         const filters = {};
         if (selectedCategory)
@@ -62368,8 +62370,10 @@ const DataTableExample = () => {
           filters.status = selectedStatus;
         const filteredProducts = await fetchProducts(filters);
         setTableData(filteredProducts);
+        logDebug(`Applied filters successfully, found ${filteredProducts.length} records`, "success");
       } catch (error) {
-        console.error("Error applying filters:", error);
+        const errorMsg = `Error applying filters: ${error.message}`;
+        logDebug(errorMsg, "error");
         message$1.error("Failed to filter products");
       } finally {
         setLoading(false);
@@ -62538,7 +62542,7 @@ const DataTableExample = () => {
                 onPressEnter: handleSearch,
                 style: { width: "100%" },
                 suffix: /* @__PURE__ */ jsxRuntimeExports.jsx(
-                  Button$3,
+                  Button$2,
                   {
                     type: "text",
                     icon: /* @__PURE__ */ jsxRuntimeExports.jsx(SearchOutlined$1, {}),
@@ -62597,7 +62601,7 @@ const DataTableExample = () => {
             display: "flex",
             justifyContent: "center"
           }, children: /* @__PURE__ */ jsxRuntimeExports.jsx(
-            Button$3,
+            Button$2,
             {
               type: "primary",
               onClick: () => loadTableData(selectedTable),
@@ -62644,7 +62648,7 @@ const DataTableExample = () => {
             fontWeight: "bold"
           }, children: "DUMMY DATA MODE ACTIVE" }) }),
           /* @__PURE__ */ jsxRuntimeExports.jsx(
-            Button$3,
+            Button$2,
             {
               type: "primary",
               onClick: () => loadTableData(selectedTable),
@@ -62684,7 +62688,7 @@ const DataTableExample = () => {
         ] }),
         /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx(
-            Button$3,
+            Button$2,
             {
               size: "small",
               onClick: clearDebugLogs,
@@ -62693,7 +62697,7 @@ const DataTableExample = () => {
             }
           ),
           /* @__PURE__ */ jsxRuntimeExports.jsx(
-            Button$3,
+            Button$2,
             {
               size: "small",
               onClick: toggleDebugConsole,
@@ -62725,7 +62729,7 @@ const DataTableExample = () => {
       ] })
     ] }),
     !showDebugConsole && /* @__PURE__ */ jsxRuntimeExports.jsx(
-      Button$3,
+      Button$2,
       {
         type: "primary",
         size: "small",
