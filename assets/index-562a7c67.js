@@ -57303,7 +57303,7 @@ class RealtimeClient {
         this.conn = null;
       }
     });
-    __vitePreload(() => import("./browser-ff2130c6.js").then((n2) => n2.b), true ? [] : void 0).then(({ default: WS }) => {
+    __vitePreload(() => import("./browser-c64c284f.js").then((n2) => n2.b), true ? [] : void 0).then(({ default: WS }) => {
       this.conn = new WS(this.endpointURL(), void 0, {
         headers: this.headers
       });
@@ -61583,9 +61583,87 @@ const getSupabaseClient = () => {
   console.log(`- URL defined: ${"Yes"}`);
   console.log(`- Key defined: ${"Yes"}`);
   {
-    console.log("✅ Using configured Supabase client from environment variables");
-    return createClient(supabaseUrl, supabaseKey);
+    console.log("✅ Using Supabase client from GitHub secrets");
+    try {
+      return createClient(supabaseUrl, supabaseKey);
+    } catch (error) {
+      console.error("Failed to connect with GitHub secrets:", error);
+    }
   }
+  console.log("⚠️ Using mock Supabase client with DUMMY DATA (no working credentials)");
+  return mockSupabase;
+};
+const mockSupabase = {
+  from: (table) => ({
+    select: (columns = "*") => ({
+      eq: (column2, value) => ({
+        order: (column3, { ascending }) => ({
+          then: (callback) => {
+            console.log(`Querying ${table} with filter ${column3}=${value}`);
+            return mockData[table] ? callback({ data: mockData[table], error: null }) : callback({ data: [], error: null });
+          }
+        }),
+        then: (callback) => {
+          console.log(`Querying ${table} with filter ${column2}=${value}`);
+          const filteredData = mockData[table] ? mockData[table].filter((row) => row[column2] === value) : [];
+          return callback({ data: filteredData, error: null });
+        }
+      }),
+      ilike: (column2, value) => ({
+        then: (callback) => {
+          console.log(`Querying ${table} with ILIKE filter ${column2} ILIKE %${value}%`);
+          const filteredData = mockData[table] ? mockData[table].filter((row) => String(row[column2]).toLowerCase().includes(value.toLowerCase())) : [];
+          return callback({ data: filteredData, error: null });
+        }
+      }),
+      order: (column2, { ascending }) => ({
+        then: (callback) => {
+          console.log(`Querying ${table} ordered by ${column2} ${ascending ? "ASC" : "DESC"}`);
+          return mockData[table] ? callback({ data: mockData[table], error: null }) : callback({ data: [], error: null });
+        }
+      }),
+      then: (callback) => {
+        console.log(`Querying all data from ${table}`);
+        return mockData[table] ? callback({ data: mockData[table], error: null }) : callback({ data: [], error: null });
+      }
+    }),
+    insert: (data) => ({
+      then: (callback) => {
+        console.log(`Inserting data into ${table}`, data);
+        return callback({ data, error: null });
+      }
+    }),
+    update: (data) => ({
+      eq: (column2, value) => ({
+        then: (callback) => {
+          console.log(`Updating ${table} where ${column2}=${value}`, data);
+          return callback({ data, error: null });
+        }
+      })
+    }),
+    delete: () => ({
+      eq: (column2, value) => ({
+        then: (callback) => {
+          console.log(`Deleting from ${table} where ${column2}=${value}`);
+          return callback({ data: null, error: null });
+        }
+      })
+    }),
+    rpc: (functionName, params) => ({
+      then: (callback) => {
+        console.log(`Calling RPC function ${functionName} with params`, params);
+        if (functionName === "search_products") {
+          const results = mockData.product_summary ? mockData.product_summary.filter(
+            (p2) => Object.values(p2).some(
+              (val) => val && String(val).toLowerCase().includes(params.search_term.toLowerCase())
+            )
+          ) : [];
+          return callback({ data: results, error: null });
+        }
+        return callback({ data: [], error: null });
+      }
+    })
+  })
 };
 const mockData = {
   categories: [
