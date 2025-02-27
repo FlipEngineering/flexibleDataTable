@@ -42,75 +42,77 @@ jobs:
           
           # Generate minimal CSS and JS
           cat > dist/index.js << 'ENDJS'
-          import React from 'https://esm.sh/react@18.2.0';
-          import ReactDOM from 'https://esm.sh/react-dom@18.2.0/client';
-          import 'https://esm.sh/antd@5.9.0/dist/reset.css';
+          // Import React from CDN
+          const React = await import('https://esm.sh/react@18.2.0');
+          const ReactDOM = await import('https://esm.sh/react-dom@18.2.0/client');
           
-          const App = () => {
-            return React.createElement('div', { className: 'App' },
-              React.createElement('header', { className: 'App-header' },
-                React.createElement('h1', null, 'React Dynamic DataTable Demo'),
-                React.createElement('p', null, 'A flexible table component with SQL database integration')
-              ),
-              React.createElement('main', { className: 'App-main' },
-                React.createElement('div', null, 
-                  React.createElement('h2', null, 'Employee Database'),
-                  React.createElement('p', null, 'This is a simplified demo of the DataTable component. For the complete interactive version, please clone the repository.'),
-                  React.createElement('table', { className: 'data-table' },
-                    React.createElement('thead', null,
-                      React.createElement('tr', null,
-                        React.createElement('th', null, 'ID'),
-                        React.createElement('th', null, 'Name'),
-                        React.createElement('th', null, 'Email'),
-                        React.createElement('th', null, 'Department'),
-                        React.createElement('th', null, 'Salary'),
-                      )
-                    ),
-                    React.createElement('tbody', null,
-                      React.createElement('tr', null,
-                        React.createElement('td', null, '1'),
-                        React.createElement('td', null, 'John Doe'),
-                        React.createElement('td', null, 'john.doe@example.com'),
-                        React.createElement('td', null, 'Engineering'),
-                        React.createElement('td', null, '$85,000'),
-                      ),
-                      React.createElement('tr', null,
-                        React.createElement('td', null, '2'),
-                        React.createElement('td', null, 'Jane Smith'),
-                        React.createElement('td', null, 'jane.smith@example.com'),
-                        React.createElement('td', null, 'Marketing'),
-                        React.createElement('td', null, '$72,000'),
-                      ),
-                      React.createElement('tr', null,
-                        React.createElement('td', null, '3'),
-                        React.createElement('td', null, 'Bob Johnson'),
-                        React.createElement('td', null, 'bob.johnson@example.com'),
-                        React.createElement('td', null, 'Sales'),
-                        React.createElement('td', null, '$95,000'),
-                      )
-                    )
-                  ),
-                  React.createElement('div', { style: { margin: '24px 0', padding: '16px', background: '#f6f6f6', borderRadius: '8px', border: '1px solid #ddd' } },
-                    React.createElement('h3', null, 'Features:'),
-                    React.createElement('ul', null,
-                      React.createElement('li', null, 'Dynamic Columns: Generated from database schema'),
-                      React.createElement('li', null, 'Multiple Data Types: Text, number, select, checkbox, formula'),
-                      React.createElement('li', null, 'Row Operations: Add, edit, delete, reorder'),
-                      React.createElement('li', null, 'Filtering & Sorting: Built into all columns'),
-                      React.createElement('li', null, 'Formula Support: Excel-like formulas (SUM, AVG, MIN, MAX, COUNT, IF)'),
-                      React.createElement('li', null, 'SQL Integration: Ready to connect to database backends')
-                    )
-                  )
-                )
-              ),
-              React.createElement('footer', { className: 'App-footer' },
-                React.createElement('p', null, '© 2025 - Dynamic DataTable Component')
-              )
-            );
-          };
-          
-          const root = ReactDOM.createRoot(document.getElementById('root'));
-          root.render(React.createElement(React.StrictMode, null, React.createElement(App)));
+          // Create an app without React
+          document.addEventListener('DOMContentLoaded', function() {
+            const rootDiv = document.getElementById('root');
+            
+            rootDiv.innerHTML = `
+              <div class="App">
+                <header class="App-header">
+                  <h1>React Dynamic DataTable Demo</h1>
+                  <p>A flexible table component with SQL database integration</p>
+                </header>
+                <main class="App-main">
+                  <div>
+                    <h2>Employee Database</h2>
+                    <p>This is a simplified demo of the DataTable component. For the complete interactive version, please clone the repository.</p>
+                    <table class="data-table">
+                      <thead>
+                        <tr>
+                          <th>ID</th>
+                          <th>Name</th>
+                          <th>Email</th>
+                          <th>Department</th>
+                          <th>Salary</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td>1</td>
+                          <td>John Doe</td>
+                          <td>john.doe@example.com</td>
+                          <td>Engineering</td>
+                          <td>$85,000</td>
+                        </tr>
+                        <tr>
+                          <td>2</td>
+                          <td>Jane Smith</td>
+                          <td>jane.smith@example.com</td>
+                          <td>Marketing</td>
+                          <td>$72,000</td>
+                        </tr>
+                        <tr>
+                          <td>3</td>
+                          <td>Bob Johnson</td>
+                          <td>bob.johnson@example.com</td>
+                          <td>Sales</td>
+                          <td>$95,000</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                    <div style="margin: 24px 0; padding: 16px; background: #f6f6f6; border-radius: 8px; border: 1px solid #ddd">
+                      <h3>Features:</h3>
+                      <ul>
+                        <li><strong>Dynamic Columns:</strong> Generated from database schema</li>
+                        <li><strong>Multiple Data Types:</strong> Text, number, select, checkbox, formula</li>
+                        <li><strong>Row Operations:</strong> Add, edit, delete, reorder</li>
+                        <li><strong>Filtering & Sorting:</strong> Built into all columns</li>
+                        <li><strong>Formula Support:</strong> Excel-like formulas (SUM, AVG, MIN, MAX, COUNT, IF)</li>
+                        <li><strong>SQL Integration:</strong> Ready to connect to database backends</li>
+                      </ul>
+                    </div>
+                  </div>
+                </main>
+                <footer class="App-footer">
+                  <p>© 2025 - Dynamic DataTable Component</p>
+                </footer>
+              </div>
+            `;
+          });
           ENDJS
           
           # Create CSS
@@ -178,8 +180,24 @@ jobs:
           }
           ENDCSS
           
-          # Update the index.html to use the files
-          sed -i 's|<script type="module" src="/src/main.jsx"></script>|<link rel="stylesheet" href="./style.css" /><script type="module" src="./index.js"></script>|g' dist/index.html
+          # Create a completely new index.html file
+          cat > dist/index.html << 'ENDHTML'
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>React Dynamic DataTable Demo</title>
+    <meta name="description" content="A flexible React table component with SQL database integration" />
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="./index.js"></script>
+  </body>
+</html>
+ENDHTML
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
