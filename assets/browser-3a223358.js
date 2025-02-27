@@ -1,4 +1,4 @@
-import { g as getDefaultExportFromCjs } from "./index-eda0b373.js";
+import { g as getDefaultExportFromCjs } from "./index-f650342a.js";
 function _mergeNamespaces(n, m) {
   for (var i = 0; i < m.length; i++) {
     const e = m[i];
