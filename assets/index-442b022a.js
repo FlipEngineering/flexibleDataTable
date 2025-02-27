@@ -14351,8 +14351,8 @@ var CheckCircleFilled = function CheckCircleFilled2(props, ref) {
     icon: CheckCircleFilledSvg
   }));
 };
-var RefIcon$y = /* @__PURE__ */ reactExports.forwardRef(CheckCircleFilled);
-const CheckCircleFilled$1 = RefIcon$y;
+var RefIcon$z = /* @__PURE__ */ reactExports.forwardRef(CheckCircleFilled);
+const CheckCircleFilled$1 = RefIcon$z;
 var CloseCircleFilled$2 = { "icon": { "tag": "svg", "attrs": { "fill-rule": "evenodd", "viewBox": "64 64 896 896", "focusable": "false" }, "children": [{ "tag": "path", "attrs": { "d": "M512 64c247.4 0 448 200.6 448 448S759.4 960 512 960 64 759.4 64 512 264.6 64 512 64zm127.98 274.82h-.04l-.08.06L512 466.75 384.14 338.88c-.04-.05-.06-.06-.08-.06a.12.12 0 00-.07 0c-.03 0-.05.01-.09.05l-45.02 45.02a.2.2 0 00-.05.09.12.12 0 000 .07v.02a.27.27 0 00.06.06L466.75 512 338.88 639.86c-.05.04-.06.06-.06.08a.12.12 0 000 .07c0 .03.01.05.05.09l45.02 45.02a.2.2 0 00.09.05.12.12 0 00.07 0c.02 0 .04-.01.08-.05L512 557.25l127.86 127.87c.04.04.06.05.08.05a.12.12 0 00.07 0c.03 0 .05-.01.09-.05l45.02-45.02a.2.2 0 00.05-.09.12.12 0 000-.07v-.02a.27.27 0 00-.05-.06L557.25 512l127.87-127.86c.04-.04.05-.06.05-.08a.12.12 0 000-.07c0-.03-.01-.05-.05-.09l-45.02-45.02a.2.2 0 00-.09-.05.12.12 0 00-.07 0z" } }] }, "name": "close-circle", "theme": "filled" };
 const CloseCircleFilledSvg = CloseCircleFilled$2;
 var CloseCircleFilled = function CloseCircleFilled2(props, ref) {
@@ -14361,8 +14361,8 @@ var CloseCircleFilled = function CloseCircleFilled2(props, ref) {
     icon: CloseCircleFilledSvg
   }));
 };
-var RefIcon$x = /* @__PURE__ */ reactExports.forwardRef(CloseCircleFilled);
-const CloseCircleFilled$1 = RefIcon$x;
+var RefIcon$y = /* @__PURE__ */ reactExports.forwardRef(CloseCircleFilled);
+const CloseCircleFilled$1 = RefIcon$y;
 var CloseOutlined$2 = { "icon": { "tag": "svg", "attrs": { "fill-rule": "evenodd", "viewBox": "64 64 896 896", "focusable": "false" }, "children": [{ "tag": "path", "attrs": { "d": "M799.86 166.31c.02 0 .04.02.08.06l57.69 57.7c.04.03.05.05.06.08a.12.12 0 010 .06c0 .03-.02.05-.06.09L569.93 512l287.7 287.7c.04.04.05.06.06.09a.12.12 0 010 .07c0 .02-.02.04-.06.08l-57.7 57.69c-.03.04-.05.05-.07.06a.12.12 0 01-.07 0c-.03 0-.05-.02-.09-.06L512 569.93l-287.7 287.7c-.04.04-.06.05-.09.06a.12.12 0 01-.07 0c-.02 0-.04-.02-.08-.06l-57.69-57.7c-.04-.03-.05-.05-.06-.07a.12.12 0 010-.07c0-.03.02-.05.06-.09L454.07 512l-287.7-287.7c-.04-.04-.05-.06-.06-.09a.12.12 0 010-.07c0-.02.02-.04.06-.08l57.7-57.69c.03-.04.05-.05.07-.06a.12.12 0 01.07 0c.03 0 .05.02.09.06L512 454.07l287.7-287.7c.04-.04.06-.05.09-.06a.12.12 0 01.07 0z" } }] }, "name": "close", "theme": "outlined" };
 const CloseOutlinedSvg = CloseOutlined$2;
 var CloseOutlined = function CloseOutlined2(props, ref) {
@@ -14371,8 +14371,8 @@ var CloseOutlined = function CloseOutlined2(props, ref) {
     icon: CloseOutlinedSvg
   }));
 };
-var RefIcon$w = /* @__PURE__ */ reactExports.forwardRef(CloseOutlined);
-const CloseOutlined$1 = RefIcon$w;
+var RefIcon$x = /* @__PURE__ */ reactExports.forwardRef(CloseOutlined);
+const CloseOutlined$1 = RefIcon$x;
 var ExclamationCircleFilled$2 = { "icon": { "tag": "svg", "attrs": { "viewBox": "64 64 896 896", "focusable": "false" }, "children": [{ "tag": "path", "attrs": { "d": "M512 64C264.6 64 64 264.6 64 512s200.6 448 448 448 448-200.6 448-448S759.4 64 512 64zm-32 232c0-4.4 3.6-8 8-8h48c4.4 0 8 3.6 8 8v272c0 4.4-3.6 8-8 8h-48c-4.4 0-8-3.6-8-8V296zm32 440a48.01 48.01 0 010-96 48.01 48.01 0 010 96z" } }] }, "name": "exclamation-circle", "theme": "filled" };
 const ExclamationCircleFilledSvg = ExclamationCircleFilled$2;
 var ExclamationCircleFilled = function ExclamationCircleFilled2(props, ref) {
@@ -14381,8 +14381,8 @@ var ExclamationCircleFilled = function ExclamationCircleFilled2(props, ref) {
     icon: ExclamationCircleFilledSvg
   }));
 };
-var RefIcon$v = /* @__PURE__ */ reactExports.forwardRef(ExclamationCircleFilled);
-const ExclamationCircleFilled$1 = RefIcon$v;
+var RefIcon$w = /* @__PURE__ */ reactExports.forwardRef(ExclamationCircleFilled);
+const ExclamationCircleFilled$1 = RefIcon$w;
 var InfoCircleFilled$2 = { "icon": { "tag": "svg", "attrs": { "viewBox": "64 64 896 896", "focusable": "false" }, "children": [{ "tag": "path", "attrs": { "d": "M512 64C264.6 64 64 264.6 64 512s200.6 448 448 448 448-200.6 448-448S759.4 64 512 64zm32 664c0 4.4-3.6 8-8 8h-48c-4.4 0-8-3.6-8-8V456c0-4.4 3.6-8 8-8h48c4.4 0 8 3.6 8 8v272zm-32-344a48.01 48.01 0 010-96 48.01 48.01 0 010 96z" } }] }, "name": "info-circle", "theme": "filled" };
 const InfoCircleFilledSvg = InfoCircleFilled$2;
 var InfoCircleFilled = function InfoCircleFilled2(props, ref) {
@@ -14391,8 +14391,8 @@ var InfoCircleFilled = function InfoCircleFilled2(props, ref) {
     icon: InfoCircleFilledSvg
   }));
 };
-var RefIcon$u = /* @__PURE__ */ reactExports.forwardRef(InfoCircleFilled);
-const InfoCircleFilled$1 = RefIcon$u;
+var RefIcon$v = /* @__PURE__ */ reactExports.forwardRef(InfoCircleFilled);
+const InfoCircleFilled$1 = RefIcon$v;
 var attributes = "accept acceptCharset accessKey action allowFullScreen allowTransparency\n    alt async autoComplete autoFocus autoPlay capture cellPadding cellSpacing challenge\n    charSet checked classID className colSpan cols content contentEditable contextMenu\n    controls coords crossOrigin data dateTime default defer dir disabled download draggable\n    encType form formAction formEncType formMethod formNoValidate formTarget frameBorder\n    headers height hidden high href hrefLang htmlFor httpEquiv icon id inputMode integrity\n    is keyParams keyType kind label lang list loop low manifest marginHeight marginWidth max maxLength media\n    mediaGroup method min minLength multiple muted name noValidate nonce open\n    optimum pattern placeholder poster preload radioGroup readOnly rel required\n    reversed role rowSpan rows sandbox scope scoped scrolling seamless selected\n    shape size sizes span spellCheck src srcDoc srcLang srcSet start step style\n    summary tabIndex target title type useMap value width wmode wrap";
 var eventsName = "onCopy onCut onPaste onCompositionEnd onCompositionStart onCompositionUpdate onKeyDown\n    onKeyPress onKeyUp onFocus onBlur onChange onInput onSubmit onClick onContextMenu onDoubleClick\n    onDrag onDragEnd onDragEnter onDragExit onDragLeave onDragOver onDragStart onDrop onMouseDown\n    onMouseEnter onMouseLeave onMouseMove onMouseOut onMouseOver onMouseUp onSelect onTouchCancel\n    onTouchEnd onTouchMove onTouchStart onScroll onWheel onAbort onCanPlay onCanPlayThrough\n    onDurationChange onEmptied onEncrypted onEnded onError onLoadedData onLoadedMetadata\n    onLoadStart onPause onPlay onPlaying onProgress onRateChange onSeeked onSeeking onStalled onSuspend onTimeUpdate onVolumeChange onWaiting onLoad onError";
 var propList = "".concat(attributes, " ").concat(eventsName).split(/[\s\n]+/);
@@ -15569,8 +15569,8 @@ var LoadingOutlined = function LoadingOutlined2(props, ref) {
     icon: LoadingOutlinedSvg
   }));
 };
-var RefIcon$t = /* @__PURE__ */ reactExports.forwardRef(LoadingOutlined);
-const LoadingOutlined$1 = RefIcon$t;
+var RefIcon$u = /* @__PURE__ */ reactExports.forwardRef(LoadingOutlined);
+const LoadingOutlined$1 = RefIcon$u;
 const zIndexContext = /* @__PURE__ */ React.createContext(void 0);
 const zIndexContext$1 = zIndexContext;
 const CONTAINER_OFFSET = 100;
@@ -17432,8 +17432,8 @@ var RightOutlined = function RightOutlined2(props, ref) {
     icon: RightOutlinedSvg
   }));
 };
-var RefIcon$s = /* @__PURE__ */ reactExports.forwardRef(RightOutlined);
-const RightOutlined$1 = RefIcon$s;
+var RefIcon$t = /* @__PURE__ */ reactExports.forwardRef(RightOutlined);
+const RightOutlined$1 = RefIcon$t;
 const genCollapseMotion = (token2) => ({
   [token2.componentCls]: {
     // For common/openAnimation
@@ -30903,8 +30903,8 @@ var CheckOutlined = function CheckOutlined2(props, ref) {
     icon: CheckOutlinedSvg
   }));
 };
-var RefIcon$r = /* @__PURE__ */ reactExports.forwardRef(CheckOutlined);
-const CheckOutlined$1 = RefIcon$r;
+var RefIcon$s = /* @__PURE__ */ reactExports.forwardRef(CheckOutlined);
+const CheckOutlined$1 = RefIcon$s;
 var DownOutlined$2 = { "icon": { "tag": "svg", "attrs": { "viewBox": "64 64 896 896", "focusable": "false" }, "children": [{ "tag": "path", "attrs": { "d": "M884 256h-75c-5.1 0-9.9 2.5-12.9 6.6L512 654.2 227.9 262.6c-3-4.1-7.8-6.6-12.9-6.6h-75c-6.5 0-10.3 7.4-6.5 12.7l352.6 486.1c12.8 17.6 39 17.6 51.7 0l352.6-486.1c3.9-5.3.1-12.7-6.4-12.7z" } }] }, "name": "down", "theme": "outlined" };
 const DownOutlinedSvg = DownOutlined$2;
 var DownOutlined = function DownOutlined2(props, ref) {
@@ -30913,8 +30913,8 @@ var DownOutlined = function DownOutlined2(props, ref) {
     icon: DownOutlinedSvg
   }));
 };
-var RefIcon$q = /* @__PURE__ */ reactExports.forwardRef(DownOutlined);
-const DownOutlined$1 = RefIcon$q;
+var RefIcon$r = /* @__PURE__ */ reactExports.forwardRef(DownOutlined);
+const DownOutlined$1 = RefIcon$r;
 var SearchOutlined$2 = { "icon": { "tag": "svg", "attrs": { "viewBox": "64 64 896 896", "focusable": "false" }, "children": [{ "tag": "path", "attrs": { "d": "M909.6 854.5L649.9 594.8C690.2 542.7 712 479 712 412c0-80.2-31.3-155.4-87.9-212.1-56.6-56.7-132-87.9-212.1-87.9s-155.5 31.3-212.1 87.9C143.2 256.5 112 331.8 112 412c0 80.1 31.3 155.5 87.9 212.1C256.5 680.8 331.8 712 412 712c67 0 130.6-21.8 182.7-62l259.7 259.6a8.2 8.2 0 0011.6 0l43.6-43.5a8.2 8.2 0 000-11.6zM570.4 570.4C528 612.7 471.8 636 412 636s-116-23.3-158.4-65.6C211.3 528 188 471.8 188 412s23.3-116.1 65.6-158.4C296 211.3 352.2 188 412 188s116.1 23.2 158.4 65.6S636 352.2 636 412s-23.3 116.1-65.6 158.4z" } }] }, "name": "search", "theme": "outlined" };
 const SearchOutlinedSvg = SearchOutlined$2;
 var SearchOutlined = function SearchOutlined2(props, ref) {
@@ -30923,8 +30923,8 @@ var SearchOutlined = function SearchOutlined2(props, ref) {
     icon: SearchOutlinedSvg
   }));
 };
-var RefIcon$p = /* @__PURE__ */ reactExports.forwardRef(SearchOutlined);
-const SearchOutlined$1 = RefIcon$p;
+var RefIcon$q = /* @__PURE__ */ reactExports.forwardRef(SearchOutlined);
+const SearchOutlined$1 = RefIcon$q;
 function useIcons(_ref) {
   let {
     suffixIcon,
@@ -32188,8 +32188,8 @@ var LeftOutlined = function LeftOutlined2(props, ref) {
     icon: LeftOutlinedSvg
   }));
 };
-var RefIcon$o = /* @__PURE__ */ reactExports.forwardRef(LeftOutlined);
-const LeftOutlined$1 = RefIcon$o;
+var RefIcon$p = /* @__PURE__ */ reactExports.forwardRef(LeftOutlined);
+const LeftOutlined$1 = RefIcon$p;
 var ESC$1 = KeyCode.ESC, TAB = KeyCode.TAB;
 function useAccessibility$1(_ref) {
   var visible = _ref.visible, triggerRef = _ref.triggerRef, onVisibleChange = _ref.onVisibleChange, autoFocus = _ref.autoFocus, overlayRef = _ref.overlayRef;
@@ -33779,8 +33779,8 @@ var EllipsisOutlined = function EllipsisOutlined2(props, ref) {
     icon: EllipsisOutlinedSvg
   }));
 };
-var RefIcon$n = /* @__PURE__ */ reactExports.forwardRef(EllipsisOutlined);
-const EllipsisOutlined$1 = RefIcon$n;
+var RefIcon$o = /* @__PURE__ */ reactExports.forwardRef(EllipsisOutlined);
+const EllipsisOutlined$1 = RefIcon$o;
 const MenuContext = /* @__PURE__ */ reactExports.createContext({
   prefixCls: "",
   firstLevel: true,
@@ -37387,8 +37387,8 @@ var PlusOutlined = function PlusOutlined2(props, ref) {
     icon: PlusOutlinedSvg
   }));
 };
-var RefIcon$m = /* @__PURE__ */ reactExports.forwardRef(PlusOutlined);
-const PlusOutlined$1 = RefIcon$m;
+var RefIcon$n = /* @__PURE__ */ reactExports.forwardRef(PlusOutlined);
+const PlusOutlined$1 = RefIcon$n;
 function throttle(delay, callback, options) {
   var _ref = options || {}, _ref$noTrailing = _ref.noTrailing, noTrailing = _ref$noTrailing === void 0 ? false : _ref$noTrailing, _ref$noLeading = _ref.noLeading, noLeading = _ref$noLeading === void 0 ? false : _ref$noLeading, _ref$debounceMode = _ref.debounceMode, debounceMode = _ref$debounceMode === void 0 ? void 0 : _ref$debounceMode;
   var timeoutID;
@@ -40362,8 +40362,8 @@ var QuestionCircleOutlined = function QuestionCircleOutlined2(props, ref) {
     icon: QuestionCircleOutlinedSvg
   }));
 };
-var RefIcon$l = /* @__PURE__ */ reactExports.forwardRef(QuestionCircleOutlined);
-const QuestionCircleOutlined$1 = RefIcon$l;
+var RefIcon$m = /* @__PURE__ */ reactExports.forwardRef(QuestionCircleOutlined);
+const QuestionCircleOutlined$1 = RefIcon$m;
 var __rest$j = globalThis && globalThis.__rest || function(s, e2) {
   var t2 = {};
   for (var p2 in s)
@@ -40956,8 +40956,8 @@ var EyeOutlined = function EyeOutlined2(props, ref) {
     icon: EyeOutlinedSvg
   }));
 };
-var RefIcon$k = /* @__PURE__ */ reactExports.forwardRef(EyeOutlined);
-const EyeOutlined$1 = RefIcon$k;
+var RefIcon$l = /* @__PURE__ */ reactExports.forwardRef(EyeOutlined);
+const EyeOutlined$1 = RefIcon$l;
 function addEventListenerWrap(target, eventType, cb2, option) {
   var callback = ReactDOM.unstable_batchedUpdates ? function run(e2) {
     ReactDOM.unstable_batchedUpdates(cb2, e2);
@@ -41300,8 +41300,8 @@ var EyeInvisibleOutlined = function EyeInvisibleOutlined2(props, ref) {
     icon: EyeInvisibleOutlinedSvg
   }));
 };
-var RefIcon$j = /* @__PURE__ */ reactExports.forwardRef(EyeInvisibleOutlined);
-const EyeInvisibleOutlined$1 = RefIcon$j;
+var RefIcon$k = /* @__PURE__ */ reactExports.forwardRef(EyeInvisibleOutlined);
+const EyeInvisibleOutlined$1 = RefIcon$k;
 var __rest$e = globalThis && globalThis.__rest || function(s, e2) {
   var t2 = {};
   for (var p2 in s)
@@ -42102,8 +42102,8 @@ var DoubleLeftOutlined = function DoubleLeftOutlined2(props, ref) {
     icon: DoubleLeftOutlinedSvg
   }));
 };
-var RefIcon$i = /* @__PURE__ */ reactExports.forwardRef(DoubleLeftOutlined);
-const DoubleLeftOutlined$1 = RefIcon$i;
+var RefIcon$j = /* @__PURE__ */ reactExports.forwardRef(DoubleLeftOutlined);
+const DoubleLeftOutlined$1 = RefIcon$j;
 var DoubleRightOutlined$2 = { "icon": { "tag": "svg", "attrs": { "viewBox": "64 64 896 896", "focusable": "false" }, "children": [{ "tag": "path", "attrs": { "d": "M533.2 492.3L277.9 166.1c-3-3.9-7.7-6.1-12.6-6.1H188c-6.7 0-10.4 7.7-6.3 12.9L447.1 512 181.7 851.1A7.98 7.98 0 00188 864h77.3c4.9 0 9.6-2.3 12.6-6.1l255.3-326.1c9.1-11.7 9.1-27.9 0-39.5zm304 0L581.9 166.1c-3-3.9-7.7-6.1-12.6-6.1H492c-6.7 0-10.4 7.7-6.3 12.9L751.1 512 485.7 851.1A7.98 7.98 0 00492 864h77.3c4.9 0 9.6-2.3 12.6-6.1l255.3-326.1c9.1-11.7 9.1-27.9 0-39.5z" } }] }, "name": "double-right", "theme": "outlined" };
 const DoubleRightOutlinedSvg = DoubleRightOutlined$2;
 var DoubleRightOutlined = function DoubleRightOutlined2(props, ref) {
@@ -42112,8 +42112,8 @@ var DoubleRightOutlined = function DoubleRightOutlined2(props, ref) {
     icon: DoubleRightOutlinedSvg
   }));
 };
-var RefIcon$h = /* @__PURE__ */ reactExports.forwardRef(DoubleRightOutlined);
-const DoubleRightOutlined$1 = RefIcon$h;
+var RefIcon$i = /* @__PURE__ */ reactExports.forwardRef(DoubleRightOutlined);
+const DoubleRightOutlined$1 = RefIcon$i;
 var locale = {
   // Options
   items_per_page: "条/页",
@@ -44205,8 +44205,8 @@ var ArrowDownOutlined = function ArrowDownOutlined2(props, ref) {
     icon: ArrowDownOutlinedSvg
   }));
 };
-var RefIcon$g = /* @__PURE__ */ reactExports.forwardRef(ArrowDownOutlined);
-const ArrowDownOutlined$1 = RefIcon$g;
+var RefIcon$h = /* @__PURE__ */ reactExports.forwardRef(ArrowDownOutlined);
+const ArrowDownOutlined$1 = RefIcon$h;
 var ArrowUpOutlined$2 = { "icon": { "tag": "svg", "attrs": { "viewBox": "64 64 896 896", "focusable": "false" }, "children": [{ "tag": "path", "attrs": { "d": "M868 545.5L536.1 163a31.96 31.96 0 00-48.3 0L156 545.5a7.97 7.97 0 006 13.2h81c4.6 0 9-2 12.1-5.5L474 300.9V864c0 4.4 3.6 8 8 8h60c4.4 0 8-3.6 8-8V300.9l218.9 252.3c3 3.5 7.4 5.5 12.1 5.5h81c6.8 0 10.5-8 6-13.2z" } }] }, "name": "arrow-up", "theme": "outlined" };
 const ArrowUpOutlinedSvg = ArrowUpOutlined$2;
 var ArrowUpOutlined = function ArrowUpOutlined2(props, ref) {
@@ -44215,8 +44215,8 @@ var ArrowUpOutlined = function ArrowUpOutlined2(props, ref) {
     icon: ArrowUpOutlinedSvg
   }));
 };
-var RefIcon$f = /* @__PURE__ */ reactExports.forwardRef(ArrowUpOutlined);
-const ArrowUpOutlined$1 = RefIcon$f;
+var RefIcon$g = /* @__PURE__ */ reactExports.forwardRef(ArrowUpOutlined);
+const ArrowUpOutlined$1 = RefIcon$g;
 var CaretDownFilled$2 = { "icon": { "tag": "svg", "attrs": { "viewBox": "0 0 1024 1024", "focusable": "false" }, "children": [{ "tag": "path", "attrs": { "d": "M840.4 300H183.6c-19.7 0-30.7 20.8-18.5 35l328.4 380.8c9.4 10.9 27.5 10.9 37 0L858.9 335c12.2-14.2 1.2-35-18.5-35z" } }] }, "name": "caret-down", "theme": "filled" };
 const CaretDownFilledSvg = CaretDownFilled$2;
 var CaretDownFilled = function CaretDownFilled2(props, ref) {
@@ -44225,8 +44225,8 @@ var CaretDownFilled = function CaretDownFilled2(props, ref) {
     icon: CaretDownFilledSvg
   }));
 };
-var RefIcon$e = /* @__PURE__ */ reactExports.forwardRef(CaretDownFilled);
-const CaretDownFilled$1 = RefIcon$e;
+var RefIcon$f = /* @__PURE__ */ reactExports.forwardRef(CaretDownFilled);
+const CaretDownFilled$1 = RefIcon$f;
 var CaretDownOutlined$2 = { "icon": { "tag": "svg", "attrs": { "viewBox": "0 0 1024 1024", "focusable": "false" }, "children": [{ "tag": "path", "attrs": { "d": "M840.4 300H183.6c-19.7 0-30.7 20.8-18.5 35l328.4 380.8c9.4 10.9 27.5 10.9 37 0L858.9 335c12.2-14.2 1.2-35-18.5-35z" } }] }, "name": "caret-down", "theme": "outlined" };
 const CaretDownOutlinedSvg = CaretDownOutlined$2;
 var CaretDownOutlined = function CaretDownOutlined2(props, ref) {
@@ -44235,8 +44235,8 @@ var CaretDownOutlined = function CaretDownOutlined2(props, ref) {
     icon: CaretDownOutlinedSvg
   }));
 };
-var RefIcon$d = /* @__PURE__ */ reactExports.forwardRef(CaretDownOutlined);
-const CaretDownOutlined$1 = RefIcon$d;
+var RefIcon$e = /* @__PURE__ */ reactExports.forwardRef(CaretDownOutlined);
+const CaretDownOutlined$1 = RefIcon$e;
 var CaretUpOutlined$2 = { "icon": { "tag": "svg", "attrs": { "viewBox": "0 0 1024 1024", "focusable": "false" }, "children": [{ "tag": "path", "attrs": { "d": "M858.9 689L530.5 308.2c-9.4-10.9-27.5-10.9-37 0L165.1 689c-12.2 14.2-1.2 35 18.5 35h656.8c19.7 0 30.7-20.8 18.5-35z" } }] }, "name": "caret-up", "theme": "outlined" };
 const CaretUpOutlinedSvg = CaretUpOutlined$2;
 var CaretUpOutlined = function CaretUpOutlined2(props, ref) {
@@ -44245,8 +44245,8 @@ var CaretUpOutlined = function CaretUpOutlined2(props, ref) {
     icon: CaretUpOutlinedSvg
   }));
 };
-var RefIcon$c = /* @__PURE__ */ reactExports.forwardRef(CaretUpOutlined);
-const CaretUpOutlined$1 = RefIcon$c;
+var RefIcon$d = /* @__PURE__ */ reactExports.forwardRef(CaretUpOutlined);
+const CaretUpOutlined$1 = RefIcon$d;
 var CopyOutlined$2 = { "icon": { "tag": "svg", "attrs": { "viewBox": "64 64 896 896", "focusable": "false" }, "children": [{ "tag": "path", "attrs": { "d": "M832 64H296c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h496v688c0 4.4 3.6 8 8 8h56c4.4 0 8-3.6 8-8V96c0-17.7-14.3-32-32-32zM704 192H192c-17.7 0-32 14.3-32 32v530.7c0 8.5 3.4 16.6 9.4 22.6l173.3 173.3c2.2 2.2 4.7 4 7.4 5.5v1.9h4.2c3.5 1.3 7.2 2 11 2H704c17.7 0 32-14.3 32-32V224c0-17.7-14.3-32-32-32zM350 856.2L263.9 770H350v86.2zM664 888H414V746c0-22.1-17.9-40-40-40H232V264h432v624z" } }] }, "name": "copy", "theme": "outlined" };
 const CopyOutlinedSvg = CopyOutlined$2;
 var CopyOutlined = function CopyOutlined2(props, ref) {
@@ -44255,8 +44255,8 @@ var CopyOutlined = function CopyOutlined2(props, ref) {
     icon: CopyOutlinedSvg
   }));
 };
-var RefIcon$b = /* @__PURE__ */ reactExports.forwardRef(CopyOutlined);
-const CopyOutlined$1 = RefIcon$b;
+var RefIcon$c = /* @__PURE__ */ reactExports.forwardRef(CopyOutlined);
+const CopyOutlined$1 = RefIcon$c;
 var DatabaseOutlined$2 = { "icon": { "tag": "svg", "attrs": { "viewBox": "64 64 896 896", "focusable": "false" }, "children": [{ "tag": "path", "attrs": { "d": "M832 64H192c-17.7 0-32 14.3-32 32v832c0 17.7 14.3 32 32 32h640c17.7 0 32-14.3 32-32V96c0-17.7-14.3-32-32-32zm-600 72h560v208H232V136zm560 480H232V408h560v208zm0 272H232V680h560v208zM304 240a40 40 0 1080 0 40 40 0 10-80 0zm0 272a40 40 0 1080 0 40 40 0 10-80 0zm0 272a40 40 0 1080 0 40 40 0 10-80 0z" } }] }, "name": "database", "theme": "outlined" };
 const DatabaseOutlinedSvg = DatabaseOutlined$2;
 var DatabaseOutlined = function DatabaseOutlined2(props, ref) {
@@ -44265,8 +44265,8 @@ var DatabaseOutlined = function DatabaseOutlined2(props, ref) {
     icon: DatabaseOutlinedSvg
   }));
 };
-var RefIcon$a = /* @__PURE__ */ reactExports.forwardRef(DatabaseOutlined);
-const DatabaseOutlined$1 = RefIcon$a;
+var RefIcon$b = /* @__PURE__ */ reactExports.forwardRef(DatabaseOutlined);
+const DatabaseOutlined$1 = RefIcon$b;
 var DeleteOutlined$2 = { "icon": { "tag": "svg", "attrs": { "viewBox": "64 64 896 896", "focusable": "false" }, "children": [{ "tag": "path", "attrs": { "d": "M360 184h-8c4.4 0 8-3.6 8-8v8h304v-8c0 4.4 3.6 8 8 8h-8v72h72v-80c0-35.3-28.7-64-64-64H352c-35.3 0-64 28.7-64 64v80h72v-72zm504 72H160c-17.7 0-32 14.3-32 32v32c0 4.4 3.6 8 8 8h60.4l24.7 523c1.6 34.1 29.8 61 63.9 61h454c34.2 0 62.3-26.8 63.9-61l24.7-523H888c4.4 0 8-3.6 8-8v-32c0-17.7-14.3-32-32-32zM731.3 840H292.7l-24.2-512h487l-24.2 512z" } }] }, "name": "delete", "theme": "outlined" };
 const DeleteOutlinedSvg = DeleteOutlined$2;
 var DeleteOutlined = function DeleteOutlined2(props, ref) {
@@ -44275,8 +44275,8 @@ var DeleteOutlined = function DeleteOutlined2(props, ref) {
     icon: DeleteOutlinedSvg
   }));
 };
-var RefIcon$9 = /* @__PURE__ */ reactExports.forwardRef(DeleteOutlined);
-const DeleteOutlined$1 = RefIcon$9;
+var RefIcon$a = /* @__PURE__ */ reactExports.forwardRef(DeleteOutlined);
+const DeleteOutlined$1 = RefIcon$a;
 var EditOutlined$2 = { "icon": { "tag": "svg", "attrs": { "viewBox": "64 64 896 896", "focusable": "false" }, "children": [{ "tag": "path", "attrs": { "d": "M257.7 752c2 0 4-.2 6-.5L431.9 722c2-.4 3.9-1.3 5.3-2.8l423.9-423.9a9.96 9.96 0 000-14.1L694.9 114.9c-1.9-1.9-4.4-2.9-7.1-2.9s-5.2 1-7.1 2.9L256.8 538.8c-1.5 1.5-2.4 3.3-2.8 5.3l-29.5 168.2a33.5 33.5 0 009.4 29.8c6.6 6.4 14.9 9.9 23.8 9.9zm67.4-174.4L687.8 215l73.3 73.3-362.7 362.6-88.9 15.7 15.6-89zM880 836H144c-17.7 0-32 14.3-32 32v36c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-36c0-17.7-14.3-32-32-32z" } }] }, "name": "edit", "theme": "outlined" };
 const EditOutlinedSvg = EditOutlined$2;
 var EditOutlined = function EditOutlined2(props, ref) {
@@ -44285,8 +44285,8 @@ var EditOutlined = function EditOutlined2(props, ref) {
     icon: EditOutlinedSvg
   }));
 };
-var RefIcon$8 = /* @__PURE__ */ reactExports.forwardRef(EditOutlined);
-const EditOutlined$1 = RefIcon$8;
+var RefIcon$9 = /* @__PURE__ */ reactExports.forwardRef(EditOutlined);
+const EditOutlined$1 = RefIcon$9;
 var EnterOutlined$2 = { "icon": { "tag": "svg", "attrs": { "viewBox": "64 64 896 896", "focusable": "false" }, "children": [{ "tag": "path", "attrs": { "d": "M864 170h-60c-4.4 0-8 3.6-8 8v518H310v-73c0-6.7-7.8-10.5-13-6.3l-141.9 112a8 8 0 000 12.6l141.9 112c5.3 4.2 13 .4 13-6.3v-75h498c35.3 0 64-28.7 64-64V178c0-4.4-3.6-8-8-8z" } }] }, "name": "enter", "theme": "outlined" };
 const EnterOutlinedSvg = EnterOutlined$2;
 var EnterOutlined = function EnterOutlined2(props, ref) {
@@ -44295,8 +44295,8 @@ var EnterOutlined = function EnterOutlined2(props, ref) {
     icon: EnterOutlinedSvg
   }));
 };
-var RefIcon$7 = /* @__PURE__ */ reactExports.forwardRef(EnterOutlined);
-const EnterOutlined$1 = RefIcon$7;
+var RefIcon$8 = /* @__PURE__ */ reactExports.forwardRef(EnterOutlined);
+const EnterOutlined$1 = RefIcon$8;
 var FileOutlined$2 = { "icon": { "tag": "svg", "attrs": { "viewBox": "64 64 896 896", "focusable": "false" }, "children": [{ "tag": "path", "attrs": { "d": "M854.6 288.6L639.4 73.4c-6-6-14.1-9.4-22.6-9.4H192c-17.7 0-32 14.3-32 32v832c0 17.7 14.3 32 32 32h640c17.7 0 32-14.3 32-32V311.3c0-8.5-3.4-16.7-9.4-22.7zM790.2 326H602V137.8L790.2 326zm1.8 562H232V136h302v216a42 42 0 0042 42h216v494z" } }] }, "name": "file", "theme": "outlined" };
 const FileOutlinedSvg = FileOutlined$2;
 var FileOutlined = function FileOutlined2(props, ref) {
@@ -44305,8 +44305,8 @@ var FileOutlined = function FileOutlined2(props, ref) {
     icon: FileOutlinedSvg
   }));
 };
-var RefIcon$6 = /* @__PURE__ */ reactExports.forwardRef(FileOutlined);
-const FileOutlined$1 = RefIcon$6;
+var RefIcon$7 = /* @__PURE__ */ reactExports.forwardRef(FileOutlined);
+const FileOutlined$1 = RefIcon$7;
 var FilterFilled$2 = { "icon": { "tag": "svg", "attrs": { "viewBox": "64 64 896 896", "focusable": "false" }, "children": [{ "tag": "path", "attrs": { "d": "M349 838c0 17.7 14.2 32 31.8 32h262.4c17.6 0 31.8-14.3 31.8-32V642H349v196zm531.1-684H143.9c-24.5 0-39.8 26.7-27.5 48l221.3 376h348.8l221.3-376c12.1-21.3-3.2-48-27.7-48z" } }] }, "name": "filter", "theme": "filled" };
 const FilterFilledSvg = FilterFilled$2;
 var FilterFilled = function FilterFilled2(props, ref) {
@@ -44315,8 +44315,8 @@ var FilterFilled = function FilterFilled2(props, ref) {
     icon: FilterFilledSvg
   }));
 };
-var RefIcon$5 = /* @__PURE__ */ reactExports.forwardRef(FilterFilled);
-const FilterFilled$1 = RefIcon$5;
+var RefIcon$6 = /* @__PURE__ */ reactExports.forwardRef(FilterFilled);
+const FilterFilled$1 = RefIcon$6;
 var FolderOpenOutlined$2 = { "icon": { "tag": "svg", "attrs": { "viewBox": "64 64 896 896", "focusable": "false" }, "children": [{ "tag": "path", "attrs": { "d": "M928 444H820V330.4c0-17.7-14.3-32-32-32H473L355.7 186.2a8.15 8.15 0 00-5.5-2.2H96c-17.7 0-32 14.3-32 32v592c0 17.7 14.3 32 32 32h698c13 0 24.8-7.9 29.7-20l134-332c1.5-3.8 2.3-7.9 2.3-12 0-17.7-14.3-32-32-32zM136 256h188.5l119.6 114.4H748V444H238c-13 0-24.8 7.9-29.7 20L136 643.2V256zm635.3 512H159l103.3-256h612.4L771.3 768z" } }] }, "name": "folder-open", "theme": "outlined" };
 const FolderOpenOutlinedSvg = FolderOpenOutlined$2;
 var FolderOpenOutlined = function FolderOpenOutlined2(props, ref) {
@@ -44325,8 +44325,8 @@ var FolderOpenOutlined = function FolderOpenOutlined2(props, ref) {
     icon: FolderOpenOutlinedSvg
   }));
 };
-var RefIcon$4 = /* @__PURE__ */ reactExports.forwardRef(FolderOpenOutlined);
-const FolderOpenOutlined$1 = RefIcon$4;
+var RefIcon$5 = /* @__PURE__ */ reactExports.forwardRef(FolderOpenOutlined);
+const FolderOpenOutlined$1 = RefIcon$5;
 var FolderOutlined$2 = { "icon": { "tag": "svg", "attrs": { "viewBox": "64 64 896 896", "focusable": "false" }, "children": [{ "tag": "path", "attrs": { "d": "M880 298.4H521L403.7 186.2a8.15 8.15 0 00-5.5-2.2H144c-17.7 0-32 14.3-32 32v592c0 17.7 14.3 32 32 32h736c17.7 0 32-14.3 32-32V330.4c0-17.7-14.3-32-32-32zM840 768H184V256h188.5l119.6 114.4H840V768z" } }] }, "name": "folder", "theme": "outlined" };
 const FolderOutlinedSvg = FolderOutlined$2;
 var FolderOutlined = function FolderOutlined2(props, ref) {
@@ -44335,8 +44335,8 @@ var FolderOutlined = function FolderOutlined2(props, ref) {
     icon: FolderOutlinedSvg
   }));
 };
-var RefIcon$3 = /* @__PURE__ */ reactExports.forwardRef(FolderOutlined);
-const FolderOutlined$1 = RefIcon$3;
+var RefIcon$4 = /* @__PURE__ */ reactExports.forwardRef(FolderOutlined);
+const FolderOutlined$1 = RefIcon$4;
 var HolderOutlined$2 = { "icon": { "tag": "svg", "attrs": { "viewBox": "64 64 896 896", "focusable": "false" }, "children": [{ "tag": "path", "attrs": { "d": "M300 276.5a56 56 0 1056-97 56 56 0 00-56 97zm0 284a56 56 0 1056-97 56 56 0 00-56 97zM640 228a56 56 0 10112 0 56 56 0 00-112 0zm0 284a56 56 0 10112 0 56 56 0 00-112 0zM300 844.5a56 56 0 1056-97 56 56 0 00-56 97zM640 796a56 56 0 10112 0 56 56 0 00-112 0z" } }] }, "name": "holder", "theme": "outlined" };
 const HolderOutlinedSvg = HolderOutlined$2;
 var HolderOutlined = function HolderOutlined2(props, ref) {
@@ -44345,8 +44345,8 @@ var HolderOutlined = function HolderOutlined2(props, ref) {
     icon: HolderOutlinedSvg
   }));
 };
-var RefIcon$2 = /* @__PURE__ */ reactExports.forwardRef(HolderOutlined);
-const HolderOutlined$1 = RefIcon$2;
+var RefIcon$3 = /* @__PURE__ */ reactExports.forwardRef(HolderOutlined);
+const HolderOutlined$1 = RefIcon$3;
 var MinusSquareOutlined$2 = { "icon": { "tag": "svg", "attrs": { "viewBox": "64 64 896 896", "focusable": "false" }, "children": [{ "tag": "path", "attrs": { "d": "M328 544h368c4.4 0 8-3.6 8-8v-48c0-4.4-3.6-8-8-8H328c-4.4 0-8 3.6-8 8v48c0 4.4 3.6 8 8 8z" } }, { "tag": "path", "attrs": { "d": "M880 112H144c-17.7 0-32 14.3-32 32v736c0 17.7 14.3 32 32 32h736c17.7 0 32-14.3 32-32V144c0-17.7-14.3-32-32-32zm-40 728H184V184h656v656z" } }] }, "name": "minus-square", "theme": "outlined" };
 const MinusSquareOutlinedSvg = MinusSquareOutlined$2;
 var MinusSquareOutlined = function MinusSquareOutlined2(props, ref) {
@@ -44355,8 +44355,8 @@ var MinusSquareOutlined = function MinusSquareOutlined2(props, ref) {
     icon: MinusSquareOutlinedSvg
   }));
 };
-var RefIcon$1 = /* @__PURE__ */ reactExports.forwardRef(MinusSquareOutlined);
-const MinusSquareOutlined$1 = RefIcon$1;
+var RefIcon$2 = /* @__PURE__ */ reactExports.forwardRef(MinusSquareOutlined);
+const MinusSquareOutlined$1 = RefIcon$2;
 var PlusSquareOutlined$2 = { "icon": { "tag": "svg", "attrs": { "viewBox": "64 64 896 896", "focusable": "false" }, "children": [{ "tag": "path", "attrs": { "d": "M328 544h152v152c0 4.4 3.6 8 8 8h48c4.4 0 8-3.6 8-8V544h152c4.4 0 8-3.6 8-8v-48c0-4.4-3.6-8-8-8H544V328c0-4.4-3.6-8-8-8h-48c-4.4 0-8 3.6-8 8v152H328c-4.4 0-8 3.6-8 8v48c0 4.4 3.6 8 8 8z" } }, { "tag": "path", "attrs": { "d": "M880 112H144c-17.7 0-32 14.3-32 32v736c0 17.7 14.3 32 32 32h736c17.7 0 32-14.3 32-32V144c0-17.7-14.3-32-32-32zm-40 728H184V184h656v656z" } }] }, "name": "plus-square", "theme": "outlined" };
 const PlusSquareOutlinedSvg = PlusSquareOutlined$2;
 var PlusSquareOutlined = function PlusSquareOutlined2(props, ref) {
@@ -44365,8 +44365,18 @@ var PlusSquareOutlined = function PlusSquareOutlined2(props, ref) {
     icon: PlusSquareOutlinedSvg
   }));
 };
-var RefIcon = /* @__PURE__ */ reactExports.forwardRef(PlusSquareOutlined);
-const PlusSquareOutlined$1 = RefIcon;
+var RefIcon$1 = /* @__PURE__ */ reactExports.forwardRef(PlusSquareOutlined);
+const PlusSquareOutlined$1 = RefIcon$1;
+var ReloadOutlined$2 = { "icon": { "tag": "svg", "attrs": { "viewBox": "64 64 896 896", "focusable": "false" }, "children": [{ "tag": "path", "attrs": { "d": "M909.1 209.3l-56.4 44.1C775.8 155.1 656.2 92 521.9 92 290 92 102.3 279.5 102 511.5 101.7 743.7 289.8 932 521.9 932c181.3 0 335.8-115 394.6-276.1 1.5-4.2-.7-8.9-4.9-10.3l-56.7-19.5a8 8 0 00-10.1 4.8c-1.8 5-3.8 10-5.9 14.9-17.3 41-42.1 77.8-73.7 109.4A344.77 344.77 0 01655.9 829c-42.3 17.9-87.4 27-133.8 27-46.5 0-91.5-9.1-133.8-27A341.5 341.5 0 01279 755.2a342.16 342.16 0 01-73.7-109.4c-17.9-42.4-27-87.4-27-133.9s9.1-91.5 27-133.9c17.3-41 42.1-77.8 73.7-109.4 31.6-31.6 68.4-56.4 109.3-73.8 42.3-17.9 87.4-27 133.8-27 46.5 0 91.5 9.1 133.8 27a341.5 341.5 0 01109.3 73.8c9.9 9.9 19.2 20.4 27.8 31.4l-60.2 47a8 8 0 003 14.1l175.6 43c5 1.2 9.9-2.6 9.9-7.7l.8-180.9c-.1-6.6-7.8-10.3-13-6.2z" } }] }, "name": "reload", "theme": "outlined" };
+const ReloadOutlinedSvg = ReloadOutlined$2;
+var ReloadOutlined = function ReloadOutlined2(props, ref) {
+  return /* @__PURE__ */ reactExports.createElement(AntdIcon, _extends({}, props, {
+    ref,
+    icon: ReloadOutlinedSvg
+  }));
+};
+var RefIcon = /* @__PURE__ */ reactExports.forwardRef(ReloadOutlined);
+const ReloadOutlined$1 = RefIcon;
 var EXPAND_COLUMN = {};
 var INTERNAL_HOOKS = "rc-table-internal-hook";
 function createContext(defaultValue) {
@@ -57293,7 +57303,7 @@ class RealtimeClient {
         this.conn = null;
       }
     });
-    __vitePreload(() => import("./browser-3a223358.js").then((n2) => n2.b), true ? [] : void 0).then(({ default: WS }) => {
+    __vitePreload(() => import("./browser-1c5f6f98.js").then((n2) => n2.b), true ? [] : void 0).then(({ default: WS }) => {
       this.conn = new WS(this.endpointURL(), void 0, {
         headers: this.headers
       });
@@ -61794,14 +61804,30 @@ const deleteProduct = async (id2) => {
   }
 };
 const fetchAvailableTables = async () => {
-  return [
-    { id: "product_summary", name: "Products", description: "Product inventory data" },
-    { id: "categories", name: "Categories", description: "Product categories" },
-    { id: "transactions", name: "Transactions", description: "Inventory transactions" },
-    { id: "suppliers", name: "Suppliers", description: "Product suppliers" },
-    { id: "customers", name: "Customers", description: "Customer information" },
-    { id: "orders", name: "Orders", description: "Customer orders" }
-  ];
+  try {
+    const { data, error } = await supabase.from("pg_tables").select("schemaname, tablename").eq("schemaname", "public").order("tablename");
+    if (error)
+      throw error;
+    if (data && data.length > 0) {
+      console.log("Found actual database tables:", data.length);
+      return data.map((table) => ({
+        id: table.tablename,
+        name: table.tablename.split("_").map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(" "),
+        description: `${table.schemaname}.${table.tablename} database table`
+      }));
+    }
+    throw new Error("No tables found in database");
+  } catch (error) {
+    console.log("Using mock tables due to error:", error.message);
+    return [
+      { id: "product_summary", name: "Products", description: "Product inventory data" },
+      { id: "categories", name: "Categories", description: "Product categories" },
+      { id: "transactions", name: "Transactions", description: "Inventory transactions" },
+      { id: "suppliers", name: "Suppliers", description: "Product suppliers" },
+      { id: "customers", name: "Customers", description: "Customer information" },
+      { id: "orders", name: "Orders", description: "Customer orders" }
+    ];
+  }
 };
 const fetchTableData = async (tableName) => {
   try {
@@ -61928,65 +61954,106 @@ const TableSelector = ({ selectedTable, onSelectTable }) => {
   var _a, _b;
   const [tables, setTables] = reactExports.useState([]);
   const [loading, setLoading] = reactExports.useState(true);
-  reactExports.useEffect(() => {
-    const loadTables = async () => {
-      try {
-        const availableTables = await fetchAvailableTables();
-        setTables(availableTables);
-        if (!selectedTable && availableTables.length > 0) {
+  const loadTables = async () => {
+    setLoading(true);
+    try {
+      const availableTables = await fetchAvailableTables();
+      setTables(availableTables);
+      if (!selectedTable && availableTables.length > 0) {
+        onSelectTable(availableTables[0].id);
+      }
+      if (selectedTable && !availableTables.find((t2) => t2.id === selectedTable)) {
+        message$1.warning("The previously selected table is no longer available");
+        if (availableTables.length > 0) {
           onSelectTable(availableTables[0].id);
         }
-      } catch (error) {
-        console.error("Error loading tables:", error);
-      } finally {
-        setLoading(false);
       }
-    };
+    } catch (error) {
+      console.error("Error loading tables:", error);
+      message$1.error("Failed to load database tables");
+    } finally {
+      setLoading(false);
+    }
+  };
+  reactExports.useEffect(() => {
     loadTables();
   }, []);
   return /* @__PURE__ */ jsxRuntimeExports.jsxs(
     "div",
     {
       style: {
-        border: "1px solid #d9d9d9",
+        border: "1px solid var(--border-color, #d9d9d9)",
         borderRadius: "8px",
         marginBottom: 16,
-        background: "white",
-        padding: "16px"
+        backgroundColor: "var(--component-background, #fff)",
+        color: "var(--text-color, rgba(0, 0, 0, 0.85))",
+        padding: "16px",
+        boxShadow: "0 2px 8px rgba(0, 0, 0, 0.05)"
       },
       children: [
         /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: {
           marginBottom: 12,
-          borderBottom: "1px solid #f0f0f0",
+          borderBottom: "1px solid var(--border-color-split, #f0f0f0)",
           paddingBottom: 8,
           display: "flex",
-          alignItems: "center"
+          alignItems: "center",
+          justifyContent: "space-between"
         }, children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(DatabaseOutlined$1, { style: { marginRight: 8 } }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { style: { fontWeight: "bold" }, children: "Database Tables" })
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { display: "flex", alignItems: "center" }, children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx(DatabaseOutlined$1, { style: { marginRight: 8, color: "var(--primary-color, #1890ff)" } }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { style: { fontWeight: "bold" }, children: "Database Tables" })
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(
+            "div",
+            {
+              onClick: loadTables,
+              style: {
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                padding: "4px",
+                borderRadius: "4px",
+                color: "var(--text-color-secondary, rgba(0, 0, 0, 0.45))"
+              },
+              title: "Refresh database tables",
+              children: /* @__PURE__ */ jsxRuntimeExports.jsx(ReloadOutlined$1, { spin: loading })
+            }
+          )
         ] }),
         loading ? /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { textAlign: "center", padding: "20px 0" }, children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx(Spin$1, {}),
           /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { marginTop: 8 }, children: "Loading tables..." })
         ] }) : /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Title, { level: 5, children: "Select Table" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Title, { level: 5, style: { color: "var(--heading-color, rgba(0, 0, 0, 0.85))" }, children: "Select Table" }),
           /* @__PURE__ */ jsxRuntimeExports.jsx(
             Select$1,
             {
               style: { width: "100%", marginBottom: 16 },
               placeholder: "Select a table",
               value: selectedTable,
-              onChange: onSelectTable,
+              onChange: (value) => {
+                var _a2;
+                onSelectTable(value);
+                message$1.info(`Loading data from ${((_a2 = tables.find((t2) => t2.id === value)) == null ? void 0 : _a2.name) || value} table...`);
+              },
               loading,
+              dropdownStyle: {
+                backgroundColor: "var(--component-background, #fff)",
+                color: "var(--text-color, rgba(0, 0, 0, 0.85))"
+              },
               children: tables.map((table) => /* @__PURE__ */ jsxRuntimeExports.jsx(Option$1, { value: table.id, children: /* @__PURE__ */ jsxRuntimeExports.jsx(Tooltip$1, { title: table.description, children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { children: table.name }) }) }, table.id))
             }
           ),
-          selectedTable && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsxs(Text, { type: "secondary", children: [
+          selectedTable && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: {
+            backgroundColor: "var(--item-hover-bg, rgba(0, 0, 0, 0.02))",
+            padding: "8px",
+            borderRadius: "4px"
+          }, children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs(Text, { style: { color: "var(--text-color-secondary, rgba(0, 0, 0, 0.45))" }, children: [
               "Viewing table: ",
-              /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { strong: true, children: ((_a = tables.find((t2) => t2.id === selectedTable)) == null ? void 0 : _a.name) || selectedTable })
+              /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { strong: true, style: { color: "var(--text-color, rgba(0, 0, 0, 0.85))" }, children: ((_a = tables.find((t2) => t2.id === selectedTable)) == null ? void 0 : _a.name) || selectedTable })
             ] }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { marginTop: 4 }, children: /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { type: "secondary", children: ((_b = tables.find((t2) => t2.id === selectedTable)) == null ? void 0 : _b.description) || "Table data" }) })
+            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { marginTop: 4 }, children: /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { style: { color: "var(--text-color-secondary, rgba(0, 0, 0, 0.45))" }, children: ((_b = tables.find((t2) => t2.id === selectedTable)) == null ? void 0 : _b.description) || "Table data" }) })
           ] })
         ] })
       ]
@@ -62020,25 +62087,26 @@ const DataTableExample = () => {
       loadTableColumns();
     }
   }, [selectedTable]);
-  reactExports.useEffect(() => {
-    const loadTableData = async () => {
-      setLoading(true);
-      try {
-        if (selectedTable === "product_summary" || selectedTable === "products") {
-          const categoriesData = await fetchCategories();
-          setCategories(categoriesData);
-        }
-        const data = await fetchTableData(selectedTable);
-        setTableData(data);
-      } catch (error) {
-        console.error("Error loading table data:", error);
-        message$1.error("Failed to load table data");
-      } finally {
-        setLoading(false);
+  const loadTableData = async (tableId) => {
+    setLoading(true);
+    try {
+      if (tableId === "product_summary" || tableId === "products") {
+        const categoriesData = await fetchCategories();
+        setCategories(categoriesData);
       }
-    };
+      const data = await fetchTableData(tableId);
+      setTableData(data);
+      console.log(`Loaded ${(data == null ? void 0 : data.length) || 0} rows from ${tableId} table`);
+    } catch (error) {
+      console.error(`Error loading ${tableId} table data:`, error);
+      message$1.error(`Failed to load ${tableId} table data`);
+    } finally {
+      setLoading(false);
+    }
+  };
+  reactExports.useEffect(() => {
     if (selectedTable) {
-      loadTableData();
+      loadTableData(selectedTable);
     }
   }, [selectedTable]);
   reactExports.useEffect(() => {
@@ -62163,17 +62231,21 @@ const DataTableExample = () => {
   return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "sql-explorer", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "explorer-container", style: { display: "flex", width: "100%" }, children: [
     /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "explorer-sidebar", style: {
       width: "300px",
-      background: "#fff",
-      borderRight: "1px solid #f0f0f0",
+      background: "var(--component-background, #fff)",
+      borderRight: "1px solid var(--border-color-split, #f0f0f0)",
       padding: "20px 16px",
       height: "calc(100vh - 150px)",
       overflowY: "auto"
     }, children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("h2", { style: { display: "flex", alignItems: "center" }, children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx(DatabaseOutlined$1, { style: { marginRight: 10 } }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("h2", { style: {
+        display: "flex",
+        alignItems: "center",
+        color: "var(--heading-color, rgba(0, 0, 0, 0.85))"
+      }, children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(DatabaseOutlined$1, { style: { marginRight: 10, color: "var(--primary-color, #1890ff)" } }),
         "SQL Explorer"
       ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("p", { children: "View and manage all tables in your PostgreSQL database" }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("p", { style: { color: "var(--text-color-secondary, rgba(0, 0, 0, 0.45))" }, children: "View and manage all tables in your PostgreSQL database" }),
       /* @__PURE__ */ jsxRuntimeExports.jsx(
         TableSelector,
         {
@@ -62182,7 +62254,7 @@ const DataTableExample = () => {
         }
       ),
       (selectedTable === "product_summary" || selectedTable === "products") && /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { children: "Filters" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { style: { color: "var(--heading-color, rgba(0, 0, 0, 0.85))" }, children: "Filters" }),
         /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { marginBottom: 16 }, children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { marginBottom: 8 }, children: /* @__PURE__ */ jsxRuntimeExports.jsx(
             Input$1,
@@ -62192,7 +62264,14 @@ const DataTableExample = () => {
               onChange: (e2) => setSearchTerm(e2.target.value),
               onPressEnter: handleSearch,
               style: { width: "100%" },
-              suffix: /* @__PURE__ */ jsxRuntimeExports.jsx(Button$2, { type: "text", icon: /* @__PURE__ */ jsxRuntimeExports.jsx(SearchOutlined$1, {}), onClick: handleSearch })
+              suffix: /* @__PURE__ */ jsxRuntimeExports.jsx(
+                Button$2,
+                {
+                  type: "text",
+                  icon: /* @__PURE__ */ jsxRuntimeExports.jsx(SearchOutlined$1, {}),
+                  onClick: handleSearch
+                }
+              )
             }
           ) }),
           /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { marginBottom: 8 }, children: /* @__PURE__ */ jsxRuntimeExports.jsx(
@@ -62224,33 +62303,75 @@ const DataTableExample = () => {
           ) })
         ] })
       ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { margin: "24px 0", padding: "16px", background: "#f0f2f5", borderRadius: "8px", border: "1px solid #d9d9d9" }, children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { children: "Database Integration" }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: {
+        margin: "24px 0",
+        padding: "16px",
+        background: "var(--item-hover-bg, rgba(0, 0, 0, 0.02))",
+        borderRadius: "8px",
+        border: "1px solid var(--border-color-split, #f0f0f0)",
+        color: "var(--text-color-secondary, rgba(0, 0, 0, 0.45))"
+      }, children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { style: { color: "var(--heading-color, rgba(0, 0, 0, 0.85))" }, children: "Database Integration" }),
         /* @__PURE__ */ jsxRuntimeExports.jsx("p", { children: "This component connects to PostgreSQL database with:" }),
         /* @__PURE__ */ jsxRuntimeExports.jsxs("ul", { children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx("li", { children: "Dynamic table selection" }),
           /* @__PURE__ */ jsxRuntimeExports.jsx("li", { children: "Automatic schema detection" }),
           /* @__PURE__ */ jsxRuntimeExports.jsx("li", { children: "CRUD operations" }),
           /* @__PURE__ */ jsxRuntimeExports.jsx("li", { children: "Filtering and search" })
-        ] })
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: {
+          marginTop: 16,
+          display: "flex",
+          justifyContent: "center"
+        }, children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+          Button$2,
+          {
+            type: "primary",
+            onClick: () => loadTableData(selectedTable),
+            loading,
+            children: "Refresh Table Data"
+          }
+        ) })
       ] })
     ] }),
-    /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "explorer-content", style: {
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "explorer-content", style: {
       flex: 1,
-      padding: "20px 24px"
-    }, children: /* @__PURE__ */ jsxRuntimeExports.jsx(
-      DataTable,
-      {
-        tableName: getTableDisplayName(),
-        columns,
-        dataSource: tableData.map((item) => ({ ...item, key: item.id })),
-        onSave: handleSave,
-        onDelete: handleDelete,
-        onAdd: handleAdd,
-        loading,
-        formulaEnabled: selectedTable === "product_summary"
-      }
-    ) })
+      padding: "20px 24px",
+      background: "var(--body-background, #fff)",
+      color: "var(--text-color, rgba(0, 0, 0, 0.85))"
+    }, children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx(
+        DataTable,
+        {
+          tableName: getTableDisplayName(),
+          columns,
+          dataSource: tableData.map((item) => ({ ...item, key: item.id })),
+          onSave: handleSave,
+          onDelete: handleDelete,
+          onAdd: handleAdd,
+          loading,
+          formulaEnabled: selectedTable === "product_summary"
+        }
+      ),
+      tableData.length === 0 && !loading && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: {
+        textAlign: "center",
+        padding: "40px 0",
+        color: "var(--text-color-secondary, rgba(0, 0, 0, 0.45))"
+      }, children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { fontSize: "72px", lineHeight: "72px", marginBottom: "16px" }, children: "📋" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { style: { color: "var(--heading-color, rgba(0, 0, 0, 0.85))" }, children: "No data found" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("p", { children: "This table appears to be empty or not available." }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(
+          Button$2,
+          {
+            type: "primary",
+            onClick: () => loadTableData(selectedTable),
+            style: { marginTop: "16px" },
+            children: "Refresh Data"
+          }
+        )
+      ] })
+    ] })
   ] }) });
 };
 const App$1 = "";
