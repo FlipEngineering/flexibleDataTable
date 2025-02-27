@@ -57303,7 +57303,7 @@ class RealtimeClient {
         this.conn = null;
       }
     });
-    __vitePreload(() => import("./browser-c64c284f.js").then((n2) => n2.b), true ? [] : void 0).then(({ default: WS }) => {
+    __vitePreload(() => import("./browser-7c837048.js").then((n2) => n2.b), true ? [] : void 0).then(({ default: WS }) => {
       this.conn = new WS(this.endpointURL(), void 0, {
         headers: this.headers
       });
@@ -62200,14 +62200,43 @@ const DataTableExample = () => {
   const [selectedStatus, setSelectedStatus] = reactExports.useState(null);
   const [selectedTable, setSelectedTable] = reactExports.useState("product_summary");
   const [columns, setColumns] = reactExports.useState([]);
+  const [debugLogs, setDebugLogs] = reactExports.useState([]);
+  const [showDebugConsole, setShowDebugConsole] = reactExports.useState(true);
+  const logDebug = (message2, type4 = "info") => {
+    const timestamp = (/* @__PURE__ */ new Date()).toISOString().split("T")[1].split(".")[0];
+    const newLog = {
+      id: Date.now(),
+      timestamp,
+      message: message2,
+      type: type4
+      // 'info', 'success', 'error', 'warning'
+    };
+    setDebugLogs((prevLogs) => [newLog, ...prevLogs].slice(0, 50));
+    switch (type4) {
+      case "error":
+        console.error(`[${timestamp}] ${message2}`);
+        break;
+      case "warning":
+        console.warn(`[${timestamp}] ${message2}`);
+        break;
+      case "success":
+        console.log(`%c[${timestamp}] ${message2}`, "color: green");
+        break;
+      default:
+        console.log(`[${timestamp}] ${message2}`);
+    }
+  };
   reactExports.useEffect(() => {
     const loadTableColumns = async () => {
       setLoading(true);
+      logDebug(`Loading columns for table: ${selectedTable}`, "info");
       try {
         const tableColumns = await getTableColumns(selectedTable);
         setColumns(tableColumns);
+        logDebug(`Loaded ${tableColumns.length} columns for ${selectedTable}`, "success");
       } catch (error) {
-        console.error("Error loading table columns:", error);
+        const errorMsg = `Error loading table columns: ${error.message}`;
+        logDebug(errorMsg, "error");
         message$1.error("Failed to load table structure");
       } finally {
         setLoading(false);
@@ -62219,16 +62248,28 @@ const DataTableExample = () => {
   }, [selectedTable]);
   const loadTableData = async (tableId) => {
     setLoading(true);
+    logDebug(`Loading data from table: ${tableId}`, "info");
     try {
       if (tableId === "product_summary" || tableId === "products") {
+        logDebug("Fetching categories for product filtering", "info");
         const categoriesData = await fetchCategories();
         setCategories(categoriesData);
+        logDebug(`Loaded ${(categoriesData == null ? void 0 : categoriesData.length) || 0} categories`, "success");
       }
       const data = await fetchTableData(tableId);
       setTableData(data);
-      console.log(`Loaded ${(data == null ? void 0 : data.length) || 0} rows from ${tableId} table`);
+      const logMsg = `Loaded ${(data == null ? void 0 : data.length) || 0} rows from ${tableId} table`;
+      logDebug(logMsg, "success");
+      if (data && data.length > 0) {
+        const sampleRow = data[0];
+        const fields = Object.keys(sampleRow).join(", ");
+        logDebug(`Table schema: ${fields}`, "info");
+      } else {
+        logDebug(`Table ${tableId} is empty or inaccessible`, "warning");
+      }
     } catch (error) {
-      console.error(`Error loading ${tableId} table data:`, error);
+      const errorMsg = `Error loading ${tableId} table data: ${error.message}`;
+      logDebug(errorMsg, "error");
       message$1.error(`Failed to load ${tableId} table data`);
     } finally {
       setLoading(false);
@@ -62284,11 +62325,21 @@ const DataTableExample = () => {
     }
   };
   const handleTableChange = (tableId) => {
+    logDebug(`Switching to table: ${tableId}`, "info");
     setSelectedTable(tableId);
     setSearchTerm("");
     setSelectedCategory(null);
     setSelectedStatus(null);
   };
+  reactExports.useEffect(() => {
+    const mode = "Production";
+    logDebug(`Environment: ${mode} mode`, "info");
+    const hasSupabaseUrl = Boolean("https://bskffxgprfmjnmwunkck.supabase.co");
+    const hasSupabaseKey = Boolean("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJza2ZmeGdwcmZtam5td3Vua2NrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA2OTEzMzcsImV4cCI6MjA1NjI2NzMzN30.BsxrbwLvZLS3NEkm-TK4SlGi2sw7BkmjqCPFsluvFKY");
+    logDebug(`Supabase URL defined: ${hasSupabaseUrl}`, hasSupabaseUrl ? "success" : "warning");
+    logDebug(`Supabase Key defined: ${hasSupabaseKey}`, hasSupabaseKey ? "success" : "warning");
+    logDebug(`Browser: ${navigator.userAgent}`, "info");
+  }, []);
   const handleSave = async (values, key, newData) => {
     try {
       if (selectedTable === "product_summary" || selectedTable === "products") {
@@ -62358,159 +62409,254 @@ const DataTableExample = () => {
         return selectedTable.charAt(0).toUpperCase() + selectedTable.slice(1);
     }
   };
-  return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "sql-explorer", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "explorer-container", style: { display: "flex", width: "100%" }, children: [
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "explorer-sidebar", style: {
-      width: "300px",
-      background: "var(--component-background, #fff)",
-      borderRight: "1px solid var(--border-color-split, #f0f0f0)",
-      padding: "20px 16px",
-      height: "calc(100vh - 150px)",
-      overflowY: "auto"
-    }, children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("h2", { style: {
-        display: "flex",
-        alignItems: "center",
-        color: "var(--heading-color, rgba(0, 0, 0, 0.85))"
+  const toggleDebugConsole = () => {
+    setShowDebugConsole((prev2) => !prev2);
+    logDebug(`Debug console ${showDebugConsole ? "hidden" : "shown"}`, "info");
+  };
+  const clearDebugLogs = () => {
+    setDebugLogs([]);
+    logDebug("Debug logs cleared", "info");
+  };
+  return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "sql-explorer", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "explorer-container", style: { display: "flex", width: "100%", flexDirection: "column" }, children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { display: "flex", flex: 1 }, children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "explorer-sidebar", style: {
+        width: "300px",
+        background: "var(--component-background, #fff)",
+        borderRight: "1px solid var(--border-color-split, #f0f0f0)",
+        padding: "20px 16px",
+        height: "calc(100vh - 250px)",
+        overflowY: "auto"
       }, children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx(DatabaseOutlined$1, { style: { marginRight: 10, color: "var(--primary-color, #1890ff)" } }),
-        "SQL Explorer"
-      ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("p", { style: { color: "var(--text-color-secondary, rgba(0, 0, 0, 0.45))" }, children: "View and manage all tables in your PostgreSQL database" }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx(
-        TableSelector,
-        {
-          selectedTable,
-          onSelectTable: handleTableChange
-        }
-      ),
-      (selectedTable === "product_summary" || selectedTable === "products") && /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { style: { color: "var(--heading-color, rgba(0, 0, 0, 0.85))" }, children: "Filters" }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { marginBottom: 16 }, children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { marginBottom: 8 }, children: /* @__PURE__ */ jsxRuntimeExports.jsx(
-            Input$1,
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("h2", { style: {
+          display: "flex",
+          alignItems: "center",
+          color: "var(--heading-color, rgba(0, 0, 0, 0.85))"
+        }, children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx(DatabaseOutlined$1, { style: { marginRight: 10, color: "var(--primary-color, #1890ff)" } }),
+          "SQL Explorer"
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("p", { style: { color: "var(--text-color-secondary, rgba(0, 0, 0, 0.45))" }, children: "View and manage all tables in your PostgreSQL database" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(
+          TableSelector,
+          {
+            selectedTable,
+            onSelectTable: handleTableChange
+          }
+        ),
+        (selectedTable === "product_summary" || selectedTable === "products") && /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { style: { color: "var(--heading-color, rgba(0, 0, 0, 0.85))" }, children: "Filters" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { marginBottom: 16 }, children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { marginBottom: 8 }, children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+              Input$1,
+              {
+                placeholder: "Search products...",
+                value: searchTerm,
+                onChange: (e2) => setSearchTerm(e2.target.value),
+                onPressEnter: handleSearch,
+                style: { width: "100%" },
+                suffix: /* @__PURE__ */ jsxRuntimeExports.jsx(
+                  Button$2,
+                  {
+                    type: "text",
+                    icon: /* @__PURE__ */ jsxRuntimeExports.jsx(SearchOutlined$1, {}),
+                    onClick: handleSearch
+                  }
+                )
+              }
+            ) }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { marginBottom: 8 }, children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+              Select$1,
+              {
+                placeholder: "Filter by Category",
+                allowClear: true,
+                style: { width: "100%" },
+                onChange: (value) => setSelectedCategory(value),
+                value: selectedCategory,
+                children: categories.map((category) => /* @__PURE__ */ jsxRuntimeExports.jsx(Option2, { value: category.id, children: category.name }, category.id))
+              }
+            ) }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { marginBottom: 8 }, children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
+              Select$1,
+              {
+                placeholder: "Filter by Status",
+                allowClear: true,
+                style: { width: "100%" },
+                onChange: (value) => setSelectedStatus(value),
+                value: selectedStatus,
+                children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(Option2, { value: "active", children: "Active" }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(Option2, { value: "discontinued", children: "Discontinued" }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(Option2, { value: "out_of_stock", children: "Out of Stock" }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(Option2, { value: "backordered", children: "Backordered" })
+                ]
+              }
+            ) })
+          ] })
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: {
+          margin: "24px 0",
+          padding: "16px",
+          background: "var(--item-hover-bg, rgba(0, 0, 0, 0.02))",
+          borderRadius: "8px",
+          border: "1px solid var(--border-color-split, #f0f0f0)",
+          color: "var(--text-color-secondary, rgba(0, 0, 0, 0.45))"
+        }, children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { style: { color: "var(--heading-color, rgba(0, 0, 0, 0.85))" }, children: "Database Integration" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("p", { children: "This component connects to PostgreSQL database with:" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("ul", { children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("li", { children: "Dynamic table selection" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("li", { children: "Automatic schema detection" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("li", { children: "CRUD operations" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("li", { children: "Filtering and search" })
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: {
+            marginTop: 16,
+            display: "flex",
+            justifyContent: "center"
+          }, children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+            Button$2,
             {
-              placeholder: "Search products...",
-              value: searchTerm,
-              onChange: (e2) => setSearchTerm(e2.target.value),
-              onPressEnter: handleSearch,
-              style: { width: "100%" },
-              suffix: /* @__PURE__ */ jsxRuntimeExports.jsx(
-                Button$2,
-                {
-                  type: "text",
-                  icon: /* @__PURE__ */ jsxRuntimeExports.jsx(SearchOutlined$1, {}),
-                  onClick: handleSearch
-                }
-              )
-            }
-          ) }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { marginBottom: 8 }, children: /* @__PURE__ */ jsxRuntimeExports.jsx(
-            Select$1,
-            {
-              placeholder: "Filter by Category",
-              allowClear: true,
-              style: { width: "100%" },
-              onChange: (value) => setSelectedCategory(value),
-              value: selectedCategory,
-              children: categories.map((category) => /* @__PURE__ */ jsxRuntimeExports.jsx(Option2, { value: category.id, children: category.name }, category.id))
-            }
-          ) }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { marginBottom: 8 }, children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
-            Select$1,
-            {
-              placeholder: "Filter by Status",
-              allowClear: true,
-              style: { width: "100%" },
-              onChange: (value) => setSelectedStatus(value),
-              value: selectedStatus,
-              children: [
-                /* @__PURE__ */ jsxRuntimeExports.jsx(Option2, { value: "active", children: "Active" }),
-                /* @__PURE__ */ jsxRuntimeExports.jsx(Option2, { value: "discontinued", children: "Discontinued" }),
-                /* @__PURE__ */ jsxRuntimeExports.jsx(Option2, { value: "out_of_stock", children: "Out of Stock" }),
-                /* @__PURE__ */ jsxRuntimeExports.jsx(Option2, { value: "backordered", children: "Backordered" })
-              ]
+              type: "primary",
+              onClick: () => loadTableData(selectedTable),
+              loading,
+              children: "Refresh Table Data"
             }
           ) })
         ] })
       ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: {
-        margin: "24px 0",
-        padding: "16px",
-        background: "var(--item-hover-bg, rgba(0, 0, 0, 0.02))",
-        borderRadius: "8px",
-        border: "1px solid var(--border-color-split, #f0f0f0)",
-        color: "var(--text-color-secondary, rgba(0, 0, 0, 0.45))"
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "explorer-content", style: {
+        flex: 1,
+        padding: "20px 24px",
+        background: "var(--body-background, #fff)",
+        color: "var(--text-color, rgba(0, 0, 0, 0.85))"
       }, children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { style: { color: "var(--heading-color, rgba(0, 0, 0, 0.85))" }, children: "Database Integration" }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("p", { children: "This component connects to PostgreSQL database with:" }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("ul", { children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("li", { children: "Dynamic table selection" }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("li", { children: "Automatic schema detection" }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("li", { children: "CRUD operations" }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("li", { children: "Filtering and search" })
-        ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: {
-          marginTop: 16,
-          display: "flex",
-          justifyContent: "center"
-        }, children: /* @__PURE__ */ jsxRuntimeExports.jsx(
-          Button$2,
+        /* @__PURE__ */ jsxRuntimeExports.jsx(
+          DataTable,
           {
-            type: "primary",
-            onClick: () => loadTableData(selectedTable),
+            tableName: getTableDisplayName(),
+            columns,
+            dataSource: tableData.map((item) => ({ ...item, key: item.id })),
+            onSave: handleSave,
+            onDelete: handleDelete,
+            onAdd: handleAdd,
             loading,
-            children: "Refresh Table Data"
+            formulaEnabled: selectedTable === "product_summary"
           }
-        ) })
+        ),
+        tableData.length === 0 && !loading && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: {
+          textAlign: "center",
+          padding: "40px 0",
+          color: "var(--text-color-secondary, rgba(0, 0, 0, 0.45))"
+        }, children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { fontSize: "72px", lineHeight: "72px", marginBottom: "16px" }, children: "📋" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { style: { color: "var(--heading-color, rgba(0, 0, 0, 0.85))" }, children: "No data found" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("p", { children: "This table appears to be empty or not available." }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { marginBottom: "16px" }, children: selectedTable && selectedTable.includes("DUMMY") && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: {
+            display: "inline-block",
+            margin: "8px 0",
+            padding: "4px 12px",
+            backgroundColor: "var(--warning-color, #faad14)",
+            color: "var(--text-color-inverse, #fff)",
+            borderRadius: "4px",
+            fontWeight: "bold"
+          }, children: "DUMMY DATA MODE ACTIVE" }) }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(
+            Button$2,
+            {
+              type: "primary",
+              onClick: () => loadTableData(selectedTable),
+              style: { marginTop: "8px" },
+              children: "Refresh Data"
+            }
+          )
+        ] })
       ] })
     ] }),
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "explorer-content", style: {
-      flex: 1,
-      padding: "20px 24px",
-      background: "var(--body-background, #fff)",
-      color: "var(--text-color, rgba(0, 0, 0, 0.85))"
+    showDebugConsole && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: {
+      borderTop: "1px solid var(--border-color-split, #f0f0f0)",
+      backgroundColor: "var(--component-background, #000)",
+      color: "var(--text-color-inverse, #fff)",
+      padding: "8px",
+      height: "150px",
+      overflowY: "auto",
+      fontFamily: "monospace",
+      fontSize: "12px"
     }, children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx(
-        DataTable,
-        {
-          tableName: getTableDisplayName(),
-          columns,
-          dataSource: tableData.map((item) => ({ ...item, key: item.id })),
-          onSave: handleSave,
-          onDelete: handleDelete,
-          onAdd: handleAdd,
-          loading,
-          formulaEnabled: selectedTable === "product_summary"
-        }
-      ),
-      tableData.length === 0 && !loading && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: {
-        textAlign: "center",
-        padding: "40px 0",
-        color: "var(--text-color-secondary, rgba(0, 0, 0, 0.45))"
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: {
+        display: "flex",
+        justifyContent: "space-between",
+        marginBottom: "8px",
+        position: "sticky",
+        top: 0,
+        backgroundColor: "var(--component-background, #000)",
+        padding: "4px",
+        zIndex: 1
       }, children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { fontSize: "72px", lineHeight: "72px", marginBottom: "16px" }, children: "📋" }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { style: { color: "var(--heading-color, rgba(0, 0, 0, 0.85))" }, children: "No data found" }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("p", { children: "This table appears to be empty or not available." }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { marginBottom: "16px" }, children: selectedTable && selectedTable.includes("DUMMY") && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: {
-          display: "inline-block",
-          margin: "8px 0",
-          padding: "4px 12px",
-          backgroundColor: "var(--warning-color, #faad14)",
-          color: "var(--text-color-inverse, #fff)",
-          borderRadius: "4px",
-          fontWeight: "bold"
-        }, children: "DUMMY DATA MODE ACTIVE" }) }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(
-          Button$2,
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { style: { fontWeight: "bold" }, children: "Debug Console" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { style: { marginLeft: "12px", opacity: 0.7 }, children: [
+            debugLogs.length,
+            " logs"
+          ] })
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx(
+            Button$2,
+            {
+              size: "small",
+              onClick: clearDebugLogs,
+              style: { marginRight: "8px" },
+              children: "Clear"
+            }
+          ),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(
+            Button$2,
+            {
+              size: "small",
+              onClick: toggleDebugConsole,
+              children: "Hide"
+            }
+          )
+        ] })
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+        debugLogs.map((log) => /* @__PURE__ */ jsxRuntimeExports.jsxs(
+          "div",
           {
-            type: "primary",
-            onClick: () => loadTableData(selectedTable),
-            style: { marginTop: "8px" },
-            children: "Refresh Data"
-          }
-        )
+            style: {
+              padding: "2px 0",
+              color: log.type === "error" ? "#ff4d4f" : log.type === "warning" ? "#faad14" : log.type === "success" ? "#52c41a" : "#fff"
+            },
+            children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { style: { opacity: 0.7, marginRight: "8px" }, children: [
+                "[",
+                log.timestamp,
+                "]"
+              ] }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: log.message })
+            ]
+          },
+          log.id
+        )),
+        debugLogs.length === 0 && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { opacity: 0.5, textAlign: "center", padding: "20px 0" }, children: "No logs to display" })
       ] })
-    ] })
+    ] }),
+    !showDebugConsole && /* @__PURE__ */ jsxRuntimeExports.jsx(
+      Button$2,
+      {
+        type: "primary",
+        size: "small",
+        onClick: toggleDebugConsole,
+        style: {
+          position: "fixed",
+          bottom: "10px",
+          right: "10px",
+          opacity: 0.8,
+          zIndex: 1e3
+        },
+        children: "Show Debug Console"
+      }
+    )
   ] }) });
 };
 const App$1 = "";
