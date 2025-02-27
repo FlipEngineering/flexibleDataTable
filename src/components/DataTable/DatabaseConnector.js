@@ -204,12 +204,31 @@ const supabase = getSupabaseClient();
  */
 export const fetchCategories = async () => {
   try {
-    // First try the correct schema name
-    const { data, error } = await supabase
+    // First try the public schema
+    let { data, error } = await supabase
       .from('categories')
       .select('*')
       .order('name', { ascending: true });
       
+    // If that fails, try the inventory schema
+    if (error) {
+      console.log('Trying inventory.categories instead...');
+      
+      try {
+        const inventoryResult = await supabase
+          .from('inventory.categories')
+          .select('*')
+          .order('name', { ascending: true });
+          
+        if (!inventoryResult.error) {
+          data = inventoryResult.data;
+          error = null;
+        }
+      } catch (inventoryError) {
+        // Just continue with the original error
+      }
+    }
+    
     if (error) throw error;
     return data;
   } catch (e) {
@@ -227,9 +246,9 @@ export const fetchCategories = async () => {
  */
 export const fetchProducts = async (filters = {}, orderBy = 'name', ascending = true) => {
   try {
-    // Start building query
+    // First try without schema prefix (public schema)
     let query = supabase
-      .from('product_summary')  // Try without schema prefix
+      .from('product_summary')
       .select('*');
       
     // Apply filters if provided
@@ -244,7 +263,39 @@ export const fetchProducts = async (filters = {}, orderBy = 'name', ascending = 
     // Apply ordering
     query = query.order(orderBy, { ascending });
     
-    const { data, error } = await query;
+    let { data, error } = await query;
+    
+    // If that fails, try the inventory schema
+    if (error) {
+      console.log('Trying inventory.product_summary instead...');
+      
+      try {
+        let inventoryQuery = supabase
+          .from('inventory.product_summary')
+          .select('*');
+          
+        // Apply the same filters
+        if (filters.category_id) {
+          inventoryQuery = inventoryQuery.eq('category_id', filters.category_id);
+        }
+        
+        if (filters.status) {
+          inventoryQuery = inventoryQuery.eq('status', filters.status);
+        }
+        
+        // Apply ordering
+        inventoryQuery = inventoryQuery.order(orderBy, { ascending });
+        
+        const inventoryResult = await inventoryQuery;
+          
+        if (!inventoryResult.error) {
+          data = inventoryResult.data;
+          error = null;
+        }
+      } catch (inventoryError) {
+        // Just continue with the original error
+      }
+    }
     
     if (error) throw error;
     console.log('Fetched real products from Supabase:', data?.length || 0);
@@ -528,31 +579,66 @@ export const fetchAvailableTables = async () => {
     
     console.log('✅ Supabase connection works!');
     
-    // Try to get all tables from the database
-    // Check common tables that anon keys typically can access
-    const tablesToCheck = [
-      // Common table names in Supabase projects
-      'todos', 'users', 'profiles', 'settings', 'posts', 'comments',
-      'products', 'categories', 'orders', 'customers', 'items',
-      
-      // Our specific table names from earlier checks
-      'product_summary', 'transactions', 'suppliers'
-    ];
+    // First try to discover all available tables using SQL
+    console.log('🔍 Querying for tables in all schemas...');
     
-    console.log(`Checking ${tablesToCheck.length} possible tables...`);
-    
-    // Try each table with simpler permissions
     const accessibleTables = [];
     
-    // First try to access each potential table directly
-    for (const tableName of tablesToCheck) {
+    try {
+      // Try to run SQL to list all tables with schemas
+      if (typeof supabase.rpc === 'function') {
+        const { data: schemaData, error: schemaError } = await supabase
+          .rpc('get_all_tables');
+        
+        if (!schemaError && schemaData && schemaData.length > 0) {
+          console.log(`✅ Found ${schemaData.length} tables via SQL query`);
+          
+          // Process returned tables
+          for (const table of schemaData) {
+            const fullTableName = table.schema_name === 'public' 
+              ? table.table_name 
+              : `${table.schema_name}.${table.table_name}`;
+              
+            accessibleTables.push({
+              id: fullTableName,
+              name: table.table_name
+                .split('_')
+                .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                .join(' '),
+              description: `${table.schema_name} schema`,
+              hasData: true
+            });
+          }
+          
+          // We found tables via SQL, return early
+          return accessibleTables;
+        } else {
+          console.log('SQL query failed, trying direct table access next');
+        }
+      }
+    } catch (e) {
+      console.log('SQL query for tables not available:', e.message);
+    }
+    
+    // If SQL query didn't work, try direct access to common tables
+    console.log('🔍 Trying direct table access in inventory schema...');
+    
+    // First try the "inventory" schema
+    const inventoryTables = [
+      'products', 'categories', 'orders', 'customers', 
+      'items', 'product_summary', 'transactions', 'suppliers'
+    ];
+    
+    // Try the inventory schema first
+    for (const tableName of inventoryTables) {
+      const fullTableName = `inventory.${tableName}`;
       try {
-        // Just try to get a single row to see if the table exists and is accessible
+        // Try to get a single row to see if the table exists in inventory schema
         let data, error;
         
         try {
           const result = await supabase
-            .from(tableName)
+            .from(fullTableName)
             .select('*')
             .limit(1);
           
@@ -563,22 +649,72 @@ export const fetchAvailableTables = async () => {
         }
         
         if (!error) {
-          // Table exists and is accessible
+          // Table exists and is accessible in inventory schema
           accessibleTables.push({
-            id: tableName,
+            id: fullTableName,
             name: tableName
               .split('_')
               .map(word => word.charAt(0).toUpperCase() + word.slice(1))
               .join(' '),
-            description: `${tableName} database table`,
+            description: `Inventory schema`,
             hasData: data && data.length > 0
           });
           
-          console.log(`✅ Found accessible table: ${tableName}`);
+          console.log(`✅ Found accessible table: ${fullTableName}`);
         }
       } catch (e) {
-        // Skip tables we can't access
-        console.log(`Checking table "${tableName}"...`);
+        console.log(`Checking table "${fullTableName}"...`);
+      }
+    }
+    
+    // If no tables found in inventory schema, try public schema
+    if (accessibleTables.length === 0) {
+      console.log('🔍 No tables found in inventory schema, checking public schema...');
+      
+      // Common tables to check in public schema
+      const publicTables = [
+        'products', 'categories', 'orders', 'customers', 'items',
+        'product_summary', 'transactions', 'suppliers',
+        'todos', 'users', 'profiles'
+      ];
+      
+      console.log(`Checking ${publicTables.length} possible tables in public schema...`);
+      
+      // Try each table with simpler permissions
+      for (const tableName of publicTables) {
+        try {
+          // Just try to get a single row to see if the table exists and is accessible
+          let data, error;
+          
+          try {
+            const result = await supabase
+              .from(tableName)
+              .select('*')
+              .limit(1);
+            
+            data = result.data;
+            error = result.error;
+          } catch (e) {
+            error = e;
+          }
+          
+          if (!error) {
+            // Table exists and is accessible
+            accessibleTables.push({
+              id: tableName,
+              name: tableName
+                .split('_')
+                .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                .join(' '),
+              description: `Public schema`,
+              hasData: data && data.length > 0
+            });
+            
+            console.log(`✅ Found accessible table: ${tableName}`);
+          }
+        } catch (e) {
+          console.log(`Checking table "${tableName}"...`);
+        }
       }
     }
     
@@ -604,12 +740,42 @@ export const fetchAvailableTables = async () => {
 export const fetchTableData = async (tableName) => {
   try {
     // Try to fetch from actual database
-    const { data, error } = await supabase
-      .from(tableName)
-      .select('*');
+    // Handle schema-qualified table names (format: schema.table)
+    const [schema, table] = tableName.includes('.') 
+      ? tableName.split('.') 
+      : [null, tableName];
+      
+    let query;
+    if (schema) {
+      // If we have a schema-qualified name, use it exactly as is
+      query = supabase.from(tableName);
+    } else {
+      // For non-qualified names, first try public schema, then try inventory schema
+      query = supabase.from(tableName);
+    }
+    
+    const { data, error } = await query.select('*');
       
     if (error) {
       console.error(`❌ Error fetching data from ${tableName}: ${error.message}`);
+      
+      // If this is a non-qualified name and it failed, try inventory schema
+      if (!schema) {
+        try {
+          console.log(`Trying inventory.${tableName} as fallback...`);
+          const inventoryResult = await supabase
+            .from(`inventory.${tableName}`)
+            .select('*');
+            
+          if (!inventoryResult.error) {
+            console.log(`✅ Successfully fetched ${inventoryResult.data?.length || 0} rows from inventory.${tableName}`);
+            return inventoryResult.data;
+          }
+        } catch (inventoryError) {
+          // Just continue to the error if this also fails
+        }
+      }
+      
       throw new Error(`Could not access table ${tableName}: ${error.message}`);
     }
     
@@ -631,7 +797,13 @@ export const getTableColumns = async (tableName) => {
   try {
     let data, error;
     
+    // Handle schema-qualified table names (format: schema.table)
+    const [schema, table] = tableName.includes('.') 
+      ? tableName.split('.') 
+      : [null, tableName];
+    
     try {
+      // Try with the exact table name as provided
       const result = await supabase
         .from(tableName)
         .select('*')
@@ -639,6 +811,24 @@ export const getTableColumns = async (tableName) => {
       
       data = result.data;
       error = result.error;
+      
+      // If this is a non-qualified name and it failed, try inventory schema
+      if (error && !schema) {
+        console.log(`Trying inventory.${tableName} for columns...`);
+        try {
+          const inventoryResult = await supabase
+            .from(`inventory.${tableName}`)
+            .select('*')
+            .limit(1);
+            
+          if (!inventoryResult.error && inventoryResult.data?.length > 0) {
+            data = inventoryResult.data;
+            error = null;
+          }
+        } catch (inventoryError) {
+          // Just continue with the original error
+        }
+      }
     } catch (e) {
       error = e;
     }
@@ -646,6 +836,7 @@ export const getTableColumns = async (tableName) => {
     if (error) throw error;
     
     if (data && data.length > 0) {
+      console.log(`Retrieved sample data for column detection from ${tableName}`);
       // Generate columns from the sample data
       return Object.keys(data[0]).map(key => {
         const value = data[0][key];
