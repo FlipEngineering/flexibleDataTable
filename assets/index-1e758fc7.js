@@ -57303,7 +57303,7 @@ class RealtimeClient {
         this.conn = null;
       }
     });
-    __vitePreload(() => import("./browser-a9cedc4b.js").then((n2) => n2.b), true ? [] : void 0).then(({ default: WS }) => {
+    __vitePreload(() => import("./browser-46c20333.js").then((n2) => n2.b), true ? [] : void 0).then(({ default: WS }) => {
       this.conn = new WS(this.endpointURL(), void 0, {
         headers: this.headers
       });
@@ -61886,95 +61886,70 @@ const deleteProduct = async (id2) => {
 };
 const fetchAvailableTables = async () => {
   try {
-    console.log("🔍 Checking for all public tables in Supabase...");
-    try {
-      const { data: versionData, error: versionError } = await supabase.rpc("version").catch((err) => {
-        console.log("RPC version check failed, trying auth.getSession instead");
-        return supabase.auth.getSession();
-      });
-      if (versionError) {
-        console.log(`⚠️ Could not check Supabase version: ${versionError.message}`);
-      } else {
-        console.log("✅ Supabase connection test successful");
+    console.log("🔍 Searching for all available tables in Supabase...");
+    const { data: schemaTables, error: schemaError } = await supabase.from("information_schema.tables").select("table_name").eq("table_schema", "public").not("table_name", "like", "pg_%").not("table_name", "like", "_prisma_%").not("table_name", "like", "schema_%").order("table_name");
+    if (!schemaError && schemaTables && schemaTables.length > 0) {
+      console.log(`✅ Found ${schemaTables.length} tables in database schema`);
+      const availableTables = schemaTables.map((table) => ({
+        id: table.table_name,
+        name: table.table_name.split("_").map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(" "),
+        description: `Database table: ${table.table_name}`,
+        source: "schema"
+      }));
+      return availableTables;
+    } else {
+      console.log(`⚠️ Cannot access information_schema: ${(schemaError == null ? void 0 : schemaError.message) || "No tables found"}`);
+      const commonTables = [
+        "todos",
+        "users",
+        "profiles",
+        "auth",
+        "products",
+        "categories",
+        "items",
+        "posts",
+        "comments",
+        "settings",
+        "data",
+        "stats"
+      ];
+      const discoveredTables = [];
+      for (const tableName of commonTables) {
+        try {
+          const { data, error } = await supabase.from(tableName).select("count(*)", { count: "exact", head: true });
+          if (!error) {
+            discoveredTables.push({
+              id: tableName,
+              name: tableName.split("_").map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(" "),
+              description: `Database table: ${tableName}`,
+              source: "direct"
+            });
+            console.log(`✅ Found table: ${tableName}`);
+          }
+        } catch (e2) {
+        }
       }
-    } catch (connectionError) {
-      console.error("❌ Supabase connection test failed:", connectionError.message);
-    }
-    const defaultTables = [
-      "todos",
-      "users",
-      "profiles",
-      "products",
-      "categories",
-      "product_summary",
-      "product_inventory",
-      "items"
-    ];
-    const accessibleTables = [];
-    for (const tableName of defaultTables) {
+      if (discoveredTables.length > 0) {
+        console.log(`✅ Discovered ${discoveredTables.length} tables directly`);
+        return discoveredTables;
+      }
+      console.log("ℹ️ No tables found. Attempting to detect if database connection works...");
       try {
-        console.log(`Checking table "${tableName}"...`);
-        const { data, error } = await supabase.from(tableName).select("*").limit(1);
-        if (!error) {
-          accessibleTables.push({
-            id: tableName,
-            name: tableName.split("_").map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(" "),
-            description: `${tableName} table`,
-            hasData: data && data.length > 0
-          });
-          console.log(`✅ Table "${tableName}" is accessible, has data: ${Boolean(data && data.length > 0)}`);
+        const { error: authError } = await supabase.auth.getSession();
+        if (!authError) {
+          console.log("✅ Supabase connection is working, but no tables found");
+          throw new Error("Database connection works, but no tables available. Create tables in your Supabase project first.");
+        } else {
+          throw new Error("Authentication error: Possible connection issue");
         }
-      } catch (error) {
-        console.error(`❌ Error with table "${tableName}": ${error.message}`);
+      } catch (authError) {
+        console.error("❌ Connection verification failed:", authError.message);
+        throw new Error("Could not connect to Supabase or no tables available");
       }
-    }
-    if (accessibleTables.length > 0) {
-      console.log(`✅ Found ${accessibleTables.length} accessible tables`);
-      return accessibleTables;
-    }
-    console.log("ℹ️ No predefined tables found. Checking connection directly...");
-    const mockTables = [];
-    mockTables.push({
-      id: "todos",
-      name: "Todos",
-      description: "Task list (auto-created)",
-      hasData: false,
-      autoCreated: true
-    });
-    try {
-      console.log("🔧 Creating a starter todos table...");
-      const { error: createError } = await supabase.rpc("create_todos_table", {}, {
-        count: "exact"
-      }).catch((err) => {
-        console.log("RPC not available, trying direct table creation");
-        return supabase.from("todos").insert({
-          title: "First todo item",
-          completed: false,
-          created_at: (/* @__PURE__ */ new Date()).toISOString()
-        });
-      });
-      if (!createError) {
-        console.log("✅ Successfully created todos table");
-        const { error: insertError } = await supabase.from("todos").insert({
-          title: "Welcome to your new database!",
-          completed: false,
-          created_at: (/* @__PURE__ */ new Date()).toISOString()
-        });
-        if (!insertError) {
-          console.log("✅ Added welcome record to todos table");
-          mockTables[0].hasData = true;
-        }
-      } else {
-        console.log(`⚠️ Could not create todos table: ${createError.message}`);
-      }
-      return mockTables;
-    } catch (createError) {
-      console.error("❌ Error creating todos table:", createError.message);
-      throw new Error("Database connection works, but no tables exist and we could not create a starter table. Check your database permissions.");
     }
   } catch (error) {
-    console.error("❌ Database connection error:", error);
-    throw new Error(`Database connection failed. ${error.message}`);
+    console.error("❌ Error finding tables:", error.message);
+    throw new Error(`Database connection issue: ${error.message}`);
   }
 };
 const fetchTableData = async (tableName) => {
@@ -62217,8 +62192,8 @@ const TableSelector = ({ selectedTable, onSelectTable }) => {
             borderRadius: "4px",
             margin: "8px 0"
           }, children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { fontSize: "16px", fontWeight: "bold", marginBottom: "8px" }, children: "Database Connection Issue" }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("p", { style: { margin: "4px 0", padding: "0 16px" }, children: "No tables found in the Supabase database. The connection might be working, but tables need to be created." }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { fontSize: "16px", fontWeight: "bold", marginBottom: "8px" }, children: "No Tables Found" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("p", { style: { margin: "4px 0", padding: "0 16px" }, children: "Could not find any tables in your Supabase database. Please create tables in your Supabase project first." }),
             /* @__PURE__ */ jsxRuntimeExports.jsx(
               Button,
               {
