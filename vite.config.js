@@ -8,19 +8,11 @@ export default defineConfig({
     port: 3000,
     open: true
   },
-  // Base path for deployment - will work on Vercel
+  // Base path for deployment
   base: '/',
-  // Build optimization
+  // Simple build config to minimize deployment issues
   build: {
-    minify: 'esbuild',
-    cssMinify: true,
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          vendor: ['react', 'react-dom'],
-          antd: ['antd']
-        }
-      }
-    }
+    minify: false,
+    cssMinify: true
   }
 })
