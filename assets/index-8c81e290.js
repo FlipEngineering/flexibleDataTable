@@ -57303,7 +57303,7 @@ class RealtimeClient {
         this.conn = null;
       }
     });
-    __vitePreload(() => import("./browser-0292ade8.js").then((n2) => n2.b), true ? [] : void 0).then(({ default: WS }) => {
+    __vitePreload(() => import("./browser-923fd49b.js").then((n2) => n2.b), true ? [] : void 0).then(({ default: WS }) => {
       this.conn = new WS(this.endpointURL(), void 0, {
         headers: this.headers
       });
@@ -61717,7 +61717,18 @@ const mockData = {
 const supabase = getSupabaseClient();
 const fetchCategories = async () => {
   try {
-    const { data, error } = await supabase.from("categories").select("*").order("name", { ascending: true });
+    let { data, error } = await supabase.from("categories").select("*").order("name", { ascending: true });
+    if (error) {
+      console.log("Trying inventory.categories instead...");
+      try {
+        const inventoryResult = await supabase.from("inventory.categories").select("*").order("name", { ascending: true });
+        if (!inventoryResult.error) {
+          data = inventoryResult.data;
+          error = null;
+        }
+      } catch (inventoryError) {
+      }
+    }
     if (error)
       throw error;
     return data;
@@ -61736,7 +61747,26 @@ const fetchProducts = async (filters = {}, orderBy = "name", ascending = true) =
       query = query.eq("status", filters.status);
     }
     query = query.order(orderBy, { ascending });
-    const { data, error } = await query;
+    let { data, error } = await query;
+    if (error) {
+      console.log("Trying inventory.product_summary instead...");
+      try {
+        let inventoryQuery = supabase.from("inventory.product_summary").select("*");
+        if (filters.category_id) {
+          inventoryQuery = inventoryQuery.eq("category_id", filters.category_id);
+        }
+        if (filters.status) {
+          inventoryQuery = inventoryQuery.eq("status", filters.status);
+        }
+        inventoryQuery = inventoryQuery.order(orderBy, { ascending });
+        const inventoryResult = await inventoryQuery;
+        if (!inventoryResult.error) {
+          data = inventoryResult.data;
+          error = null;
+        }
+      } catch (inventoryError) {
+      }
+    }
     if (error)
       throw error;
     console.log("Fetched real products from Supabase:", (data == null ? void 0 : data.length) || 0);
@@ -61919,31 +61949,47 @@ const fetchAvailableTables = async () => {
       throw new Error(`Connection failed: ${sessionError.message}`);
     }
     console.log("✅ Supabase connection works!");
-    const tablesToCheck = [
-      // Common table names in Supabase projects
-      "todos",
-      "users",
-      "profiles",
-      "settings",
-      "posts",
-      "comments",
+    console.log("🔍 Querying for tables in all schemas...");
+    const accessibleTables = [];
+    try {
+      if (typeof supabase.rpc === "function") {
+        const { data: schemaData, error: schemaError } = await supabase.rpc("get_all_tables");
+        if (!schemaError && schemaData && schemaData.length > 0) {
+          console.log(`✅ Found ${schemaData.length} tables via SQL query`);
+          for (const table of schemaData) {
+            const fullTableName = table.schema_name === "public" ? table.table_name : `${table.schema_name}.${table.table_name}`;
+            accessibleTables.push({
+              id: fullTableName,
+              name: table.table_name.split("_").map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(" "),
+              description: `${table.schema_name} schema`,
+              hasData: true
+            });
+          }
+          return accessibleTables;
+        } else {
+          console.log("SQL query failed, trying direct table access next");
+        }
+      }
+    } catch (e2) {
+      console.log("SQL query for tables not available:", e2.message);
+    }
+    console.log("🔍 Trying direct table access in inventory schema...");
+    const inventoryTables = [
       "products",
       "categories",
       "orders",
       "customers",
       "items",
-      // Our specific table names from earlier checks
       "product_summary",
       "transactions",
       "suppliers"
     ];
-    console.log(`Checking ${tablesToCheck.length} possible tables...`);
-    const accessibleTables = [];
-    for (const tableName of tablesToCheck) {
+    for (const tableName of inventoryTables) {
+      const fullTableName = `inventory.${tableName}`;
       try {
         let data, error;
         try {
-          const result = await supabase.from(tableName).select("*").limit(1);
+          const result = await supabase.from(fullTableName).select("*").limit(1);
           data = result.data;
           error = result.error;
         } catch (e2) {
@@ -61951,15 +61997,55 @@ const fetchAvailableTables = async () => {
         }
         if (!error) {
           accessibleTables.push({
-            id: tableName,
+            id: fullTableName,
             name: tableName.split("_").map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(" "),
-            description: `${tableName} database table`,
+            description: `Inventory schema`,
             hasData: data && data.length > 0
           });
-          console.log(`✅ Found accessible table: ${tableName}`);
+          console.log(`✅ Found accessible table: ${fullTableName}`);
         }
       } catch (e2) {
-        console.log(`Checking table "${tableName}"...`);
+        console.log(`Checking table "${fullTableName}"...`);
+      }
+    }
+    if (accessibleTables.length === 0) {
+      console.log("🔍 No tables found in inventory schema, checking public schema...");
+      const publicTables = [
+        "products",
+        "categories",
+        "orders",
+        "customers",
+        "items",
+        "product_summary",
+        "transactions",
+        "suppliers",
+        "todos",
+        "users",
+        "profiles"
+      ];
+      console.log(`Checking ${publicTables.length} possible tables in public schema...`);
+      for (const tableName of publicTables) {
+        try {
+          let data, error;
+          try {
+            const result = await supabase.from(tableName).select("*").limit(1);
+            data = result.data;
+            error = result.error;
+          } catch (e2) {
+            error = e2;
+          }
+          if (!error) {
+            accessibleTables.push({
+              id: tableName,
+              name: tableName.split("_").map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(" "),
+              description: `Public schema`,
+              hasData: data && data.length > 0
+            });
+            console.log(`✅ Found accessible table: ${tableName}`);
+          }
+        } catch (e2) {
+          console.log(`Checking table "${tableName}"...`);
+        }
       }
     }
     if (accessibleTables.length > 0) {
@@ -61973,10 +62059,29 @@ const fetchAvailableTables = async () => {
   }
 };
 const fetchTableData = async (tableName) => {
+  var _a;
   try {
-    const { data, error } = await supabase.from(tableName).select("*");
+    const [schema, table] = tableName.includes(".") ? tableName.split(".") : [null, tableName];
+    let query;
+    if (schema) {
+      query = supabase.from(tableName);
+    } else {
+      query = supabase.from(tableName);
+    }
+    const { data, error } = await query.select("*");
     if (error) {
       console.error(`❌ Error fetching data from ${tableName}: ${error.message}`);
+      if (!schema) {
+        try {
+          console.log(`Trying inventory.${tableName} as fallback...`);
+          const inventoryResult = await supabase.from(`inventory.${tableName}`).select("*");
+          if (!inventoryResult.error) {
+            console.log(`✅ Successfully fetched ${((_a = inventoryResult.data) == null ? void 0 : _a.length) || 0} rows from inventory.${tableName}`);
+            return inventoryResult.data;
+          }
+        } catch (inventoryError) {
+        }
+      }
       throw new Error(`Could not access table ${tableName}: ${error.message}`);
     }
     console.log(`✅ Successfully fetched ${(data == null ? void 0 : data.length) || 0} rows from ${tableName}`);
@@ -61987,18 +62092,32 @@ const fetchTableData = async (tableName) => {
   }
 };
 const getTableColumns = async (tableName) => {
+  var _a;
   try {
     let data, error;
+    const [schema, table] = tableName.includes(".") ? tableName.split(".") : [null, tableName];
     try {
       const result = await supabase.from(tableName).select("*").limit(1);
       data = result.data;
       error = result.error;
+      if (error && !schema) {
+        console.log(`Trying inventory.${tableName} for columns...`);
+        try {
+          const inventoryResult = await supabase.from(`inventory.${tableName}`).select("*").limit(1);
+          if (!inventoryResult.error && ((_a = inventoryResult.data) == null ? void 0 : _a.length) > 0) {
+            data = inventoryResult.data;
+            error = null;
+          }
+        } catch (inventoryError) {
+        }
+      }
     } catch (e2) {
       error = e2;
     }
     if (error)
       throw error;
     if (data && data.length > 0) {
+      console.log(`Retrieved sample data for column detection from ${tableName}`);
       return Object.keys(data[0]).map((key) => {
         const value = data[0][key];
         const type4 = typeof value;
