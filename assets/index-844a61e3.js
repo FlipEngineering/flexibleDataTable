@@ -57303,7 +57303,7 @@ class RealtimeClient {
         this.conn = null;
       }
     });
-    __vitePreload(() => import("./browser-7c837048.js").then((n2) => n2.b), true ? [] : void 0).then(({ default: WS }) => {
+    __vitePreload(() => import("./browser-eccde64c.js").then((n2) => n2.b), true ? [] : void 0).then(({ default: WS }) => {
       this.conn = new WS(this.endpointURL(), void 0, {
         headers: this.headers
       });
@@ -61886,27 +61886,26 @@ const deleteProduct = async (id2) => {
 };
 const fetchAvailableTables = async () => {
   try {
-    const knownTables = [
-      "todos",
-      "users",
-      "profiles",
-      "products",
-      "categories",
-      "transactions",
-      "suppliers",
-      "customers",
-      "orders",
-      "product_summary"
+    const realTables = [
+      "product_summary",
+      "categories"
     ];
+    const descriptions = {
+      "product_summary": "Product inventory with pricing and stock information",
+      "categories": "Product categories for organizational structure",
+      "todos": "Task tracking for projects and assignments",
+      "users": "User accounts and authentication information",
+      "profiles": "User profile details and preferences"
+    };
     const existingTables = [];
-    for (const tableName of knownTables) {
+    for (const tableName of realTables) {
       try {
         const { data, error } = await supabase.from(tableName).select("*").limit(1);
         if (!error) {
           existingTables.push({
             id: tableName,
             name: tableName.split("_").map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(" "),
-            description: `${tableName} table`,
+            description: descriptions[tableName] || `${tableName} table`,
             // Add flag to indicate if table has data
             hasData: data && data.length > 0
           });
@@ -61919,27 +61918,42 @@ const fetchAvailableTables = async () => {
       }
     }
     if (existingTables.length > 0) {
-      console.log("✅ Successfully found tables in database:", existingTables.length);
+      console.log("✅ Successfully found real tables in database:", existingTables.length);
       return existingTables;
     }
-    try {
-      const { data: schemaInfo, error: schemaError } = await supabase.rpc("get_schema_info");
-      if (!schemaError && schemaInfo && schemaInfo.length > 0) {
-        console.log("Found tables via RPC get_schema_info:", schemaInfo.length);
-        return schemaInfo.map((table) => ({
-          id: table.name,
-          name: table.name.split("_").map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(" "),
-          description: table.description || `${table.name} table`
-        }));
+    const otherPossibleTables = [
+      "todos",
+      "users",
+      "profiles",
+      "products",
+      "transactions",
+      "suppliers",
+      "customers",
+      "orders"
+    ];
+    for (const tableName of otherPossibleTables) {
+      try {
+        const { data, error } = await supabase.from(tableName).select("*").limit(1);
+        if (!error) {
+          existingTables.push({
+            id: tableName,
+            name: tableName.split("_").map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(" "),
+            description: descriptions[tableName] || `${tableName} table`,
+            hasData: data && data.length > 0
+          });
+          console.log(`✅ Found additional table: "${tableName}"`);
+        }
+      } catch (e2) {
       }
-    } catch (rpcError) {
-      console.log("RPC get_schema_info not available:", rpcError.message);
     }
-    throw new Error("No tables found in database using any method");
+    if (existingTables.length > 0) {
+      return existingTables;
+    }
+    throw new Error("No tables found in database");
   } catch (error) {
     console.log("⚠️ Using mock tables due to error:", error.message);
     return [
-      { id: "todos", name: "Todos", description: "Task tracking table" },
+      { id: "todos", name: "Todos (DUMMY)", description: "DUMMY DATA: Task tracking" },
       { id: "product_summary", name: "Products (DUMMY)", description: "DUMMY DATA: Product inventory data" },
       { id: "categories", name: "Categories (DUMMY)", description: "DUMMY DATA: Product categories" },
       { id: "transactions", name: "Transactions (DUMMY)", description: "DUMMY DATA: Inventory transactions" },
@@ -62074,18 +62088,35 @@ const TableSelector = ({ selectedTable, onSelectTable }) => {
   var _a, _b, _c, _d;
   const [tables, setTables] = reactExports.useState([]);
   const [loading, setLoading] = reactExports.useState(true);
+  const [refreshCounter, setRefreshCounter] = reactExports.useState(0);
   const loadTables = async () => {
     setLoading(true);
+    if (refreshCounter > 0) {
+      console.log("🔄 Forcing a clean table fetch on retry #" + refreshCounter);
+    }
     try {
       const availableTables = await fetchAvailableTables();
-      setTables(availableTables);
-      if (!selectedTable && availableTables.length > 0) {
-        onSelectTable(availableTables[0].id);
-      }
-      if (selectedTable && !availableTables.find((t2) => t2.id === selectedTable)) {
-        message$1.warning("The previously selected table is no longer available");
-        if (availableTables.length > 0) {
+      const realTables = availableTables.filter((t2) => !t2.name.includes("DUMMY"));
+      if (realTables.length > 0) {
+        console.log("✅ Found real tables:", realTables.map((t2) => t2.id).join(", "));
+        setTables(realTables);
+        if (!selectedTable && realTables.length > 0) {
+          onSelectTable(realTables[0].id);
+        }
+        if (selectedTable && selectedTable.includes("DUMMY")) {
+          message$1.success("Connected to real database tables");
+          onSelectTable(realTables[0].id);
+        }
+      } else {
+        console.warn("⚠️ All tables appear to be mock data");
+        setTables(availableTables);
+        if (!selectedTable && availableTables.length > 0) {
           onSelectTable(availableTables[0].id);
+        }
+        if (refreshCounter < 2) {
+          setTimeout(() => {
+            setRefreshCounter((prev2) => prev2 + 1);
+          }, 2e3);
         }
       }
     } catch (error) {
@@ -62097,7 +62128,10 @@ const TableSelector = ({ selectedTable, onSelectTable }) => {
   };
   reactExports.useEffect(() => {
     loadTables();
-  }, []);
+  }, [refreshCounter]);
+  const handleRefresh = () => {
+    setRefreshCounter((prev2) => prev2 + 1);
+  };
   return /* @__PURE__ */ jsxRuntimeExports.jsxs(
     "div",
     {
@@ -62126,16 +62160,19 @@ const TableSelector = ({ selectedTable, onSelectTable }) => {
           /* @__PURE__ */ jsxRuntimeExports.jsx(
             "div",
             {
-              onClick: loadTables,
+              onClick: handleRefresh,
               style: {
                 cursor: "pointer",
                 display: "flex",
                 alignItems: "center",
                 padding: "4px",
                 borderRadius: "4px",
-                color: "var(--text-color-secondary, rgba(0, 0, 0, 0.45))"
+                color: "var(--text-color-secondary, rgba(0, 0, 0, 0.45))",
+                transition: "all 0.3s"
               },
               title: "Refresh database tables",
+              onMouseEnter: (e2) => e2.currentTarget.style.color = "var(--primary-color, #1890ff)",
+              onMouseLeave: (e2) => e2.currentTarget.style.color = "var(--text-color-secondary, rgba(0, 0, 0, 0.45))",
               children: /* @__PURE__ */ jsxRuntimeExports.jsx(ReloadOutlined$1, { spin: loading })
             }
           )
@@ -62338,7 +62375,16 @@ const DataTableExample = () => {
     const hasSupabaseKey = Boolean("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJza2ZmeGdwcmZtam5td3Vua2NrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA2OTEzMzcsImV4cCI6MjA1NjI2NzMzN30.BsxrbwLvZLS3NEkm-TK4SlGi2sw7BkmjqCPFsluvFKY");
     logDebug(`Supabase URL defined: ${hasSupabaseUrl}`, hasSupabaseUrl ? "success" : "warning");
     logDebug(`Supabase Key defined: ${hasSupabaseKey}`, hasSupabaseKey ? "success" : "warning");
+    if (hasSupabaseUrl) {
+      const url2 = "https://bskffxgprfmjnmwunkck.supabase.co";
+      const safeUrl = url2.substring(0, 12) + "...";
+      logDebug(`Supabase URL: ${safeUrl}`, "info");
+    }
     logDebug(`Browser: ${navigator.userAgent}`, "info");
+    setTimeout(() => {
+      logDebug("Refreshing available tables...", "info");
+      setDebugLogs([]);
+    }, 1e3);
   }, []);
   const handleSave = async (values, key, newData) => {
     try {
