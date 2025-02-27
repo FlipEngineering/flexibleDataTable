@@ -18894,10 +18894,10 @@ const InternalCompoundedButton = /* @__PURE__ */ React.forwardRef((props, ref) =
   }
   return wrapCSSVar(buttonNode);
 });
-const Button$1 = InternalCompoundedButton;
-Button$1.Group = Group$4;
-Button$1.__ANT_BUTTON = true;
-const Button$2 = Button$1;
+const Button$2 = InternalCompoundedButton;
+Button$2.Group = Group$4;
+Button$2.__ANT_BUTTON = true;
+const Button$3 = Button$2;
 function isThenable(thing) {
   return !!(thing === null || thing === void 0 ? void 0 : thing.then);
 }
@@ -18983,7 +18983,7 @@ const ActionButton = (props) => {
     }
     handlePromiseOnOk(returnValueOfOnOk);
   };
-  return /* @__PURE__ */ reactExports.createElement(Button$2, Object.assign({}, convertLegacyProps(type4), {
+  return /* @__PURE__ */ reactExports.createElement(Button$3, Object.assign({}, convertLegacyProps(type4), {
     onClick,
     loading,
     prefixCls
@@ -23566,7 +23566,7 @@ const NormalCancelBtn = () => {
     cancelTextLocale,
     onCancel
   } = reactExports.useContext(ModalContext);
-  return /* @__PURE__ */ React.createElement(Button$2, Object.assign({
+  return /* @__PURE__ */ React.createElement(Button$3, Object.assign({
     onClick: onCancel
   }, cancelButtonProps), cancelTextLocale);
 };
@@ -23579,7 +23579,7 @@ const NormalOkBtn = () => {
     okTextLocale,
     onOk
   } = reactExports.useContext(ModalContext);
-  return /* @__PURE__ */ React.createElement(Button$2, Object.assign({}, convertLegacyProps(okType), {
+  return /* @__PURE__ */ React.createElement(Button$3, Object.assign({}, convertLegacyProps(okType), {
     loading: confirmLoading,
     onClick: onOk
   }, okButtonProps), okTextLocale);
@@ -36357,9 +36357,9 @@ const RadioButton = (props, ref) => {
     ref
   })));
 };
-const Button = /* @__PURE__ */ reactExports.forwardRef(RadioButton);
+const Button$1 = /* @__PURE__ */ reactExports.forwardRef(RadioButton);
 const Radio = InternalRadio$1;
-Radio.Button = Button;
+Radio.Button = Button$1;
 Radio.Group = Group$3;
 Radio.__ANT_RADIO = true;
 const Radio$1 = Radio;
@@ -39239,7 +39239,7 @@ const DropdownButton = (props) => {
   } else {
     dropdownProps.placement = direction === "rtl" ? "bottomLeft" : "bottomRight";
   }
-  const leftButton = /* @__PURE__ */ reactExports.createElement(Button$2, {
+  const leftButton = /* @__PURE__ */ reactExports.createElement(Button$3, {
     type: type4,
     danger,
     disabled,
@@ -39249,7 +39249,7 @@ const DropdownButton = (props) => {
     href,
     title
   }, children);
-  const rightButton = /* @__PURE__ */ reactExports.createElement(Button$2, {
+  const rightButton = /* @__PURE__ */ reactExports.createElement(Button$3, {
     type: type4,
     danger,
     icon
@@ -41486,7 +41486,7 @@ const Search = /* @__PURE__ */ reactExports.forwardRef((props, ref) => {
       size
     } : {}));
   } else {
-    button = /* @__PURE__ */ reactExports.createElement(Button$2, {
+    button = /* @__PURE__ */ reactExports.createElement(Button$3, {
       className: btnClassName,
       type: enterButton ? "primary" : void 0,
       size,
@@ -50414,12 +50414,12 @@ const FilterDropdown = (props) => {
     };
     dropdownContent = /* @__PURE__ */ reactExports.createElement(reactExports.Fragment, null, getFilterComponent(), /* @__PURE__ */ reactExports.createElement("div", {
       className: `${prefixCls}-dropdown-btns`
-    }, /* @__PURE__ */ reactExports.createElement(Button$2, {
+    }, /* @__PURE__ */ reactExports.createElement(Button$3, {
       type: "link",
       size: "small",
       disabled: getResetDisabled(),
       onClick: () => onReset()
-    }, locale2.filterReset), /* @__PURE__ */ reactExports.createElement(Button$2, {
+    }, locale2.filterReset), /* @__PURE__ */ reactExports.createElement(Button$3, {
       type: "primary",
       size: "small",
       onClick: onConfirm
@@ -54434,7 +54434,7 @@ const DataTable = ({
           ),
           /* @__PURE__ */ jsxRuntimeExports.jsxs(Space$1, { children: [
             /* @__PURE__ */ jsxRuntimeExports.jsx(
-              Button$2,
+              Button$3,
               {
                 type: "primary",
                 onClick: () => confirm2(),
@@ -54444,7 +54444,7 @@ const DataTable = ({
                 children: "Search"
               }
             ),
-            /* @__PURE__ */ jsxRuntimeExports.jsx(Button$2, { onClick: () => clearFilters(), size: "small", style: { width: 90 }, children: "Reset" })
+            /* @__PURE__ */ jsxRuntimeExports.jsx(Button$3, { onClick: () => clearFilters(), size: "small", style: { width: 90 }, children: "Reset" })
           ] })
         ] }),
         onFilter: (value, record) => {
@@ -54505,7 +54505,7 @@ const DataTable = ({
       key: "actions",
       render: (_, record) => /* @__PURE__ */ jsxRuntimeExports.jsxs(Space$1, { size: "middle", children: [
         /* @__PURE__ */ jsxRuntimeExports.jsx(Tooltip$1, { title: "Edit", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
-          Button$2,
+          Button$3,
           {
             icon: /* @__PURE__ */ jsxRuntimeExports.jsx(EditOutlined$1, {}),
             onClick: () => handleEdit(record),
@@ -54513,7 +54513,7 @@ const DataTable = ({
           }
         ) }),
         /* @__PURE__ */ jsxRuntimeExports.jsx(Tooltip$1, { title: "Delete", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
-          Button$2,
+          Button$3,
           {
             icon: /* @__PURE__ */ jsxRuntimeExports.jsx(DeleteOutlined$1, {}),
             onClick: () => showDeleteConfirm(record),
@@ -54652,7 +54652,7 @@ const DataTable = ({
     /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "data-table-header", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { children: tableName }),
       /* @__PURE__ */ jsxRuntimeExports.jsx(Space$1, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(
-        Button$2,
+        Button$3,
         {
           type: "primary",
           icon: /* @__PURE__ */ jsxRuntimeExports.jsx(PlusOutlined$1, {}),
@@ -54663,7 +54663,7 @@ const DataTable = ({
     ] }),
     /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "data-table-actions", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(Space$1, { children: [
       /* @__PURE__ */ jsxRuntimeExports.jsx(
-        Button$2,
+        Button$3,
         {
           icon: /* @__PURE__ */ jsxRuntimeExports.jsx(ArrowUpOutlined$1, {}),
           onClick: () => moveRow("up"),
@@ -54672,7 +54672,7 @@ const DataTable = ({
         }
       ),
       /* @__PURE__ */ jsxRuntimeExports.jsx(
-        Button$2,
+        Button$3,
         {
           icon: /* @__PURE__ */ jsxRuntimeExports.jsx(ArrowDownOutlined$1, {}),
           onClick: () => moveRow("down"),
@@ -57303,7 +57303,7 @@ class RealtimeClient {
         this.conn = null;
       }
     });
-    __vitePreload(() => import("./browser-eccde64c.js").then((n2) => n2.b), true ? [] : void 0).then(({ default: WS }) => {
+    __vitePreload(() => import("./browser-8bf44446.js").then((n2) => n2.b), true ? [] : void 0).then(({ default: WS }) => {
       this.conn = new WS(this.endpointURL(), void 0, {
         headers: this.headers
       });
@@ -61885,83 +61885,39 @@ const deleteProduct = async (id2) => {
   }
 };
 const fetchAvailableTables = async () => {
-  try {
-    const realTables = [
-      "product_summary",
-      "categories"
-    ];
-    const descriptions = {
-      "product_summary": "Product inventory with pricing and stock information",
-      "categories": "Product categories for organizational structure",
-      "todos": "Task tracking for projects and assignments",
-      "users": "User accounts and authentication information",
-      "profiles": "User profile details and preferences"
-    };
-    const existingTables = [];
-    for (const tableName of realTables) {
-      try {
-        const { data, error } = await supabase.from(tableName).select("*").limit(1);
-        if (!error) {
-          existingTables.push({
-            id: tableName,
-            name: tableName.split("_").map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(" "),
-            description: descriptions[tableName] || `${tableName} table`,
-            // Add flag to indicate if table has data
-            hasData: data && data.length > 0
-          });
-          console.log(`✅ Found table: "${tableName}"`);
-        } else {
-          console.log(`❌ Table not accessible: "${tableName}" - ${error.message}`);
-        }
-      } catch (e2) {
-        console.log(`❌ Error checking table "${tableName}":`, e2.message);
+  const knownRealTables = [
+    "product_summary",
+    "categories"
+  ];
+  const descriptions = {
+    "product_summary": "Product inventory with pricing and stock information",
+    "categories": "Product categories for organizational structure"
+  };
+  const accessibleTables = [];
+  console.log("🔍 Checking for known tables in Supabase database...");
+  for (const tableName of knownRealTables) {
+    try {
+      console.log(`Checking table "${tableName}"...`);
+      const { data, error } = await supabase.from(tableName).select("*").limit(1);
+      if (error) {
+        throw new Error(`Error accessing ${tableName}: ${error.message}`);
       }
+      accessibleTables.push({
+        id: tableName,
+        name: tableName.split("_").map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(" "),
+        description: descriptions[tableName] || `${tableName} database table`,
+        hasData: data && data.length > 0
+      });
+      console.log(`✅ Table "${tableName}" is accessible`);
+    } catch (error) {
+      console.error(`❌ Could not access table "${tableName}": ${error.message}`);
     }
-    if (existingTables.length > 0) {
-      console.log("✅ Successfully found real tables in database:", existingTables.length);
-      return existingTables;
-    }
-    const otherPossibleTables = [
-      "todos",
-      "users",
-      "profiles",
-      "products",
-      "transactions",
-      "suppliers",
-      "customers",
-      "orders"
-    ];
-    for (const tableName of otherPossibleTables) {
-      try {
-        const { data, error } = await supabase.from(tableName).select("*").limit(1);
-        if (!error) {
-          existingTables.push({
-            id: tableName,
-            name: tableName.split("_").map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(" "),
-            description: descriptions[tableName] || `${tableName} table`,
-            hasData: data && data.length > 0
-          });
-          console.log(`✅ Found additional table: "${tableName}"`);
-        }
-      } catch (e2) {
-      }
-    }
-    if (existingTables.length > 0) {
-      return existingTables;
-    }
-    throw new Error("No tables found in database");
-  } catch (error) {
-    console.log("⚠️ Using mock tables due to error:", error.message);
-    return [
-      { id: "todos", name: "Todos (DUMMY)", description: "DUMMY DATA: Task tracking" },
-      { id: "product_summary", name: "Products (DUMMY)", description: "DUMMY DATA: Product inventory data" },
-      { id: "categories", name: "Categories (DUMMY)", description: "DUMMY DATA: Product categories" },
-      { id: "transactions", name: "Transactions (DUMMY)", description: "DUMMY DATA: Inventory transactions" },
-      { id: "suppliers", name: "Suppliers (DUMMY)", description: "DUMMY DATA: Product suppliers" },
-      { id: "customers", name: "Customers (DUMMY)", description: "DUMMY DATA: Customer information" },
-      { id: "orders", name: "Orders (DUMMY)", description: "DUMMY DATA: Customer orders" }
-    ];
   }
+  if (accessibleTables.length > 0) {
+    console.log(`✅ Found ${accessibleTables.length} accessible tables`);
+    return accessibleTables;
+  }
+  throw new Error("No database tables are accessible. Please check your database connection and permissions.");
 };
 const fetchTableData = async (tableName) => {
   try {
@@ -62096,32 +62052,27 @@ const TableSelector = ({ selectedTable, onSelectTable }) => {
     }
     try {
       const availableTables = await fetchAvailableTables();
-      const realTables = availableTables.filter((t2) => !t2.name.includes("DUMMY"));
-      if (realTables.length > 0) {
-        console.log("✅ Found real tables:", realTables.map((t2) => t2.id).join(", "));
-        setTables(realTables);
-        if (!selectedTable && realTables.length > 0) {
-          onSelectTable(realTables[0].id);
-        }
-        if (selectedTable && selectedTable.includes("DUMMY")) {
-          message$1.success("Connected to real database tables");
-          onSelectTable(realTables[0].id);
-        }
-      } else {
-        console.warn("⚠️ All tables appear to be mock data");
-        setTables(availableTables);
-        if (!selectedTable && availableTables.length > 0) {
+      console.log("✅ Found database tables:", availableTables.map((t2) => t2.id).join(", "));
+      setTables(availableTables);
+      if (!selectedTable && availableTables.length > 0) {
+        onSelectTable(availableTables[0].id);
+        message$1.success(`Connected to ${availableTables.length} database tables`);
+      }
+      if (selectedTable && !availableTables.find((t2) => t2.id === selectedTable)) {
+        message$1.info("Previously selected table is no longer available");
+        if (availableTables.length > 0) {
           onSelectTable(availableTables[0].id);
-        }
-        if (refreshCounter < 2) {
-          setTimeout(() => {
-            setRefreshCounter((prev2) => prev2 + 1);
-          }, 2e3);
         }
       }
     } catch (error) {
-      console.error("Error loading tables:", error);
-      message$1.error("Failed to load database tables");
+      console.error("Database connection error:", error);
+      message$1.error(`Database connection failed: ${error.message}`);
+      setTables([]);
+      if (refreshCounter < 3) {
+        setTimeout(() => {
+          setRefreshCounter((prev2) => prev2 + 1);
+        }, 2e3);
+      }
     } finally {
       setLoading(false);
     }
@@ -62182,7 +62133,7 @@ const TableSelector = ({ selectedTable, onSelectTable }) => {
           /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { marginTop: 8 }, children: "Loading tables..." })
         ] }) : /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx(Title, { level: 5, style: { color: "var(--heading-color, rgba(0, 0, 0, 0.85))" }, children: "Select Table" }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(
+          tables.length > 0 ? /* @__PURE__ */ jsxRuntimeExports.jsx(
             Select$1,
             {
               style: { width: "100%", marginBottom: 16 },
@@ -62200,7 +62151,27 @@ const TableSelector = ({ selectedTable, onSelectTable }) => {
               },
               children: tables.map((table) => /* @__PURE__ */ jsxRuntimeExports.jsx(Option$1, { value: table.id, children: /* @__PURE__ */ jsxRuntimeExports.jsx(Tooltip$1, { title: table.description, children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { children: table.name }) }) }, table.id))
             }
-          ),
+          ) : /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: {
+            textAlign: "center",
+            padding: "20px 0",
+            color: "var(--error-color, #ff4d4f)",
+            border: "1px dashed var(--error-color, #ff4d4f)",
+            borderRadius: "4px",
+            margin: "8px 0"
+          }, children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { fontSize: "16px", fontWeight: "bold", marginBottom: "8px" }, children: "Database Connection Failed" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("p", { style: { margin: "4px 0" }, children: "Could not connect to Supabase database" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx(
+              Button,
+              {
+                type: "primary",
+                onClick: handleRefresh,
+                style: { marginTop: "12px" },
+                danger: true,
+                children: "Retry Connection"
+              }
+            )
+          ] }),
           selectedTable && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: {
             backgroundColor: "var(--item-hover-bg, rgba(0, 0, 0, 0.02))",
             padding: "8px",
@@ -62501,7 +62472,7 @@ const DataTableExample = () => {
                 onPressEnter: handleSearch,
                 style: { width: "100%" },
                 suffix: /* @__PURE__ */ jsxRuntimeExports.jsx(
-                  Button$2,
+                  Button$3,
                   {
                     type: "text",
                     icon: /* @__PURE__ */ jsxRuntimeExports.jsx(SearchOutlined$1, {}),
@@ -62560,7 +62531,7 @@ const DataTableExample = () => {
             display: "flex",
             justifyContent: "center"
           }, children: /* @__PURE__ */ jsxRuntimeExports.jsx(
-            Button$2,
+            Button$3,
             {
               type: "primary",
               onClick: () => loadTableData(selectedTable),
@@ -62607,7 +62578,7 @@ const DataTableExample = () => {
             fontWeight: "bold"
           }, children: "DUMMY DATA MODE ACTIVE" }) }),
           /* @__PURE__ */ jsxRuntimeExports.jsx(
-            Button$2,
+            Button$3,
             {
               type: "primary",
               onClick: () => loadTableData(selectedTable),
@@ -62647,7 +62618,7 @@ const DataTableExample = () => {
         ] }),
         /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx(
-            Button$2,
+            Button$3,
             {
               size: "small",
               onClick: clearDebugLogs,
@@ -62656,7 +62627,7 @@ const DataTableExample = () => {
             }
           ),
           /* @__PURE__ */ jsxRuntimeExports.jsx(
-            Button$2,
+            Button$3,
             {
               size: "small",
               onClick: toggleDebugConsole,
@@ -62688,7 +62659,7 @@ const DataTableExample = () => {
       ] })
     ] }),
     !showDebugConsole && /* @__PURE__ */ jsxRuntimeExports.jsx(
-      Button$2,
+      Button$3,
       {
         type: "primary",
         size: "small",
