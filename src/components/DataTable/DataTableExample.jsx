@@ -360,21 +360,22 @@ const DataTableExample = () => {
           {/* Sidebar */}
           <div className="explorer-sidebar" style={{ 
             width: '300px', 
-            background: 'var(--component-background, #fff)', 
-            borderRight: '1px solid var(--border-color-split, #f0f0f0)',
+            background: 'var(--component-background, #141414)', 
+            borderRight: '1px solid var(--border-color-split, #303030)',
             padding: '20px 16px',
             height: 'calc(100vh - 250px)',
-            overflowY: 'auto'
+            overflowY: 'auto',
+            color: 'var(--text-color, rgba(255, 255, 255, 0.85))'
           }}>
             <h2 style={{ 
               display: 'flex', 
               alignItems: 'center',
-              color: 'var(--heading-color, rgba(0, 0, 0, 0.85))'
+              color: 'var(--heading-color, rgba(255, 255, 255, 0.85))'
             }}>
               <DatabaseOutlined style={{ marginRight: 10, color: 'var(--primary-color, #1890ff)' }} />
               SQL Explorer
             </h2>
-            <p style={{ color: 'var(--text-color-secondary, rgba(0, 0, 0, 0.45))' }}>
+            <p style={{ color: 'var(--text-color-secondary, rgba(255, 255, 255, 0.45))' }}>
               View and manage all tables in your PostgreSQL database
             </p>
             
@@ -474,8 +475,8 @@ const DataTableExample = () => {
           <div className="explorer-content" style={{ 
             flex: 1, 
             padding: '20px 24px',
-            background: 'var(--body-background, #fff)',
-            color: 'var(--text-color, rgba(0, 0, 0, 0.85))'
+            background: 'var(--body-background, #141414)',
+            color: 'var(--text-color, rgba(255, 255, 255, 0.85))'
           }}>
             <DataTable
               tableName={getTableDisplayName()}
@@ -492,10 +493,10 @@ const DataTableExample = () => {
               <div style={{
                 textAlign: 'center',
                 padding: '40px 0',
-                color: 'var(--text-color-secondary, rgba(0, 0, 0, 0.45))'
+                color: 'var(--text-color-secondary, rgba(255, 255, 255, 0.45))'
               }}>
                 <div style={{ fontSize: '72px', lineHeight: '72px', marginBottom: '16px' }}>📋</div>
-                <h3 style={{ color: 'var(--heading-color, rgba(0, 0, 0, 0.85))' }}>No data found</h3>
+                <h3 style={{ color: 'var(--heading-color, rgba(255, 255, 255, 0.85))' }}>No data found</h3>
                 <p>This table appears to be empty or not available.</p>
                 <div style={{ marginBottom: '16px' }}>
                   {selectedTable && selectedTable.includes('DUMMY') && (
@@ -524,72 +525,124 @@ const DataTableExample = () => {
           </div>
         </div>
         
-        {/* Debug Console */}
+        {/* Debug Console with Resize Handle */}
         {showDebugConsole && (
-          <div style={{ 
-            borderTop: '1px solid var(--border-color-split, #f0f0f0)',
-            backgroundColor: 'var(--component-background, #000)',
-            color: 'var(--text-color-inverse, #fff)',
-            padding: '8px',
-            height: '150px',
-            overflowY: 'auto',
-            fontFamily: 'monospace',
-            fontSize: '12px'
-          }}>
-            <div style={{ 
-              display: 'flex', 
-              justifyContent: 'space-between', 
-              marginBottom: '8px',
-              position: 'sticky',
-              top: 0,
-              backgroundColor: 'var(--component-background, #000)',
-              padding: '4px',
-              zIndex: 1
-            }}>
-              <div>
-                <span style={{ fontWeight: 'bold' }}>Debug Console</span>
-                <span style={{ marginLeft: '12px', opacity: 0.7 }}>
-                  {debugLogs.length} logs
-                </span>
+          <>
+            {/* Resize Handle */}
+            <div 
+              style={{ 
+                height: '6px', 
+                backgroundColor: '#444', 
+                cursor: 'ns-resize',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center'
+              }}
+              onMouseDown={(e) => {
+                // Start resizing
+                const startY = e.clientY;
+                const startHeight = document.getElementById('debug-console').offsetHeight;
+                
+                const handleMouseMove = (moveEvent) => {
+                  // Calculate new height (reverse direction for y-axis)
+                  const newHeight = startHeight - (moveEvent.clientY - startY);
+                  // Limit min and max height
+                  const clampedHeight = Math.min(Math.max(newHeight, 50), 500);
+                  document.getElementById('debug-console').style.height = `${clampedHeight}px`;
+                };
+                
+                const handleMouseUp = () => {
+                  // Stop resizing
+                  document.removeEventListener('mousemove', handleMouseMove);
+                  document.removeEventListener('mouseup', handleMouseUp);
+                };
+                
+                // Add event listeners
+                document.addEventListener('mousemove', handleMouseMove);
+                document.addEventListener('mouseup', handleMouseUp);
+                
+                // Prevent default behavior
+                e.preventDefault();
+              }}
+            >
+              <div style={{ 
+                width: '30px', 
+                height: '4px', 
+                backgroundColor: '#888', 
+                borderRadius: '2px' 
+              }} />
+            </div>
+            
+            {/* Debug Console */}
+            <div 
+              id="debug-console"
+              style={{ 
+                borderTop: '1px solid var(--border-color-split, #303030)',
+                backgroundColor: 'var(--component-background, #141414)',
+                color: 'var(--text-color-inverse, #fff)',
+                padding: '8px',
+                height: '150px',
+                overflowY: 'auto',
+                fontFamily: 'monospace',
+                fontSize: '12px',
+                position: 'relative'
+              }}
+            >
+              <div style={{ 
+                display: 'flex', 
+                justifyContent: 'space-between', 
+                marginBottom: '8px',
+                position: 'sticky',
+                top: 0,
+                backgroundColor: 'var(--component-background, #141414)',
+                padding: '4px',
+                zIndex: 1
+              }}>
+                <div>
+                  <span style={{ fontWeight: 'bold' }}>Debug Console</span>
+                  <span style={{ marginLeft: '12px', opacity: 0.7 }}>
+                    {debugLogs.length} logs
+                  </span>
+                </div>
+                <div>
+                  <Button 
+                    size="small" 
+                    onClick={clearDebugLogs} 
+                    style={{ marginRight: '8px' }}
+                  >
+                    Clear
+                  </Button>
+                  <Button 
+                    size="small" 
+                    onClick={toggleDebugConsole}
+                  >
+                    Hide
+                  </Button>
+                </div>
               </div>
               <div>
-                <Button 
-                  size="small" 
-                  onClick={clearDebugLogs} 
-                  style={{ marginRight: '8px' }}
-                >
-                  Clear
-                </Button>
-                <Button 
-                  size="small" 
-                  onClick={toggleDebugConsole}
-                >
-                  Hide
-                </Button>
+                {debugLogs.map(log => (
+                  <div 
+                    key={log.id} 
+                    style={{ 
+                      padding: '2px 0',
+                      color: log.type === 'error' ? '#ff4d4f' :
+                            log.type === 'warning' ? '#faad14' :
+                            log.type === 'success' ? '#52c41a' : '#fff'
+                    }}
+                  >
+                    <span style={{ opacity: 0.7, marginRight: '8px' }}>[{log.timestamp}]</span>
+                    <span>{log.message}</span>
+                  </div>
+                ))}
+                {debugLogs.length === 0 && (
+                  <div style={{ opacity: 0.5, textAlign: 'center', padding: '20px 0' }}>
+                    No logs to display
+                  </div>
+                )}
               </div>
             </div>
-            <div>
-              {debugLogs.map(log => (
-                <div 
-                  key={log.id} 
-                  style={{ 
-                    padding: '2px 0',
-                    color: log.type === 'error' ? '#ff4d4f' :
-                          log.type === 'warning' ? '#faad14' :
-                          log.type === 'success' ? '#52c41a' : '#fff'
-                  }}
-                >
-                  <span style={{ opacity: 0.7, marginRight: '8px' }}>[{log.timestamp}]</span>
-                  <span>{log.message}</span>
-                </div>
-              ))}
-              {debugLogs.length === 0 && (
-                <div style={{ opacity: 0.5, textAlign: 'center', padding: '20px 0' }}>
-                  No logs to display
-                </div>
-              )}
-            </div>
-          </div>
+          </>
         )}
         
         {/* Debug toggle button (when hidden) */}

@@ -75,18 +75,18 @@ const TableSelector = ({ selectedTable, onSelectTable }) => {
   return (
     <div
       style={{ 
-        border: '1px solid var(--border-color, #d9d9d9)',
+        border: '1px solid var(--border-color, #303030)',
         borderRadius: '8px',
         marginBottom: 16,
-        backgroundColor: 'var(--component-background, #fff)',
-        color: 'var(--text-color, rgba(0, 0, 0, 0.85))',
+        backgroundColor: 'var(--component-background, #1f1f1f)',
+        color: 'var(--text-color, rgba(255, 255, 255, 0.85))',
         padding: '16px',
-        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)'
+        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)'
       }}
     >
       <div style={{ 
         marginBottom: 12, 
-        borderBottom: '1px solid var(--border-color-split, #f0f0f0)', 
+        borderBottom: '1px solid var(--border-color-split, #303030)', 
         paddingBottom: 8,
         display: 'flex', 
         alignItems: 'center',
@@ -122,7 +122,7 @@ const TableSelector = ({ selectedTable, onSelectTable }) => {
         </div>
       ) : (
         <>
-          <Title level={5} style={{ color: 'var(--heading-color, rgba(0, 0, 0, 0.85))' }}>
+          <Title level={5} style={{ color: 'var(--heading-color, rgba(255, 255, 255, 0.85))' }}>
             Select Table
           </Title>
           {tables.length > 0 ? (
@@ -136,8 +136,8 @@ const TableSelector = ({ selectedTable, onSelectTable }) => {
               }}
               loading={loading}
               dropdownStyle={{ 
-                backgroundColor: 'var(--component-background, #fff)',
-                color: 'var(--text-color, rgba(0, 0, 0, 0.85))'
+                backgroundColor: 'var(--component-background, #1f1f1f)',
+                color: 'var(--text-color, rgba(255, 255, 255, 0.85))'
               }}
             >
               {tables.map(table => (
@@ -287,15 +287,15 @@ INSERT INTO product_summary (sku, name, description, category, price, cost, quan
           
           {selectedTable && (
             <div style={{ 
-              backgroundColor: 'var(--item-hover-bg, rgba(0, 0, 0, 0.02))',
+              backgroundColor: 'var(--item-hover-bg, rgba(255, 255, 255, 0.08))',
               padding: '8px',
               borderRadius: '4px'
             }}>
-              <Text style={{ color: 'var(--text-color-secondary, rgba(0, 0, 0, 0.45))' }}>
-                Viewing table: <Text strong style={{ color: 'var(--text-color, rgba(0, 0, 0, 0.85))' }}>{tables.find(t => t.id === selectedTable)?.name || selectedTable}</Text>
+              <Text style={{ color: 'var(--text-color-secondary, rgba(255, 255, 255, 0.45))' }}>
+                Viewing table: <Text strong style={{ color: 'var(--text-color, rgba(255, 255, 255, 0.85))' }}>{tables.find(t => t.id === selectedTable)?.name || selectedTable}</Text>
               </Text>
               <div style={{ marginTop: 4 }}>
-                <Text style={{ color: 'var(--text-color-secondary, rgba(0, 0, 0, 0.45))' }}>
+                <Text style={{ color: 'var(--text-color-secondary, rgba(255, 255, 255, 0.45))' }}>
                   {tables.find(t => t.id === selectedTable)?.description || 'Table data'}
                 </Text>
               </div>
