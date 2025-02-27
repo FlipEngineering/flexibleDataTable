@@ -37,15 +37,26 @@ const TableSelector = ({ selectedTable, onSelectTable }) => {
   }, []);
 
   return (
-    <Card 
-      style={{ marginBottom: 16 }}
-      title={
-        <div style={{ display: 'flex', alignItems: 'center' }}>
-          <DatabaseOutlined style={{ marginRight: 8 }} />
-          <span>Database Tables</span>
-        </div>
-      }
+    <div
+      style={{ 
+        border: '1px solid #d9d9d9',
+        borderRadius: '8px',
+        marginBottom: 16,
+        background: 'white',
+        padding: '16px'
+      }}
     >
+      <div style={{ 
+        marginBottom: 12, 
+        borderBottom: '1px solid #f0f0f0', 
+        paddingBottom: 8,
+        display: 'flex', 
+        alignItems: 'center' 
+      }}>
+        <DatabaseOutlined style={{ marginRight: 8 }} />
+        <span style={{ fontWeight: 'bold' }}>Database Tables</span>
+      </div>
+  
       {loading ? (
         <div style={{ textAlign: 'center', padding: '20px 0' }}>
           <Spin />
@@ -84,7 +95,7 @@ const TableSelector = ({ selectedTable, onSelectTable }) => {
           )}
         </>
       )}
-    </Card>
+    </div>
   );
 };
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Input, Select, Button, message, Row, Col, Layout } from 'antd';
+import { Input, Select, Button, message } from 'antd';
 import { SearchOutlined, DatabaseOutlined } from '@ant-design/icons';
 import DataTable from './DataTable';
 import TableSelector from './TableSelector';
@@ -14,7 +14,6 @@ import {
 } from './DatabaseConnector';
 
 const { Option } = Select;
-const { Sider, Content } = Layout;
 
 const DataTableExample = () => {
   const [tableData, setTableData] = useState([]);
@@ -227,99 +226,106 @@ const DataTableExample = () => {
   };
 
   return (
-    <Layout style={{ background: '#fff', minHeight: '100vh' }}>
-      <Sider 
-        width={300} 
-        style={{ 
+    <div className="sql-explorer">
+      <div className="explorer-container" style={{ display: 'flex', width: '100%' }}>
+        {/* Sidebar */}
+        <div className="explorer-sidebar" style={{ 
+          width: '300px', 
           background: '#fff', 
           borderRight: '1px solid #f0f0f0',
-          padding: '20px 16px'
-        }}
-      >
-        <h2 style={{ display: 'flex', alignItems: 'center' }}>
-          <DatabaseOutlined style={{ marginRight: 10 }} />
-          SQL Explorer
-        </h2>
-        <p>View and manage all tables in your PostgreSQL database</p>
-        
-        <TableSelector 
-          selectedTable={selectedTable}
-          onSelectTable={handleTableChange}
-        />
-        
-        {/* Only show filters for product tables */}
-        {(selectedTable === 'product_summary' || selectedTable === 'products') && (
-          <>
-            <h3>Filters</h3>
-            <div style={{ marginBottom: 16 }}>
-              <div style={{ marginBottom: 8 }}>
-                <Input
-                  placeholder="Search products..."
-                  value={searchTerm}
-                  onChange={e => setSearchTerm(e.target.value)}
-                  onPressEnter={handleSearch}
-                  style={{ width: '100%' }}
-                  suffix={<Button type="text" icon={<SearchOutlined />} onClick={handleSearch} />}
-                />
+          padding: '20px 16px',
+          height: 'calc(100vh - 150px)',
+          overflowY: 'auto'
+        }}>
+          <h2 style={{ display: 'flex', alignItems: 'center' }}>
+            <DatabaseOutlined style={{ marginRight: 10 }} />
+            SQL Explorer
+          </h2>
+          <p>View and manage all tables in your PostgreSQL database</p>
+          
+          <TableSelector 
+            selectedTable={selectedTable}
+            onSelectTable={handleTableChange}
+          />
+          
+          {/* Only show filters for product tables */}
+          {(selectedTable === 'product_summary' || selectedTable === 'products') && (
+            <>
+              <h3>Filters</h3>
+              <div style={{ marginBottom: 16 }}>
+                <div style={{ marginBottom: 8 }}>
+                  <Input
+                    placeholder="Search products..."
+                    value={searchTerm}
+                    onChange={e => setSearchTerm(e.target.value)}
+                    onPressEnter={handleSearch}
+                    style={{ width: '100%' }}
+                    suffix={<Button type="text" icon={<SearchOutlined />} onClick={handleSearch} />}
+                  />
+                </div>
+                
+                <div style={{ marginBottom: 8 }}>
+                  <Select
+                    placeholder="Filter by Category"
+                    allowClear
+                    style={{ width: '100%' }}
+                    onChange={value => setSelectedCategory(value)}
+                    value={selectedCategory}
+                  >
+                    {categories.map(category => (
+                      <Option key={category.id} value={category.id}>{category.name}</Option>
+                    ))}
+                  </Select>
+                </div>
+                
+                <div style={{ marginBottom: 8 }}>
+                  <Select
+                    placeholder="Filter by Status"
+                    allowClear
+                    style={{ width: '100%' }}
+                    onChange={value => setSelectedStatus(value)}
+                    value={selectedStatus}
+                  >
+                    <Option value="active">Active</Option>
+                    <Option value="discontinued">Discontinued</Option>
+                    <Option value="out_of_stock">Out of Stock</Option>
+                    <Option value="backordered">Backordered</Option>
+                  </Select>
+                </div>
               </div>
-              
-              <div style={{ marginBottom: 8 }}>
-                <Select
-                  placeholder="Filter by Category"
-                  allowClear
-                  style={{ width: '100%' }}
-                  onChange={value => setSelectedCategory(value)}
-                  value={selectedCategory}
-                >
-                  {categories.map(category => (
-                    <Option key={category.id} value={category.id}>{category.name}</Option>
-                  ))}
-                </Select>
-              </div>
-              
-              <div style={{ marginBottom: 8 }}>
-                <Select
-                  placeholder="Filter by Status"
-                  allowClear
-                  style={{ width: '100%' }}
-                  onChange={value => setSelectedStatus(value)}
-                  value={selectedStatus}
-                >
-                  <Option value="active">Active</Option>
-                  <Option value="discontinued">Discontinued</Option>
-                  <Option value="out_of_stock">Out of Stock</Option>
-                  <Option value="backordered">Backordered</Option>
-                </Select>
-              </div>
-            </div>
-          </>
-        )}
-        
-        <div style={{ margin: '24px 0', padding: '16px', background: '#f0f2f5', borderRadius: '8px', border: '1px solid #d9d9d9' }}>
-          <h3>Database Integration</h3>
-          <p>This component connects to PostgreSQL database with:</p>
-          <ul>
-            <li>Dynamic table selection</li>
-            <li>Automatic schema detection</li>
-            <li>CRUD operations</li>
-            <li>Filtering and search</li>
-          </ul>
+            </>
+          )}
+          
+          <div style={{ margin: '24px 0', padding: '16px', background: '#f0f2f5', borderRadius: '8px', border: '1px solid #d9d9d9' }}>
+            <h3>Database Integration</h3>
+            <p>This component connects to PostgreSQL database with:</p>
+            <ul>
+              <li>Dynamic table selection</li>
+              <li>Automatic schema detection</li>
+              <li>CRUD operations</li>
+              <li>Filtering and search</li>
+            </ul>
+          </div>
         </div>
-      </Sider>
-      
-      <Content style={{ padding: '20px 24px' }}>
-        <DataTable
-          tableName={getTableDisplayName()}
-          columns={columns}
-          dataSource={tableData.map(item => ({ ...item, key: item.id }))}
-          onSave={handleSave}
-          onDelete={handleDelete}
-          onAdd={handleAdd}
-          loading={loading}
-          formulaEnabled={selectedTable === 'product_summary'}
-        />
-      </Content>
-    </Layout>
+        
+        {/* Main content */}
+        <div className="explorer-content" style={{ 
+          flex: 1, 
+          padding: '20px 24px'
+        }}>
+          <DataTable
+            tableName={getTableDisplayName()}
+            columns={columns}
+            dataSource={tableData.map(item => ({ ...item, key: item.id }))}
+            onSave={handleSave}
+            onDelete={handleDelete}
+            onAdd={handleAdd}
+            loading={loading}
+            formulaEnabled={selectedTable === 'product_summary'}
+          />
+        </div>
+      </div>
+    </div>
   );
 };
 
