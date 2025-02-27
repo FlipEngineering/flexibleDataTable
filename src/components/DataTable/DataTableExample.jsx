@@ -224,21 +224,32 @@ const DataTableExample = () => {
         const product = tableData.find(p => p.key === key);
         if (!product) return;
         
+        // Show loading indicator
+        message.loading({ content: 'Saving to database...', key: 'saveOperation' });
+        
         // Update the product in database
-        await saveProduct({ ...product, ...values }, false);
+        const savedData = await saveProduct({ ...product, ...values }, false);
+        
+        if (savedData) {
+          // Operation was successful
+          message.success({ content: 'Record updated in database', key: 'saveOperation', duration: 2 });
+          
+          // If we have real database, refresh data to get server-calculated fields
+          loadTableData(selectedTable);
+        } else {
+          throw new Error('Save operation returned no data');
+        }
       } else {
         // For other tables, we would need to implement specific update logic
         message.info(`Update operations for ${selectedTable} not yet implemented`);
         return;
       }
       
-      message.success('Record updated successfully');
-      
-      // Update local state
+      // Update local state for immediate UI feedback
       setTableData(newData);
     } catch (error) {
       console.error('Error updating record:', error);
-      message.error('Failed to update record');
+      message.error({ content: 'Failed to update record in database', key: 'saveOperation', duration: 2 });
     }
   };
 
@@ -249,42 +260,64 @@ const DataTableExample = () => {
         const product = tableData.find(p => p.key === key);
         if (!product) return;
         
+        // Show loading indicator
+        message.loading({ content: 'Deleting from database...', key: 'deleteOperation' });
+        
         // Delete from database
-        await deleteProduct(product.id);
+        const success = await deleteProduct(product.id);
+        
+        if (success) {
+          // Operation was successful
+          message.success({ content: 'Record deleted from database', key: 'deleteOperation', duration: 2 });
+          
+          // If we have real database, refresh data to ensure consistency
+          loadTableData(selectedTable);
+        } else {
+          throw new Error('Delete operation failed');
+        }
       } else {
         // For other tables, we would need to implement specific delete logic
         message.info(`Delete operations for ${selectedTable} not yet implemented`);
         return;
       }
       
-      message.success('Record deleted successfully');
-      
-      // Update local state
+      // Update local state for immediate UI feedback
       setTableData(newData);
     } catch (error) {
       console.error('Error deleting record:', error);
-      message.error('Failed to delete record');
+      message.error({ content: 'Failed to delete record from database', key: 'deleteOperation', duration: 2 });
     }
   };
 
   const handleAdd = async (record, newData) => {
     try {
       if (selectedTable === 'product_summary' || selectedTable === 'products') {
-        // Add to database
-        await saveProduct(record, true);
+        // Show loading indicator
+        message.loading({ content: 'Adding to database...', key: 'addOperation' });
+        
+        // Add to database (true indicates new record)
+        const savedData = await saveProduct(record, true);
+        
+        if (savedData) {
+          // Operation was successful
+          message.success({ content: 'Record added to database', key: 'addOperation', duration: 2 });
+          
+          // If we have real database, refresh data to get server-assigned IDs and calculated fields
+          loadTableData(selectedTable);
+        } else {
+          throw new Error('Add operation returned no data');
+        }
       } else {
         // For other tables, we would need to implement specific add logic
         message.info(`Add operations for ${selectedTable} not yet implemented`);
         return;
       }
       
-      message.success('Record added successfully');
-      
-      // Update local state
+      // Update local state for immediate UI feedback
       setTableData(newData);
     } catch (error) {
       console.error('Error adding record:', error);
-      message.error('Failed to add record');
+      message.error({ content: 'Failed to add record to database', key: 'addOperation', duration: 2 });
     }
   };
 

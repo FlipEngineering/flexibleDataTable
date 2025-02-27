@@ -226,7 +226,23 @@ CREATE TABLE IF NOT EXISTS categories (
   id SERIAL PRIMARY KEY,
   name TEXT,
   description TEXT
-);`}
+);
+
+-- Insert sample categories
+INSERT INTO categories (name, description) VALUES
+('Electronics', 'Electronic devices and accessories'),
+('Office Supplies', 'Office stationary and supplies'),
+('Furniture', 'Office and home furniture'),
+('Kitchen', 'Kitchen appliances and utensils'),
+('Books', 'Books and publications');
+
+-- Insert sample products
+INSERT INTO product_summary (sku, name, description, category, price, cost, quantity, reorder_level, status) VALUES
+('E-LAPTOP-001', 'Business Laptop', '15-inch business laptop with 16GB RAM', 'Electronics', 1299.99, 950.00, 25, 5, 'active'),
+('E-PHONE-002', 'Smartphone X', 'Latest smartphone model with dual camera', 'Electronics', 899.99, 650.00, 42, 10, 'active'),
+('O-DESK-001', 'Standing Desk', 'Adjustable height standing desk', 'Office Supplies', 499.99, 300.00, 8, 3, 'active'),
+('F-CHAIR-002', 'Ergonomic Chair', 'Fully adjustable ergonomic office chair', 'Furniture', 349.99, 200.00, 12, 5, 'active'),
+('B-BIZ-001', 'Business Strategy Book', 'Best-selling business strategy guide', 'Books', 24.99, 12.00, 45, 10, 'active');`}
                   </pre>
                 </div>
               </div>
