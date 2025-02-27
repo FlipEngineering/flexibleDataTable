@@ -129,6 +129,8 @@ const DataTableExample = () => {
     
     const applyFilters = async () => {
       setLoading(true);
+      logDebug(`Applying filters to ${selectedTable}...`, 'info');
+      
       try {
         const filters = {};
         if (selectedCategory) filters.category_id = selectedCategory;
@@ -136,8 +138,10 @@ const DataTableExample = () => {
         
         const filteredProducts = await fetchProducts(filters);
         setTableData(filteredProducts);
+        logDebug(`Applied filters successfully, found ${filteredProducts.length} records`, 'success');
       } catch (error) {
-        console.error('Error applying filters:', error);
+        const errorMsg = `Error applying filters: ${error.message}`;
+        logDebug(errorMsg, 'error');
         message.error('Failed to filter products');
       } finally {
         setLoading(false);

@@ -158,19 +158,49 @@ const TableSelector = ({ selectedTable, onSelectTable }) => {
               margin: '8px 0'
             }}>
               <div style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '8px' }}>
-                No Tables Found
+                DATABASE ERROR
               </div>
               <p style={{ margin: '4px 0', padding: '0 16px' }}>
-                No accessible tables in your Supabase database. Sample data is available for demonstration.
+                No accessible tables found in your Supabase database.
               </p>
-              <Button 
-                type="primary" 
-                onClick={handleRefresh} 
-                style={{ marginTop: '12px' }}
-                danger
-              >
-                Retry Connection
-              </Button>
+              <p style={{ margin: '4px 0', padding: '0 16px', fontSize: '12px' }}>
+                Please create tables in your Supabase project first, or check your database permissions.
+              </p>
+              <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginTop: '12px' }}>
+                <button 
+                  style={{
+                    backgroundColor: '#ff4d4f',
+                    color: 'white',
+                    borderRadius: '4px',
+                    padding: '4px 15px',
+                    border: 'none',
+                    cursor: 'pointer',
+                    boxShadow: '0 2px 0 rgba(0,0,0,0.045)',
+                    height: '32px'
+                  }}
+                  onClick={handleRefresh}
+                >
+                  Retry Connection
+                </button>
+                <a 
+                  href="https://supabase.com/dashboard" 
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <button
+                    style={{
+                      backgroundColor: 'white',
+                      color: 'rgba(0, 0, 0, 0.85)',
+                      borderRadius: '4px',
+                      padding: '4px 15px',
+                      border: '1px solid #d9d9d9',
+                      cursor: 'pointer',
+                      boxShadow: '0 2px 0 rgba(0,0,0,0.045)',
+                      height: '32px'
+                    }}
+                  >Go to Supabase</button>
+                </a>
+              </div>
             </div>
           )}
           

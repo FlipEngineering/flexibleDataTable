@@ -275,8 +275,24 @@ export const fetchProducts = async (filters = {}, orderBy = 'name', ascending = 
 export const searchProducts = async (searchTerm) => {
   try {
     // First try the RPC function if available
-    const { data, error } = await supabase
-      .rpc('search_products', { search_term: searchTerm });
+    let data, error;
+    
+    try {
+      // Check if the client has the RPC method
+      if (typeof supabase.rpc === 'function') {
+        const result = await supabase
+          .rpc('search_products', { search_term: searchTerm });
+        
+        data = result.data;
+        error = result.error;
+      } else {
+        // If RPC method is not available, throw error to fall back to client-side search
+        throw new Error('RPC method not available in this Supabase client');
+      }
+    } catch (e) {
+      console.log('🔍 Supabase RPC call failed:', e.message);
+      error = e;
+    }
       
     if (error) throw error;
     console.log('Fetched search results from Supabase RPC:', data?.length || 0);
@@ -487,7 +503,23 @@ export const fetchAvailableTables = async () => {
     console.log('🔍 Checking database connection and looking for tables...');
     
     // First, ensure we can connect to Supabase at all
-    const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+    let sessionData, sessionError;
+    
+    try {
+      // Handle both real Supabase client and mock client
+      if (typeof supabase.auth?.getSession === 'function') {
+        const session = await supabase.auth.getSession();
+        sessionData = session.data;
+        sessionError = session.error;
+      } else {
+        // Mock success for our mock client
+        sessionData = { session: {} };
+        sessionError = null;
+      }
+    } catch (e) {
+      console.error('❌ Supabase connection test failed:', e.message);
+      sessionError = e;
+    }
     
     if (sessionError) {
       console.error('❌ Cannot connect to Supabase:', sessionError.message);
@@ -496,8 +528,8 @@ export const fetchAvailableTables = async () => {
     
     console.log('✅ Supabase connection works!');
     
-    // Skip information_schema since it requires special permissions
-    // Instead, check a predefined list of tables that anon keys typically can access
+    // Try to get all tables from the database
+    // Check common tables that anon keys typically can access
     const tablesToCheck = [
       // Common table names in Supabase projects
       'todos', 'users', 'profiles', 'settings', 'posts', 'comments',
@@ -512,30 +544,23 @@ export const fetchAvailableTables = async () => {
     // Try each table with simpler permissions
     const accessibleTables = [];
     
-    // Create a manual pre-set of sample data for demonstration
-    const sampleTables = [
-      { 
-        id: 'product_summary', 
-        name: 'Product Summary',
-        description: 'Sample product inventory data',
-        sample: true 
-      },
-      { 
-        id: 'categories', 
-        name: 'Categories',
-        description: 'Sample product categories',
-        sample: true 
-      }
-    ];
-    
     // First try to access each potential table directly
     for (const tableName of tablesToCheck) {
       try {
         // Just try to get a single row to see if the table exists and is accessible
-        const { data, error } = await supabase
-          .from(tableName)
-          .select('*')
-          .limit(1);
+        let data, error;
+        
+        try {
+          const result = await supabase
+            .from(tableName)
+            .select('*')
+            .limit(1);
+          
+          data = result.data;
+          error = result.error;
+        } catch (e) {
+          error = e;
+        }
         
         if (!error) {
           // Table exists and is accessible
@@ -553,6 +578,7 @@ export const fetchAvailableTables = async () => {
         }
       } catch (e) {
         // Skip tables we can't access
+        console.log(`Checking table "${tableName}"...`);
       }
     }
     
@@ -562,34 +588,11 @@ export const fetchAvailableTables = async () => {
       return accessibleTables;
     }
     
-    // When development or demo mode (no real tables available)
-    console.log('⚠️ No accessible tables found. Using sample tables for demonstration.');
-    
-    return sampleTables.map(table => ({
-      ...table,
-      name: table.name + ' (SAMPLE)',
-      description: 'SAMPLE DATA: ' + table.description
-    }));
+    // If no tables found, throw an error
+    throw new Error('No accessible tables found in the database. Please create tables in your Supabase project.');
   } catch (error) {
     console.error('❌ Database connection issue:', error);
-    
-    // Provide sample tables as fallback when there's a connection issue
-    console.log('⚠️ Displaying sample tables due to connection issue');
-    
-    return [
-      { 
-        id: 'product_summary', 
-        name: 'Products (SAMPLE)', 
-        description: 'SAMPLE DATA: Product inventory for demonstration',
-        sample: true
-      },
-      { 
-        id: 'categories', 
-        name: 'Categories (SAMPLE)', 
-        description: 'SAMPLE DATA: Product categories for demonstration',
-        sample: true
-      }
-    ];
+    throw new Error(`Database connection issue: ${error.message}`);
   }
 };
 
@@ -599,9 +602,6 @@ export const fetchAvailableTables = async () => {
  * @returns {Promise<Array>} - Table data
  */
 export const fetchTableData = async (tableName) => {
-  // Check if this is a sample table by looking at the name
-  const isSampleTable = tableName.includes('(SAMPLE)') || tableName === 'product_summary' || tableName === 'categories';
-  
   try {
     // Try to fetch from actual database
     const { data, error } = await supabase
@@ -609,65 +609,15 @@ export const fetchTableData = async (tableName) => {
       .select('*');
       
     if (error) {
-      console.log(`Error fetching data from ${tableName}: ${error.message}`);
-      
-      // For sample tables, use mock data
-      if (isSampleTable) {
-        throw new Error('Using sample data instead');
-      } else {
-        // For other tables with errors, return empty array
-        return [];
-      }
+      console.error(`❌ Error fetching data from ${tableName}: ${error.message}`);
+      throw new Error(`Could not access table ${tableName}: ${error.message}`);
     }
     
     console.log(`✅ Successfully fetched ${data?.length || 0} rows from ${tableName}`);
     return data;
-  } catch (e) {
-    console.log(`⚠️ Using sample data for ${tableName}: ${e.message}`);
-    
-    // Extract the real table name if it's a sample table with (SAMPLE) in the name
-    const cleanTableName = tableName.replace('(SAMPLE)', '').trim().toLowerCase();
-    
-    // Return corresponding sample data based on table name
-    if (cleanTableName === 'categories' || tableName === 'categories') {
-      return mockData.categories;
-    } else if (cleanTableName === 'product_summary' || cleanTableName === 'products' || 
-               tableName === 'product_summary' || tableName === 'products') {
-      return mockData.product_summary;
-    } else if (cleanTableName === 'suppliers' || tableName === 'suppliers') {
-      return mockData.suppliers || [
-        { id: 1, name: 'TechSupply Inc.', contact: 'John Smith', email: 'jsmith@techsupply.com', phone: '555-123-4567' },
-        { id: 2, name: 'Office Essentials', contact: 'Sarah Johnson', email: 'sjohnson@offess.com', phone: '555-987-6543' },
-        { id: 3, name: 'Furniture Depot', contact: 'Michael Brown', email: 'mbrown@furndepot.com', phone: '555-456-7890' }
-      ];
-    } else if (cleanTableName === 'customers' || tableName === 'customers') {
-      return mockData.customers || [
-        { id: 1, name: 'Acme Corp', contact: 'Jane Doe', email: 'jdoe@acme.com', phone: '555-111-2222' },
-        { id: 2, name: 'Widget LLC', contact: 'Bob Wilson', email: 'bwilson@widget.com', phone: '555-333-4444' },
-        { id: 3, name: 'Example Industries', contact: 'Carol Taylor', email: 'ctaylor@example.com', phone: '555-555-6666' }
-      ];
-    } else if (cleanTableName === 'orders' || tableName === 'orders') {
-      return mockData.orders || [
-        { id: 1, customer_id: 1, order_date: '2025-01-15', status: 'completed', total: 2499.97 },
-        { id: 2, customer_id: 2, order_date: '2025-02-01', status: 'processing', total: 899.99 },
-        { id: 3, customer_id: 1, order_date: '2025-02-20', status: 'pending', total: 1299.99 }
-      ];
-    } else if (cleanTableName === 'transactions' || tableName === 'transactions') {
-      return mockData.transactions || [
-        { id: 1, product_id: 1, type: 'purchase', quantity: 10, transaction_date: '2025-01-10', note: 'Initial inventory' },
-        { id: 2, product_id: 2, type: 'sale', quantity: -5, transaction_date: '2025-01-20', note: 'Customer order #135' },
-        { id: 3, product_id: 1, type: 'adjustment', quantity: -1, transaction_date: '2025-02-05', note: 'Damaged product' }
-      ];
-    } else if (cleanTableName === 'todos' || tableName === 'todos') {
-      return [
-        { id: 1, title: 'Welcome to the demo tables', completed: false, created_at: new Date().toISOString() },
-        { id: 2, title: 'Try selecting different tables', completed: true, created_at: new Date().toISOString() },
-        { id: 3, title: 'Explore the sample data', completed: false, created_at: new Date().toISOString() }
-      ];
-    }
-    
-    // Default empty array for other tables
-    return [];
+  } catch (error) {
+    console.error(`❌ Failed to fetch data from ${tableName}:`, error.message);
+    throw new Error(`Data access error: ${error.message}`);
   }
 };
 
@@ -679,10 +629,19 @@ export const fetchTableData = async (tableName) => {
 export const getTableColumns = async (tableName) => {
   // Try to get a sample row to infer columns
   try {
-    const { data, error } = await supabase
-      .from(tableName)
-      .select('*')
-      .limit(1);
+    let data, error;
+    
+    try {
+      const result = await supabase
+        .from(tableName)
+        .select('*')
+        .limit(1);
+      
+      data = result.data;
+      error = result.error;
+    } catch (e) {
+      error = e;
+    }
       
     if (error) throw error;
     
