@@ -371,10 +371,25 @@ const DataTableExample = () => {
               <div style={{ fontSize: '72px', lineHeight: '72px', marginBottom: '16px' }}>📋</div>
               <h3 style={{ color: 'var(--heading-color, rgba(0, 0, 0, 0.85))' }}>No data found</h3>
               <p>This table appears to be empty or not available.</p>
+              <div style={{ marginBottom: '16px' }}>
+                {selectedTable && selectedTable.includes('DUMMY') && (
+                  <div style={{
+                    display: 'inline-block',
+                    margin: '8px 0',
+                    padding: '4px 12px',
+                    backgroundColor: 'var(--warning-color, #faad14)',
+                    color: 'var(--text-color-inverse, #fff)',
+                    borderRadius: '4px',
+                    fontWeight: 'bold'
+                  }}>
+                    DUMMY DATA MODE ACTIVE
+                  </div>
+                )}
+              </div>
               <Button 
                 type="primary" 
                 onClick={() => loadTableData(selectedTable)}
-                style={{ marginTop: '16px' }}
+                style={{ marginTop: '8px' }}
               >
                 Refresh Data
               </Button>

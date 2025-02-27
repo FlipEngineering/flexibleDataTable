@@ -22,18 +22,40 @@ import { createClient } from '@supabase/supabase-js';
  * - Add .env to .gitignore
  */
 const getSupabaseClient = () => {
-  // Access environment variables set during the build process
+  // Check for environment variables (set during build process)
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
   const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+  // Debug information for connection troubleshooting
+  console.log('Supabase connection check:');
+  console.log(`- URL defined: ${supabaseUrl ? 'Yes' : 'No'}`);
+  console.log(`- Key defined: ${supabaseKey ? 'Yes' : 'No'}`);
   
-  // Check if we have the actual credentials
+  // Explicitly set demo credentials for live demos if needed
+  // IMPORTANT: Only use public demo credentials here, never production keys
+  const demoUrl = 'https://zfprvvlfftvbblodcszk.supabase.co';
+  const demoKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpmcHJ2dmxmZnR2YmJsb2Rjc3prIiwicm9sZSI6ImFub24iLCJpYXQiOjE2MDc2MjM3NzcsImV4cCI6MTc3MDE5NTc3N30.C_lKKjnY_palw5SaXXW1Gl6UMhXBZB_KM33sWw8kJvI';
+  
+  // Use configured Supabase credentials if available
   if (supabaseUrl && supabaseKey) {
-    console.log('Using actual Supabase client with provided credentials');
+    console.log('✅ Using configured Supabase client with provided credentials');
     return createClient(supabaseUrl, supabaseKey);
   }
   
-  // Fallback to mock implementation if no credentials
-  console.log('Using mock Supabase client (no credentials provided)');
+  // Check if we should use the demo database
+  const useDemoDatabase = true; // Set to true to use the demo database
+  
+  if (useDemoDatabase) {
+    console.log('⚠️ Using demo Supabase database (for demonstration purposes only)');
+    try {
+      return createClient(demoUrl, demoKey);
+    } catch (error) {
+      console.error('Failed to connect to demo database:', error);
+    }
+  }
+  
+  // Fallback to mock implementation if no credentials or demo fails
+  console.log('⚠️ Using mock Supabase client with DUMMY DATA (no working credentials)');
   return mockSupabase;
 };
 
@@ -456,21 +478,20 @@ export const recordTransaction = async (transaction) => {
  */
 export const fetchAvailableTables = async () => {
   try {
-    // Try to fetch actual tables from the database using Supabase
-    const { data, error } = await supabase
+    // First try to list available tables using system tables
+    // This approach works with PostgreSQL databases
+    const { data: pgTables, error: pgError } = await supabase
       .from('pg_tables')
       .select('schemaname, tablename')
       .eq('schemaname', 'public')
       .order('tablename');
     
-    if (error) throw error;
-    
-    // If we got actual table data from the database
-    if (data && data.length > 0) {
-      console.log('Found actual database tables:', data.length);
+    // If pg_tables query worked, use it
+    if (!pgError && pgTables && pgTables.length > 0) {
+      console.log('Found database tables via pg_tables:', pgTables.length);
       
       // Map the raw table data to our table format
-      return data.map(table => ({
+      return pgTables.map(table => ({
         id: table.tablename,
         name: table.tablename
           .split('_')
@@ -480,19 +501,80 @@ export const fetchAvailableTables = async () => {
       }));
     }
     
-    throw new Error('No tables found in database');
+    // If pg_tables didn't work, try an alternative approach
+    // Try to use PostgreSQL's information_schema (another approach)
+    const { data: infoSchemaTables, error: infoSchemaError } = await supabase
+      .from('information_schema.tables')
+      .select('table_schema, table_name')
+      .eq('table_schema', 'public')
+      .order('table_name');
+    
+    if (!infoSchemaError && infoSchemaTables && infoSchemaTables.length > 0) {
+      console.log('Found database tables via information_schema:', infoSchemaTables.length);
+      
+      return infoSchemaTables.map(table => ({
+        id: table.table_name,
+        name: table.table_name
+          .split('_')
+          .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(' '),
+        description: `${table.table_schema}.${table.table_name} database table`
+      }));
+    }
+    
+    // If neither method works, try one more approach - query a specific
+    // list of tables that we know should exist
+    const expectedTables = [
+      'products', 'product_summary', 'categories', 'transactions', 
+      'suppliers', 'customers', 'orders'
+    ];
+    
+    // Test each table by querying for a single row
+    const existingTables = [];
+    
+    for (const tableName of expectedTables) {
+      try {
+        const { data, error } = await supabase
+          .from(tableName)
+          .select('*')
+          .limit(1);
+          
+        // If query succeeds, add to existing tables
+        if (!error) {
+          existingTables.push({
+            id: tableName,
+            name: tableName
+              .split('_')
+              .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+              .join(' '),
+            description: `${tableName} database table`,
+            // Add flag to indicate if table has data
+            hasData: data && data.length > 0
+          });
+          console.log(`Table "${tableName}" exists`);
+        }
+      } catch (e) {
+        console.log(`Table "${tableName}" not found:`, e.message);
+      }
+    }
+    
+    if (existingTables.length > 0) {
+      console.log('Found existing tables by testing:', existingTables.length);
+      return existingTables;
+    }
+    
+    throw new Error('No tables found in database using any method');
   } catch (error) {
     console.log('Using mock tables due to error:', error.message);
     
     // Fall back to mock tables
-    // In a production app, you might want to only show tables that have mock data
     return [
-      { id: 'product_summary', name: 'Products', description: 'Product inventory data' },
-      { id: 'categories', name: 'Categories', description: 'Product categories' },
-      { id: 'transactions', name: 'Transactions', description: 'Inventory transactions' },
-      { id: 'suppliers', name: 'Suppliers', description: 'Product suppliers' },
-      { id: 'customers', name: 'Customers', description: 'Customer information' },
-      { id: 'orders', name: 'Orders', description: 'Customer orders' }
+      { id: 'product_summary', name: 'Products (DUMMY)', description: 'DUMMY DATA: Product inventory data' },
+      { id: 'categories', name: 'Categories (DUMMY)', description: 'DUMMY DATA: Product categories' },
+      { id: 'transactions', name: 'Transactions (DUMMY)', description: 'DUMMY DATA: Inventory transactions' },
+      { id: 'suppliers', name: 'Suppliers (DUMMY)', description: 'DUMMY DATA: Product suppliers' },
+      { id: 'customers', name: 'Customers (DUMMY)', description: 'DUMMY DATA: Customer information' },
+      { id: 'orders', name: 'Orders (DUMMY)', description: 'DUMMY DATA: Customer orders' }
     ];
   }
 };

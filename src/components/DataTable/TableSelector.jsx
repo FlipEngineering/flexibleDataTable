@@ -136,6 +136,21 @@ const TableSelector = ({ selectedTable, onSelectTable }) => {
                   {tables.find(t => t.id === selectedTable)?.description || 'Table data'}
                 </Text>
               </div>
+              
+              {tables.find(t => t.id === selectedTable)?.name?.includes('DUMMY') && (
+                <div style={{
+                  marginTop: 8,
+                  padding: '4px 8px',
+                  backgroundColor: 'var(--warning-color, #faad14)',
+                  color: 'var(--text-color-inverse, #fff)',
+                  borderRadius: '4px',
+                  fontWeight: 'bold',
+                  fontSize: '0.85rem',
+                  textAlign: 'center'
+                }}>
+                  USING MOCK DATA
+                </div>
+              )}
             </div>
           )}
         </>
