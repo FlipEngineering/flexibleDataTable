@@ -23,9 +23,10 @@
 }
 
 .App-main {
-  max-width: 1400px; /* Increased from 1200px for more table space */
-  margin: 0 auto;
-  padding: 0 20px;
+  /* Remove max-width to allow full-width table and sidebars */
+  width: 100%;
+  margin: 0;
+  padding: 0;
 }
 
 .App-footer {

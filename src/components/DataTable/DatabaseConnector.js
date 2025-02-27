@@ -450,6 +450,174 @@ export const recordTransaction = async (transaction) => {
   }
 };
 
+/**
+ * Fetches all available tables from the database
+ * @returns {Promise<Array>} - List of table names
+ */
+export const fetchAvailableTables = async () => {
+  // In a real implementation, we would query the database for available tables
+  // For now, return a static list of mock tables
+  return [
+    { id: 'product_summary', name: 'Products', description: 'Product inventory data' },
+    { id: 'categories', name: 'Categories', description: 'Product categories' },
+    { id: 'transactions', name: 'Transactions', description: 'Inventory transactions' },
+    { id: 'suppliers', name: 'Suppliers', description: 'Product suppliers' },
+    { id: 'customers', name: 'Customers', description: 'Customer information' },
+    { id: 'orders', name: 'Orders', description: 'Customer orders' }
+  ];
+};
+
+/**
+ * Fetches table data based on table name
+ * @param {string} tableName - Name of the table to fetch
+ * @returns {Promise<Array>} - Table data
+ */
+export const fetchTableData = async (tableName) => {
+  try {
+    // Try to fetch from actual database
+    const { data, error } = await supabase
+      .from(tableName)
+      .select('*');
+      
+    if (error) throw error;
+    console.log(`Fetched ${data?.length || 0} rows from ${tableName}`);
+    return data;
+  } catch (e) {
+    console.log(`Falling back to mock data for ${tableName}:`, e.message);
+    
+    // Fall back to mock data
+    if (tableName === 'categories') {
+      return mockData.categories;
+    } else if (tableName === 'product_summary' || tableName === 'products') {
+      return mockData.product_summary;
+    } else if (tableName === 'suppliers') {
+      return mockData.suppliers || [
+        { id: 1, name: 'TechSupply Inc.', contact: 'John Smith', email: 'jsmith@techsupply.com', phone: '555-123-4567' },
+        { id: 2, name: 'Office Essentials', contact: 'Sarah Johnson', email: 'sjohnson@offess.com', phone: '555-987-6543' },
+        { id: 3, name: 'Furniture Depot', contact: 'Michael Brown', email: 'mbrown@furndepot.com', phone: '555-456-7890' }
+      ];
+    } else if (tableName === 'customers') {
+      return mockData.customers || [
+        { id: 1, name: 'Acme Corp', contact: 'Jane Doe', email: 'jdoe@acme.com', phone: '555-111-2222' },
+        { id: 2, name: 'Widget LLC', contact: 'Bob Wilson', email: 'bwilson@widget.com', phone: '555-333-4444' },
+        { id: 3, name: 'Example Industries', contact: 'Carol Taylor', email: 'ctaylor@example.com', phone: '555-555-6666' }
+      ];
+    } else if (tableName === 'orders') {
+      return mockData.orders || [
+        { id: 1, customer_id: 1, order_date: '2025-01-15', status: 'completed', total: 2499.97 },
+        { id: 2, customer_id: 2, order_date: '2025-02-01', status: 'processing', total: 899.99 },
+        { id: 3, customer_id: 1, order_date: '2025-02-20', status: 'pending', total: 1299.99 }
+      ];
+    } else if (tableName === 'transactions') {
+      return mockData.transactions || [
+        { id: 1, product_id: 1, type: 'purchase', quantity: 10, transaction_date: '2025-01-10', note: 'Initial inventory' },
+        { id: 2, product_id: 2, type: 'sale', quantity: -5, transaction_date: '2025-01-20', note: 'Customer order #135' },
+        { id: 3, product_id: 1, type: 'adjustment', quantity: -1, transaction_date: '2025-02-05', note: 'Damaged product' }
+      ];
+    }
+    
+    // If table doesn't exist in mock data, return empty array
+    return [];
+  }
+};
+
+/**
+ * Gets column definitions for a specific table
+ * @param {string} tableName - Name of the table
+ * @returns {Array} - Column definitions
+ */
+export const getTableColumns = async (tableName) => {
+  // Try to get a sample row to infer columns
+  try {
+    const { data, error } = await supabase
+      .from(tableName)
+      .select('*')
+      .limit(1);
+      
+    if (error) throw error;
+    
+    if (data && data.length > 0) {
+      // Generate columns from the sample data
+      return Object.keys(data[0]).map(key => {
+        const value = data[0][key];
+        const type = typeof value;
+        
+        if (key === 'id') {
+          return {
+            title: 'ID',
+            dataIndex: key,
+            type: 'number',
+            required: true,
+            sorter: true
+          };
+        }
+        
+        return {
+          title: key.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
+          dataIndex: key,
+          type: type === 'number' ? 'number' : 
+                type === 'boolean' ? 'checkbox' : 'text',
+          required: false,
+          sorter: true,
+          filterable: true
+        };
+      });
+    }
+  } catch (e) {
+    console.log(`Falling back to predefined columns for ${tableName}:`, e.message);
+  }
+  
+  // Fallback to predefined columns if we couldn't infer them
+  if (tableName === 'product_summary' || tableName === 'products') {
+    return getProductColumns();
+  } else if (tableName === 'categories') {
+    return [
+      { title: 'ID', dataIndex: 'id', type: 'number', required: true },
+      { title: 'Name', dataIndex: 'name', type: 'text', required: true },
+      { title: 'Description', dataIndex: 'description', type: 'text', required: false }
+    ];
+  } else if (tableName === 'suppliers') {
+    return [
+      { title: 'ID', dataIndex: 'id', type: 'number', required: true },
+      { title: 'Name', dataIndex: 'name', type: 'text', required: true },
+      { title: 'Contact Person', dataIndex: 'contact', type: 'text', required: false },
+      { title: 'Email', dataIndex: 'email', type: 'text', required: false },
+      { title: 'Phone', dataIndex: 'phone', type: 'text', required: false }
+    ];
+  } else if (tableName === 'customers') {
+    return [
+      { title: 'ID', dataIndex: 'id', type: 'number', required: true },
+      { title: 'Name', dataIndex: 'name', type: 'text', required: true },
+      { title: 'Contact Person', dataIndex: 'contact', type: 'text', required: false },
+      { title: 'Email', dataIndex: 'email', type: 'text', required: false },
+      { title: 'Phone', dataIndex: 'phone', type: 'text', required: false }
+    ];
+  } else if (tableName === 'orders') {
+    return [
+      { title: 'ID', dataIndex: 'id', type: 'number', required: true },
+      { title: 'Customer ID', dataIndex: 'customer_id', type: 'number', required: true },
+      { title: 'Order Date', dataIndex: 'order_date', type: 'text', required: true },
+      { title: 'Status', dataIndex: 'status', type: 'text', required: true },
+      { title: 'Total', dataIndex: 'total', type: 'number', required: true }
+    ];
+  } else if (tableName === 'transactions') {
+    return [
+      { title: 'ID', dataIndex: 'id', type: 'number', required: true },
+      { title: 'Product ID', dataIndex: 'product_id', type: 'number', required: true },
+      { title: 'Type', dataIndex: 'type', type: 'text', required: true },
+      { title: 'Quantity', dataIndex: 'quantity', type: 'number', required: true },
+      { title: 'Transaction Date', dataIndex: 'transaction_date', type: 'text', required: true },
+      { title: 'Note', dataIndex: 'note', type: 'text', required: false }
+    ];
+  }
+  
+  // Default columns if none of the known tables
+  return [
+    { title: 'ID', dataIndex: 'id', type: 'number', required: true },
+    { title: 'Name', dataIndex: 'name', type: 'text', required: true }
+  ];
+};
+
 export default {
   fetchCategories,
   fetchProducts,
@@ -458,5 +626,8 @@ export default {
   saveProduct,
   deleteProduct,
   fetchProductTransactions,
-  recordTransaction
+  recordTransaction,
+  fetchAvailableTables,
+  fetchTableData,
+  getTableColumns
 };
