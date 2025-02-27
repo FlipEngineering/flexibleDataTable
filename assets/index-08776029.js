@@ -57303,7 +57303,7 @@ class RealtimeClient {
         this.conn = null;
       }
     });
-    __vitePreload(() => import("./browser-1c5f6f98.js").then((n2) => n2.b), true ? [] : void 0).then(({ default: WS }) => {
+    __vitePreload(() => import("./browser-019bde86.js").then((n2) => n2.b), true ? [] : void 0).then(({ default: WS }) => {
       this.conn = new WS(this.endpointURL(), void 0, {
         headers: this.headers
       });
@@ -61579,8 +61579,11 @@ const createClient = (supabaseUrl, supabaseKey, options) => {
 const getSupabaseClient = () => {
   const supabaseUrl = "https://bskffxgprfmjnmwunkck.supabase.co";
   const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJza2ZmeGdwcmZtam5td3Vua2NrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA2OTEzMzcsImV4cCI6MjA1NjI2NzMzN30.BsxrbwLvZLS3NEkm-TK4SlGi2sw7BkmjqCPFsluvFKY";
+  console.log("Supabase connection check:");
+  console.log(`- URL defined: ${"Yes"}`);
+  console.log(`- Key defined: ${"Yes"}`);
   {
-    console.log("Using actual Supabase client with provided credentials");
+    console.log("✅ Using configured Supabase client with provided credentials");
     return createClient(supabaseUrl, supabaseKey);
   }
 };
@@ -61805,27 +61808,65 @@ const deleteProduct = async (id2) => {
 };
 const fetchAvailableTables = async () => {
   try {
-    const { data, error } = await supabase.from("pg_tables").select("schemaname, tablename").eq("schemaname", "public").order("tablename");
-    if (error)
-      throw error;
-    if (data && data.length > 0) {
-      console.log("Found actual database tables:", data.length);
-      return data.map((table) => ({
+    const { data: pgTables, error: pgError } = await supabase.from("pg_tables").select("schemaname, tablename").eq("schemaname", "public").order("tablename");
+    if (!pgError && pgTables && pgTables.length > 0) {
+      console.log("Found database tables via pg_tables:", pgTables.length);
+      return pgTables.map((table) => ({
         id: table.tablename,
         name: table.tablename.split("_").map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(" "),
         description: `${table.schemaname}.${table.tablename} database table`
       }));
     }
-    throw new Error("No tables found in database");
+    const { data: infoSchemaTables, error: infoSchemaError } = await supabase.from("information_schema.tables").select("table_schema, table_name").eq("table_schema", "public").order("table_name");
+    if (!infoSchemaError && infoSchemaTables && infoSchemaTables.length > 0) {
+      console.log("Found database tables via information_schema:", infoSchemaTables.length);
+      return infoSchemaTables.map((table) => ({
+        id: table.table_name,
+        name: table.table_name.split("_").map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(" "),
+        description: `${table.table_schema}.${table.table_name} database table`
+      }));
+    }
+    const expectedTables = [
+      "products",
+      "product_summary",
+      "categories",
+      "transactions",
+      "suppliers",
+      "customers",
+      "orders"
+    ];
+    const existingTables = [];
+    for (const tableName of expectedTables) {
+      try {
+        const { data, error } = await supabase.from(tableName).select("*").limit(1);
+        if (!error) {
+          existingTables.push({
+            id: tableName,
+            name: tableName.split("_").map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(" "),
+            description: `${tableName} database table`,
+            // Add flag to indicate if table has data
+            hasData: data && data.length > 0
+          });
+          console.log(`Table "${tableName}" exists`);
+        }
+      } catch (e2) {
+        console.log(`Table "${tableName}" not found:`, e2.message);
+      }
+    }
+    if (existingTables.length > 0) {
+      console.log("Found existing tables by testing:", existingTables.length);
+      return existingTables;
+    }
+    throw new Error("No tables found in database using any method");
   } catch (error) {
     console.log("Using mock tables due to error:", error.message);
     return [
-      { id: "product_summary", name: "Products", description: "Product inventory data" },
-      { id: "categories", name: "Categories", description: "Product categories" },
-      { id: "transactions", name: "Transactions", description: "Inventory transactions" },
-      { id: "suppliers", name: "Suppliers", description: "Product suppliers" },
-      { id: "customers", name: "Customers", description: "Customer information" },
-      { id: "orders", name: "Orders", description: "Customer orders" }
+      { id: "product_summary", name: "Products (DUMMY)", description: "DUMMY DATA: Product inventory data" },
+      { id: "categories", name: "Categories (DUMMY)", description: "DUMMY DATA: Product categories" },
+      { id: "transactions", name: "Transactions (DUMMY)", description: "DUMMY DATA: Inventory transactions" },
+      { id: "suppliers", name: "Suppliers (DUMMY)", description: "DUMMY DATA: Product suppliers" },
+      { id: "customers", name: "Customers (DUMMY)", description: "DUMMY DATA: Customer information" },
+      { id: "orders", name: "Orders (DUMMY)", description: "DUMMY DATA: Customer orders" }
     ];
   }
 };
@@ -61951,7 +61992,7 @@ const getTableColumns = async (tableName) => {
 const { Option: Option$1 } = Select$1;
 const { Title, Text } = Typography$1;
 const TableSelector = ({ selectedTable, onSelectTable }) => {
-  var _a, _b;
+  var _a, _b, _c, _d;
   const [tables, setTables] = reactExports.useState([]);
   const [loading, setLoading] = reactExports.useState(true);
   const loadTables = async () => {
@@ -62053,7 +62094,17 @@ const TableSelector = ({ selectedTable, onSelectTable }) => {
               "Viewing table: ",
               /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { strong: true, style: { color: "var(--text-color, rgba(0, 0, 0, 0.85))" }, children: ((_a = tables.find((t2) => t2.id === selectedTable)) == null ? void 0 : _a.name) || selectedTable })
             ] }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { marginTop: 4 }, children: /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { style: { color: "var(--text-color-secondary, rgba(0, 0, 0, 0.45))" }, children: ((_b = tables.find((t2) => t2.id === selectedTable)) == null ? void 0 : _b.description) || "Table data" }) })
+            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { marginTop: 4 }, children: /* @__PURE__ */ jsxRuntimeExports.jsx(Text, { style: { color: "var(--text-color-secondary, rgba(0, 0, 0, 0.45))" }, children: ((_b = tables.find((t2) => t2.id === selectedTable)) == null ? void 0 : _b.description) || "Table data" }) }),
+            ((_d = (_c = tables.find((t2) => t2.id === selectedTable)) == null ? void 0 : _c.name) == null ? void 0 : _d.includes("DUMMY")) && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: {
+              marginTop: 8,
+              padding: "4px 8px",
+              backgroundColor: "var(--warning-color, #faad14)",
+              color: "var(--text-color-inverse, #fff)",
+              borderRadius: "4px",
+              fontWeight: "bold",
+              fontSize: "0.85rem",
+              textAlign: "center"
+            }, children: "USING MOCK DATA" })
           ] })
         ] })
       ]
@@ -62361,12 +62412,21 @@ const DataTableExample = () => {
         /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { fontSize: "72px", lineHeight: "72px", marginBottom: "16px" }, children: "📋" }),
         /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { style: { color: "var(--heading-color, rgba(0, 0, 0, 0.85))" }, children: "No data found" }),
         /* @__PURE__ */ jsxRuntimeExports.jsx("p", { children: "This table appears to be empty or not available." }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { marginBottom: "16px" }, children: selectedTable && selectedTable.includes("DUMMY") && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: {
+          display: "inline-block",
+          margin: "8px 0",
+          padding: "4px 12px",
+          backgroundColor: "var(--warning-color, #faad14)",
+          color: "var(--text-color-inverse, #fff)",
+          borderRadius: "4px",
+          fontWeight: "bold"
+        }, children: "DUMMY DATA MODE ACTIVE" }) }),
         /* @__PURE__ */ jsxRuntimeExports.jsx(
           Button$2,
           {
             type: "primary",
             onClick: () => loadTableData(selectedTable),
-            style: { marginTop: "16px" },
+            style: { marginTop: "8px" },
             children: "Refresh Data"
           }
         )
