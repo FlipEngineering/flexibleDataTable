@@ -126,7 +126,7 @@ const TableSelector = ({ selectedTable, onSelectTable }) => {
             Select Table
           </Title>
           {tables.length > 0 ? (
-            <div style={{ marginBottom: 16 }}>
+            <div style={{ marginBottom: 16, minHeight: '150px' }}>
               {tables.map(table => (
                 <div 
                   key={table.id}
@@ -146,11 +146,16 @@ const TableSelector = ({ selectedTable, onSelectTable }) => {
                       ? 'white' 
                       : 'var(--text-color, rgba(255, 255, 255, 0.85))',
                     fontWeight: selectedTable === table.id ? 'bold' : 'normal',
-                    border: '1px solid var(--border-color, #303030)'
+                    border: '1px solid var(--border-color, #303030)',
+                    height: '40px',
+                    display: 'flex',
+                    alignItems: 'center'
                   }}
                 >
                   <Tooltip title={table.description}>
-                    <div>{table.name}</div>
+                    <div style={{ width: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {table.name}
+                    </div>
                   </Tooltip>
                 </div>
               ))}

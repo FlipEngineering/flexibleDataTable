@@ -52,6 +52,14 @@ const DataTableExample = () => {
       default:
         console.log(`[${timestamp}] ${message}`);
     }
+    
+    // Auto-scroll the debug console to show newest logs
+    setTimeout(() => {
+      const logsContainer = document.getElementById('debug-console-logs');
+      if (logsContainer) {
+        logsContainer.scrollTop = 0; // Scroll to top since logs are in reverse order (newest first)
+      }
+    }, 50);
   };
   
   // Load table columns when selected table changes
@@ -349,8 +357,16 @@ const DataTableExample = () => {
   
   // Clear debug logs
   const clearDebugLogs = () => {
-    // Clear logs without adding a new log message
+    // Actually clear logs array
     setDebugLogs([]);
+    
+    // Force a render update in case the state update doesn't trigger it
+    setTimeout(() => {
+      const debugConsole = document.getElementById('debug-console-logs');
+      if (debugConsole) {
+        debugConsole.innerHTML = '<div style="opacity: 0.5; text-align: center; padding: 20px 0;">No logs to display</div>';
+      }
+    }, 50);
   };
 
   return (
@@ -358,15 +374,57 @@ const DataTableExample = () => {
       <div className="explorer-container" style={{ display: 'flex', width: '100%', flexDirection: 'column' }}>
         <div style={{ display: 'flex', flex: 1 }}>
           {/* Sidebar */}
-          <div className="explorer-sidebar" style={{ 
-            width: '300px', 
-            background: 'var(--component-background, #141414)', 
-            borderRight: '1px solid var(--border-color-split, #303030)',
-            padding: '20px 16px',
-            height: 'calc(100vh - 250px)',
-            overflowY: 'auto',
-            color: 'var(--text-color, rgba(255, 255, 255, 0.85))'
-          }}>
+          <div 
+            id="explorer-sidebar"
+            className="explorer-sidebar" 
+            style={{ 
+              width: '300px', 
+              minWidth: '200px',
+              maxWidth: '500px',
+              background: 'var(--component-background, #141414)', 
+              borderRight: '1px solid var(--border-color-split, #303030)',
+              padding: '20px 16px',
+              height: 'calc(100vh - 250px)',
+              overflowY: 'auto',
+              color: 'var(--text-color, rgba(255, 255, 255, 0.85))',
+              position: 'relative',
+              flexShrink: 0
+            }}
+          >
+            {/* Resize handle */}
+            <div
+              style={{
+                position: 'absolute',
+                top: 0,
+                bottom: 0,
+                right: 0,
+                width: '6px',
+                cursor: 'col-resize',
+                backgroundColor: 'transparent',
+                zIndex: 10,
+              }}
+              onMouseDown={(e) => {
+                e.preventDefault();
+                const sidebar = document.getElementById('explorer-sidebar');
+                const startX = e.clientX;
+                const startWidth = sidebar.offsetWidth;
+                
+                const handleMouseMove = (moveEvent) => {
+                  const newWidth = startWidth + (moveEvent.clientX - startX);
+                  // Limit between min and max width
+                  const clampedWidth = Math.min(Math.max(newWidth, 200), 500);
+                  sidebar.style.width = `${clampedWidth}px`;
+                };
+                
+                const handleMouseUp = () => {
+                  document.removeEventListener('mousemove', handleMouseMove);
+                  document.removeEventListener('mouseup', handleMouseUp);
+                };
+                
+                document.addEventListener('mousemove', handleMouseMove);
+                document.addEventListener('mouseup', handleMouseUp);
+              }}
+            />
             <h2 style={{ 
               display: 'flex', 
               alignItems: 'center',
@@ -548,13 +606,26 @@ const DataTableExample = () => {
                   const newHeight = startHeight - (moveEvent.clientY - startY);
                   // Limit min and max height
                   const clampedHeight = Math.min(Math.max(newHeight, 50), 500);
-                  document.getElementById('debug-console').style.height = `${clampedHeight}px`;
+                  const debugConsole = document.getElementById('debug-console');
+                  debugConsole.style.height = `${clampedHeight}px`;
+                  
+                  // Auto-scroll to bottom when resizing
+                  const logsContainer = document.getElementById('debug-console-logs');
+                  if (logsContainer) {
+                    logsContainer.scrollTop = logsContainer.scrollHeight;
+                  }
+                  
+                  // Highlight the resize handle during resize
+                  document.getElementById('resize-handle-indicator').style.backgroundColor = '#1890ff';
                 };
                 
                 const handleMouseUp = () => {
                   // Stop resizing
                   document.removeEventListener('mousemove', handleMouseMove);
                   document.removeEventListener('mouseup', handleMouseUp);
+                  
+                  // Reset the resize handle color
+                  document.getElementById('resize-handle-indicator').style.backgroundColor = '#888';
                 };
                 
                 // Add event listeners
@@ -565,12 +636,16 @@ const DataTableExample = () => {
                 e.preventDefault();
               }}
             >
-              <div style={{ 
-                width: '30px', 
-                height: '4px', 
-                backgroundColor: '#888', 
-                borderRadius: '2px' 
-              }} />
+              <div 
+                id="resize-handle-indicator"
+                style={{ 
+                  width: '30px', 
+                  height: '4px', 
+                  backgroundColor: '#888', 
+                  borderRadius: '2px',
+                  transition: 'background-color 0.2s'
+                }} 
+              />
             </div>
             
             {/* Debug Console */}
@@ -582,10 +657,11 @@ const DataTableExample = () => {
                 color: 'var(--text-color-inverse, #fff)',
                 padding: '8px',
                 height: '150px',
-                overflowY: 'auto',
                 fontFamily: 'monospace',
                 fontSize: '12px',
-                position: 'relative'
+                position: 'relative',
+                display: 'flex',
+                flexDirection: 'column'
               }}
             >
               <div style={{ 
@@ -620,7 +696,14 @@ const DataTableExample = () => {
                   </Button>
                 </div>
               </div>
-              <div>
+              <div 
+                id="debug-console-logs"
+                style={{
+                  overflowY: 'auto',
+                  flex: 1,
+                  maxHeight: 'calc(100% - 40px)'
+                }}
+              >
                 {debugLogs.map(log => (
                   <div 
                     key={log.id} 
