@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Input, Select, Button, message } from 'antd';
+import { Input, Select, Button, message as antMessage } from 'antd';
 import { SearchOutlined, DatabaseOutlined } from '@ant-design/icons';
 import DataTable from './DataTable';
 import TableSelector from './TableSelector';
@@ -42,9 +42,14 @@ const DataTableExample = () => {
   const [columns, setColumns] = useState([]);
   const [debugLogs, setDebugLogs] = useState([]);
   const [showDebugConsole, setShowDebugConsole] = useState(true);
+  const [showOnlyErrors, setShowOnlyErrors] = useState(false);
+  const [sqlQuery, setSqlQuery] = useState('');
+  const [sqlQueryResult, setSqlQueryResult] = useState(null);
+  const [sqlQueryError, setSqlQueryError] = useState(null);
+  const [sqlQueryRunning, setSqlQueryRunning] = useState(false);
   
-  // Enhanced debug logger function with detailed logging
-  const logDebug = (message, type = 'info', details = null) => {
+  // Enhanced debug logger function with detailed logging and popup notifications
+  const logDebug = (message, type = 'info', details = null, showPopup = false) => {
     const timestamp = new Date().toISOString().split('T')[1].split('.')[0];
     
     // Create the log entry
@@ -76,40 +81,63 @@ const DataTableExample = () => {
     
     // Also log to browser console with appropriate formatting
     const logPrefix = `[${timestamp}] `;
+    
+    // Store the message text in a local variable to avoid name conflicts
+    const msgText = message; 
+    
     switch(type) {
       case 'error':
-        console.error(logPrefix + message, details || '');
+        console.error(logPrefix + msgText, details || '');
+        // Always show popup for errors
+        antMessage.error(msgText);
         break;
       case 'warning':
-        console.warn(logPrefix + message, details || '');
+        console.warn(logPrefix + msgText, details || '');
+        // Show popup for warnings if requested
+        if (showPopup) antMessage.warning(msgText);
         break;
       case 'success':
-        console.log(`%c${logPrefix}${message}`, 'color: green', details || '');
+        console.log(`%c${logPrefix}${msgText}`, 'color: green', details || '');
+        // Show popup for success if requested
+        if (showPopup) antMessage.success(msgText);
         break;
       case 'db':
-        console.log(`%c${logPrefix}${message}`, 'color: blue; font-weight: bold', details || '');
+        console.log(`%c${logPrefix}${msgText}`, 'color: #52c41a; font-weight: bold', details || '');
+        // Only show popup for DB errors or if specifically requested
+        if (showPopup || (msgText.includes('ERROR') && msgText.includes('DB'))) {
+          antMessage.error(`Database Error: ${msgText.replace('[DB]', '')}`);
+        }
         break;
       default:
-        console.log(logPrefix + message, details || '');
+        console.log(logPrefix + msgText, details || '');
+        // Show popup for info if requested
+        if (showPopup) antMessage.info(msgText);
     }
     
-    // Auto-scroll the debug console to show newest logs
+    // Auto-scroll the debug console to show newest logs if not manually scrolled
     setTimeout(() => {
       const logsContainer = document.getElementById('debug-console-logs');
       if (logsContainer) {
-        logsContainer.scrollTop = 0; // Scroll to top since logs are in reverse order (newest first)
+        // Check if auto-scroll is enabled
+        const autoScroll = logsContainer.getAttribute('data-auto-scroll') !== 'false';
+        
+        // Only auto-scroll if user hasn't manually scrolled up
+        if (autoScroll) {
+          logsContainer.scrollTop = 0; // Scroll to top since logs are in reverse order (newest first)
+        }
       }
     }, 50);
   };
   
   // Database-specific logger
-  const logDB = (operation, target, status, details = null) => {
+  const logDB = (operation, target, status, details = null, showPopup = false) => {
     const message = `[DB] ${operation} ${target}: ${status}`;
     const type = status === 'SUCCESS' ? 'success' : 
                 status === 'ERROR' ? 'error' : 
                 status === 'WARNING' ? 'warning' : 'db';
     
-    logDebug(message, type, details);
+    // Pass the showPopup parameter to logDebug
+    logDebug(message, type, details, showPopup);
   };
   
   // Load table columns when selected table changes
@@ -129,7 +157,7 @@ const DataTableExample = () => {
           error: error.message,
           stack: error.stack
         });
-        message.error('Failed to load table structure');
+        antMessage.error('Failed to load table structure');
       } finally {
         setLoading(false);
       }
@@ -158,44 +186,86 @@ const DataTableExample = () => {
         } catch (catError) {
           logDB('FETCH', 'categories', 'ERROR', {
             error: catError.message,
+            errorObject: catError,
+            code: catError.code,
+            details: catError.details || {},
             stack: catError.stack
-          });
+          }, true); // Show popup for category fetch errors
         }
       }
       
       // Start database fetch with detailed timing
       const startTime = performance.now();
       
-      // Load data for the selected table
-      const data = await fetchTableData(tableId);
-      const endTime = performance.now();
-      const fetchTime = (endTime - startTime).toFixed(2);
-      
-      setTableData(data);
-      
-      // Record successful fetch with timing and data info
-      logDB('FETCH', `data from ${tableId}`, 'SUCCESS', {
-        count: data?.length || 0,
-        fetchTimeMs: fetchTime,
-        tableId: tableId,
-        sample: data && data.length > 0 ? { id: data[0].id } : null,
-        fields: data && data.length > 0 ? Object.keys(data[0]) : []
-      });
-      
-      // Provide a user-friendly message
-      if (data?.length === 0) {
-        logDebug(`Table ${tableId} is empty`, 'warning');
+      try {
+        // Load data for the selected table
+        const data = await fetchTableData(tableId);
+        const endTime = performance.now();
+        const fetchTime = (endTime - startTime).toFixed(2);
+        
+        setTableData(data);
+        
+        // Record successful fetch with timing and data info
+        logDB('FETCH', `data from ${tableId}`, 'SUCCESS', {
+          count: data?.length || 0,
+          fetchTimeMs: fetchTime,
+          tableId: tableId,
+          sample: data && data.length > 0 ? { id: data[0].id } : null,
+          fields: data && data.length > 0 ? Object.keys(data[0]) : []
+        });
+        
+        // Provide a user-friendly message
+        if (data?.length === 0) {
+          logDebug(`Table ${tableId} is empty`, 'warning', null, true);
+        }
+      } catch (dbError) {
+        // Enhanced error logging with more details
+        const errorDetails = {
+          message: dbError.message,
+          code: dbError.code,
+          details: dbError.details || {},
+          hint: dbError.hint,
+          stack: dbError.stack,
+          tableId: tableId,
+          url: supabaseUrl ? supabaseUrl.substring(0, 15) + '...' : 'not defined',
+          timestamp: new Date().toISOString()
+        };
+        
+        // Log detailed error information to debug console
+        logDB('FETCH', `data from ${tableId}`, 'ERROR', errorDetails, true);
+        
+        // Show specific error notification based on error type
+        if (dbError.code && dbError.code.startsWith('22')) {
+          antMessage.error(`Database syntax error: ${dbError.message}`);
+        } else if (dbError.code && dbError.code.startsWith('23')) {
+          antMessage.error(`Database constraint violation: ${dbError.message}`);
+        } else if (dbError.code && dbError.code.startsWith('42')) {
+          antMessage.error(`Invalid database object or syntax: ${dbError.message}`);
+        } else {
+          antMessage.error(`Failed to load ${tableId} table data: ${dbError.message}`);
+        }
+        
+        // Return mock data as fallback
+        if (tableId.includes('product')) {
+          setTableData(mockData.product_summary || []);
+          logDebug('Falling back to mock product data', 'warning', null, true);
+        } else if (tableId.includes('categories')) {
+          setTableData(mockData.categories || []);
+          logDebug('Falling back to mock category data', 'warning', null, true);
+        } else {
+          setTableData([]);
+        }
       }
     } catch (error) {
-      // Detailed error logging
+      // Detailed error logging for overall operation
       logDB('FETCH', `data from ${tableId}`, 'ERROR', {
         error: error.message,
         stack: error.stack,
         tableId: tableId,
         url: supabaseUrl ? supabaseUrl.substring(0, 15) + '...' : 'not defined'
-      });
+      }, true); // Force popup for this critical error
       
-      message.error(`Failed to load ${tableId} table data: ${error.message}`);
+      antMessage.error(`Failed to load ${tableId} table data: ${error.message}`);
     } finally {
       setLoading(false);
     }
@@ -229,7 +299,7 @@ const DataTableExample = () => {
       } catch (error) {
         const errorMsg = `Error applying filters: ${error.message}`;
         logDebug(errorMsg, 'error');
-        message.error('Failed to filter products');
+        antMessage.error('Failed to filter products');
       } finally {
         setLoading(false);
       }
@@ -241,7 +311,7 @@ const DataTableExample = () => {
   // Handle search
   const handleSearch = async () => {
     if (selectedTable !== 'product_summary' && selectedTable !== 'products') {
-      message.info('Search is currently only available for the Products table');
+      antMessage.info('Search is currently only available for the Products table');
       return;
     }
     
@@ -258,7 +328,7 @@ const DataTableExample = () => {
       setTableData(results);
     } catch (error) {
       console.error('Error searching products:', error);
-      message.error('Search failed');
+      antMessage.error('Search failed');
     } finally {
       setLoading(false);
     }
@@ -273,6 +343,160 @@ const DataTableExample = () => {
     setSelectedStatus(null);
   };
   
+  // Debug console height control - try to get saved height or default to 300px
+  const [debugHeight, setDebugHeight] = useState(() => {
+    // Try to get saved height from localStorage
+    const savedHeight = localStorage.getItem('debugConsoleHeight');
+    return savedHeight ? parseInt(savedHeight, 10) : 300;
+  });
+  
+  // Apply height when it changes
+  useEffect(() => {
+    // Apply height to DOM
+    const container = document.getElementById('debug-console-container');
+    if (container) {
+      container.style.setProperty('height', `${debugHeight}px`, 'important');
+      
+      // Save to localStorage for persistence
+      localStorage.setItem('debugConsoleHeight', debugHeight);
+    }
+  }, [debugHeight]);
+  
+  // Initialize the SQL query field with default query when debug console is shown
+  useEffect(() => {
+    if (showDebugConsole && !sqlQuery) {
+      // Set a default SQL query using the current selected table
+      setSqlQuery(`SELECT * FROM ${selectedTable} LIMIT 10;`);
+      
+      // Log welcome message
+      logDebug('SQL Terminal ready - enter a query and click Execute', 'db', {
+        mode: 'Demo / Local SQL Parser',
+        supported: 'Basic SELECT queries with simple WHERE conditions',
+        tip: 'Use example queries above or press Ctrl+Enter to execute'
+      });
+    }
+  }, [showDebugConsole, selectedTable]);
+  
+  // Handle drag resize functionality
+  const handleResizeDrag = (e) => {
+    e.preventDefault();
+    
+    // Initial measurements
+    const startY = e.clientY;
+    const container = document.getElementById('debug-console-container');
+    if (!container) return;
+    
+    const startHeight = container.offsetHeight;
+    console.log(`Starting resize drag from height: ${startHeight}px`);
+    
+    // Track if mouse is down
+    let isDragging = true;
+    
+    // Handle mouse movement
+    const handleMouseMove = (moveEvent) => {
+      if (!isDragging) return;
+      
+      // Calculate how far mouse has moved
+      const deltaY = startY - moveEvent.clientY;
+      
+      // Dragging up = increase height, down = decrease
+      let newHeight = startHeight + deltaY;
+      
+      // Apply constraints
+      const minHeight = 100;
+      const maxHeight = window.innerHeight * 0.8;
+      newHeight = Math.max(minHeight, Math.min(newHeight, maxHeight));
+      
+      // Apply new height directly to DOM
+      container.style.setProperty('height', `${newHeight}px`, 'important');
+      
+      // Update state to keep React in sync
+      setDebugHeight(newHeight);
+    };
+    
+    // Handle mouse up - end resize
+    const handleMouseUp = () => {
+      isDragging = false;
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+      
+      // Save final height
+      if (container) {
+        const finalHeight = container.offsetHeight;
+        console.log(`Resize complete. New height: ${finalHeight}px`);
+      }
+    };
+    
+    // Add listeners
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+  };
+  
+  // Listen for database operation events from DatabaseConnector
+  useEffect(() => {
+    // Event handler for database operations
+    const handleDatabaseOperation = (e) => {
+      const { operation, target, status, rows, timestamp } = e.detail;
+      logDB(operation, target, status, {
+        timestamp,
+        rows: rows || 0,
+        ...e.detail
+      });
+    };
+    
+    // Event handler for database errors
+    const handleDatabaseError = (e) => {
+      const { operation, target, message, code, hint, details, stack } = e.detail;
+      
+      // Log error with full details
+      logDB(operation, target, 'ERROR', {
+        message,
+        code,
+        hint,
+        details,
+        stack,
+        timestamp: e.detail.timestamp
+      }, true); // Always show popup for database errors
+      
+      // Show specific error message based on error type
+      if (code && code.startsWith('22')) {
+        antMessage.error(`Database syntax error: ${message}`);
+      } else if (code && code.startsWith('23')) {
+        antMessage.error(`Database constraint violation: ${message}`);
+      } else if (code && code.startsWith('42')) { 
+        antMessage.error(`Invalid database object: ${message}`);
+      } else {
+        antMessage.error(`Database error: ${message}`);
+      }
+    };
+    
+    // Event handler for connection status
+    const handleConnectionSuccess = (e) => {
+      logDebug(e.detail.message, 'success', null, true);
+    };
+    
+    const handleConnectionError = (e) => {
+      logDebug(e.detail.message, 'error', {
+        error: e.detail.error,
+        timestamp: e.detail.timestamp
+      }, true);
+    };
+
+    // Add event listeners
+    window.addEventListener('supabase:operation', handleDatabaseOperation);
+    window.addEventListener('supabase:error', handleDatabaseError);
+    window.addEventListener('supabase:connectionSuccess', handleConnectionSuccess);
+    window.addEventListener('supabase:connectionError', handleConnectionError);
+    
+    // Cleanup
+    return () => {
+      window.removeEventListener('supabase:operation', handleDatabaseOperation);
+      window.removeEventListener('supabase:error', handleDatabaseError);
+      window.removeEventListener('supabase:connectionSuccess', handleConnectionSuccess);
+      window.removeEventListener('supabase:connectionError', handleConnectionError);
+    };
+  }, []);
+
   // Collect environment info for debugging
   useEffect(() => {
     // Log environment info once on component mount
@@ -298,7 +522,6 @@ const DataTableExample = () => {
     // Force refresh tables list on initial load to make sure we get non-mock tables
     setTimeout(() => {
       logDebug('Refreshing available tables...', 'info');
-      setDebugLogs([]); // Clear logs for clean output
     }, 1000);
   }, []);
 
@@ -308,12 +531,13 @@ const DataTableExample = () => {
       // Find the record to update
       const record = tableData.find(p => p.key === key);
       if (!record) {
-        message.error({ content: 'Record not found', duration: 2 });
+        // Show popup notification
+        logDebug('Record not found', 'error', { key, availableRecords: tableData.length }, true);
         return;
       }
       
       // Show loading indicator
-      message.loading({ content: 'Saving to database...', key: 'saveOperation' });
+      antMessage.loading({ content: 'Saving to database...', key: 'saveOperation' });
       
       // For product tables, we have specific save functionality
       if (selectedTable === 'product_summary' || selectedTable === 'products') {
@@ -330,49 +554,73 @@ const DataTableExample = () => {
           
           // Log the update operation start with details
           const updatePayload = { ...record, ...processedValues };
-          logDB('UPDATE', `product ${record.id}`, 'STARTED', {
-            id: record.id,
-            fields: Object.keys(processedValues)
+          logDB('UPDATE', `product ${record.id || record.key}`, 'STARTED', {
+            id: record.id || record.key,
+            fields: Object.keys(processedValues),
+            timestamp: new Date().toISOString()
           });
           
           // Start timing the operation
           const startTime = performance.now();
           
-          // Update the product in database
-          const savedData = await saveProduct(updatePayload, false);
-          
-          // Calculate time taken
-          const endTime = performance.now();
-          const updateTime = (endTime - startTime).toFixed(2);
-          
-          if (savedData) {
-            // Operation was successful
-            message.success({ content: 'Record updated in database', key: 'saveOperation', duration: 2 });
+          try {
+            // Update the product in database
+            const savedData = await saveProduct(updatePayload, false);
             
-            // Log success with timing details
-            logDB('UPDATE', `product ${record.id}`, 'SUCCESS', {
-              id: record.id,
-              timeMs: updateTime,
-              fields: Object.keys(processedValues),
-              response: savedData
+            // Calculate time taken
+            const endTime = performance.now();
+            const updateTime = (endTime - startTime).toFixed(2);
+            
+            if (savedData) {
+              // Operation was successful
+              antMessage.success({ content: 'Record updated in database', key: 'saveOperation', duration: 2 });
+              
+              // Log success with timing details
+              logDB('UPDATE', `product ${record.id || record.key}`, 'SUCCESS', {
+                id: record.id || record.key,
+                timeMs: updateTime,
+                fields: Object.keys(processedValues),
+                response: savedData
+              }, true); // Show success popup
+              
+              // Refresh data to get server-calculated fields
+              await loadTableData(selectedTable);
+            } else {
+              throw new Error('Save operation returned no data');
+            }
+          } catch (error) {
+            // Enhanced error handling with detailed logging and user-friendly message
+            const errorMessage = error.message || 'Unknown database error';
+            
+            // Show user-friendly error with popup
+            antMessage.error({ 
+              content: `Failed to update record: ${errorMessage}`, 
+              key: 'saveOperation', 
+              duration: 5 
             });
             
-            // Refresh data to get server-calculated fields
-            await loadTableData(selectedTable);
-          } else {
-            throw new Error('Save operation returned no data');
+            // Log detailed error information with popup notification
+            logDB('UPDATE', `product ${record.id || record.key}`, 'ERROR', {
+              id: record.id || record.key,
+              error: errorMessage,
+              details: error.details || {},
+              stack: error.stack,
+              table: selectedTable,
+              fields: Object.keys(values),
+              timestamp: new Date().toISOString()
+            }, true); // force popup for this error
           }
         } catch (error) {
-          message.error({ content: `Failed to update product: ${error.message}`, key: 'saveOperation', duration: 3 });
+          // This catches errors in the validation phase
+          antMessage.error({ content: `Failed to update product: ${error.message}`, key: 'saveOperation', duration: 3 });
           
-          // Log detailed error information
-          logDB('UPDATE', `product ${record.id}`, 'ERROR', {
-            id: record.id,
+          // Log detailed error information with popup notification
+          logDB('UPDATE', `product validation`, 'ERROR', {
             error: error.message,
             stack: error.stack,
             table: selectedTable,
             fields: Object.keys(values)
-          });
+          }, true);
         }
       } else {
         // Generic table update
@@ -381,7 +629,7 @@ const DataTableExample = () => {
           if (selectedTable.includes('DUMMY')) {
             // Just update local state for mock data
             setTableData(newData);
-            message.success({ content: 'Record updated (mock mode)', key: 'saveOperation', duration: 2 });
+            antMessage.success({ content: 'Record updated (mock mode)', key: 'saveOperation', duration: 2 });
             logDebug(`${selectedTable} updated (mock mode)`, 'success');
           } else {
             // For real tables, try a generic update
@@ -404,7 +652,7 @@ const DataTableExample = () => {
               
             if (error) throw error;
             
-            message.success({ content: 'Record updated in database', key: 'saveOperation', duration: 2 });
+            antMessage.success({ content: 'Record updated in database', key: 'saveOperation', duration: 2 });
             
             // Log success with details
             logDB('UPDATE', `record in ${tableName}`, 'SUCCESS', {
@@ -419,7 +667,7 @@ const DataTableExample = () => {
             await loadTableData(selectedTable);
           }
         } catch (error) {
-          message.error({ content: `Failed to update record: ${error.message}`, key: 'saveOperation', duration: 3 });
+          antMessage.error({ content: `Failed to update record: ${error.message}`, key: 'saveOperation', duration: 3 });
           
           // Log detailed error information
           logDB('UPDATE', `record in ${selectedTable}`, 'ERROR', {
@@ -434,7 +682,7 @@ const DataTableExample = () => {
       }
     } catch (error) {
       console.error('Error updating record:', error);
-      message.error({ content: 'Failed to update record in database', key: 'saveOperation', duration: 2 });
+      antMessage.error({ content: 'Failed to update record in database', key: 'saveOperation', duration: 2 });
       
       // Log the overall operation failure
       logDB('UPDATE', 'record', 'CRITICAL_ERROR', {
@@ -450,12 +698,12 @@ const DataTableExample = () => {
       // Find the record to delete
       const record = tableData.find(p => p.key === key);
       if (!record) {
-        message.error({ content: 'Record not found', duration: 2 });
+        antMessage.error({ content: 'Record not found', duration: 2 });
         return;
       }
       
       // Show loading indicator
-      message.loading({ content: 'Deleting from database...', key: 'deleteOperation' });
+      antMessage.loading({ content: 'Deleting from database...', key: 'deleteOperation' });
       
       // For product tables, we have specific delete functionality
       if (selectedTable === 'product_summary' || selectedTable === 'products') {
@@ -479,7 +727,7 @@ const DataTableExample = () => {
           
           if (success) {
             // Operation was successful
-            message.success({ content: 'Record deleted from database', key: 'deleteOperation', duration: 2 });
+            antMessage.success({ content: 'Record deleted from database', key: 'deleteOperation', duration: 2 });
             
             // Log success with timing information
             logDB('DELETE', `product ${record.id}`, 'SUCCESS', {
@@ -495,7 +743,7 @@ const DataTableExample = () => {
             throw new Error('Delete operation failed');
           }
         } catch (error) {
-          message.error({ content: `Failed to delete product: ${error.message}`, key: 'deleteOperation', duration: 3 });
+          antMessage.error({ content: `Failed to delete product: ${error.message}`, key: 'deleteOperation', duration: 3 });
           
           // Log detailed error information
           logDB('DELETE', `product ${record.id}`, 'ERROR', {
@@ -512,7 +760,7 @@ const DataTableExample = () => {
           if (selectedTable.includes('DUMMY')) {
             // Just update local state for mock data
             setTableData(newData);
-            message.success({ content: 'Record deleted (mock mode)', key: 'deleteOperation', duration: 2 });
+            antMessage.success({ content: 'Record deleted (mock mode)', key: 'deleteOperation', duration: 2 });
             logDebug(`Record deleted from ${selectedTable} (mock mode)`, 'success');
           } else {
             // For real tables, try a generic delete
@@ -537,7 +785,7 @@ const DataTableExample = () => {
               
             if (error) throw error;
             
-            message.success({ content: 'Record deleted from database', key: 'deleteOperation', duration: 2 });
+            antMessage.success({ content: 'Record deleted from database', key: 'deleteOperation', duration: 2 });
             
             // Log success with timing information
             logDB('DELETE', `record from ${tableName}`, 'SUCCESS', {
@@ -550,7 +798,7 @@ const DataTableExample = () => {
             await loadTableData(selectedTable);
           }
         } catch (error) {
-          message.error({ content: `Failed to delete record: ${error.message}`, key: 'deleteOperation', duration: 3 });
+          antMessage.error({ content: `Failed to delete record: ${error.message}`, key: 'deleteOperation', duration: 3 });
           
           // Log detailed error information
           logDB('DELETE', `record from ${selectedTable}`, 'ERROR', {
@@ -567,7 +815,7 @@ const DataTableExample = () => {
       }
     } catch (error) {
       console.error('Error deleting record:', error);
-      message.error({ content: 'Failed to delete record from database', key: 'deleteOperation', duration: 2 });
+      antMessage.error({ content: 'Failed to delete record from database', key: 'deleteOperation', duration: 2 });
       
       // Log the overall operation failure
       logDB('DELETE', 'record', 'CRITICAL_ERROR', {
@@ -581,7 +829,7 @@ const DataTableExample = () => {
   const handleAdd = async (record, newData) => {
     try {
       // Show loading indicator
-      message.loading({ content: 'Adding to database...', key: 'addOperation' });
+      antMessage.loading({ content: 'Adding to database...', key: 'addOperation' });
       
       // For product tables, we have specific add functionality
       if (selectedTable === 'product_summary' || selectedTable === 'products') {
@@ -614,7 +862,7 @@ const DataTableExample = () => {
           
           if (savedData) {
             // Operation was successful
-            message.success({ content: 'Record added to database', key: 'addOperation', duration: 2 });
+            antMessage.success({ content: 'Record added to database', key: 'addOperation', duration: 2 });
             
             // Log success with timing details
             logDB('INSERT', 'new product', 'SUCCESS', {
@@ -631,7 +879,7 @@ const DataTableExample = () => {
             throw new Error('Add operation returned no data');
           }
         } catch (error) {
-          message.error({ content: `Failed to add product: ${error.message}`, key: 'addOperation', duration: 3 });
+          antMessage.error({ content: `Failed to add product: ${error.message}`, key: 'addOperation', duration: 3 });
           
           // Log detailed error information
           logDB('INSERT', 'new product', 'ERROR', {
@@ -648,7 +896,7 @@ const DataTableExample = () => {
           if (selectedTable.includes('DUMMY')) {
             // Just update local state for mock data
             setTableData(newData);
-            message.success({ content: 'Record added (mock mode)', key: 'addOperation', duration: 2 });
+            antMessage.success({ content: 'Record added (mock mode)', key: 'addOperation', duration: 2 });
             logDebug(`New record added to ${selectedTable} (mock mode)`, 'success');
           } else {
             // For real tables, try a generic insert
@@ -674,7 +922,7 @@ const DataTableExample = () => {
               
             if (error) throw error;
             
-            message.success({ content: 'Record added to database', key: 'addOperation', duration: 2 });
+            antMessage.success({ content: 'Record added to database', key: 'addOperation', duration: 2 });
             
             // Log success with timing details
             logDB('INSERT', `record into ${tableName}`, 'SUCCESS', {
@@ -688,7 +936,7 @@ const DataTableExample = () => {
             await loadTableData(selectedTable);
           }
         } catch (error) {
-          message.error({ content: `Failed to add record: ${error.message}`, key: 'addOperation', duration: 3 });
+          antMessage.error({ content: `Failed to add record: ${error.message}`, key: 'addOperation', duration: 3 });
           
           // Log detailed error information
           logDB('INSERT', `record into ${selectedTable}`, 'ERROR', {
@@ -705,7 +953,7 @@ const DataTableExample = () => {
       }
     } catch (error) {
       console.error('Error adding record:', error);
-      message.error({ content: 'Failed to add record to database', key: 'addOperation', duration: 2 });
+      antMessage.error({ content: 'Failed to add record to database', key: 'addOperation', duration: 2 });
       
       // Log the overall operation failure
       logDB('INSERT', 'record', 'CRITICAL_ERROR', {
@@ -718,6 +966,12 @@ const DataTableExample = () => {
 
   // Get table name for display
   const getTableDisplayName = () => {
+    // Check if we're in SQL query mode
+    if (localStorage.getItem('currentMode') === 'sql_query') {
+      return localStorage.getItem('sqlQueryLabel') || 'SQL Query Results';
+    }
+    
+    // Otherwise use normal table names
     switch (selectedTable) {
       case 'product_summary':
         return 'Products';
@@ -742,10 +996,96 @@ const DataTableExample = () => {
     logDebug(`Debug console ${showDebugConsole ? 'hidden' : 'shown'}`, 'info');
   };
   
-  // Clear debug logs
+  // Function to directly initialize resize handle functionality
+  // Will be called from useEffect after render
+  const initializeResizeHandles = () => {
+    console.log("Initializing resize handlers");
+    
+    // Get elements
+    const container = document.getElementById('debug-console-container');
+    const topHandle = document.getElementById('debug-console-resize-handle');
+    const bottomHandle = document.getElementById('debug-console-resize-handle-bottom');
+    
+    if (!container || !topHandle || !bottomHandle) {
+      console.error("Could not find resize elements", {
+        container: Boolean(container),
+        topHandle: Boolean(topHandle),
+        bottomHandle: Boolean(bottomHandle)
+      });
+      return;
+    }
+    
+    // Top handle resize function
+    const initTopResize = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      console.log("Top resize activated");
+      const startY = e.clientY;
+      const startHeight = container.offsetHeight;
+      
+      const onMouseMove = (event) => {
+        const delta = startY - event.clientY;
+        const newHeight = startHeight + delta;
+        if (newHeight >= 50 && newHeight <= window.innerHeight * 0.8) {
+          container.style.height = `${newHeight}px`;
+        }
+      };
+      
+      const onMouseUp = () => {
+        console.log("Top resize complete");
+        document.removeEventListener('mousemove', onMouseMove, true);
+        document.removeEventListener('mouseup', onMouseUp, true);
+        localStorage.setItem('debugConsoleHeight', container.offsetHeight);
+      };
+      
+      document.addEventListener('mousemove', onMouseMove, true);
+      document.addEventListener('mouseup', onMouseUp, true);
+    };
+    
+    // Bottom handle resize function
+    const initBottomResize = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      console.log("Bottom resize activated");
+      const startY = e.clientY;
+      const startHeight = container.offsetHeight;
+      
+      const onMouseMove = (event) => {
+        const delta = event.clientY - startY;
+        const newHeight = startHeight + delta;
+        if (newHeight >= 50 && newHeight <= window.innerHeight * 0.8) {
+          container.style.height = `${newHeight}px`;
+        }
+      };
+      
+      const onMouseUp = () => {
+        console.log("Bottom resize complete");
+        document.removeEventListener('mousemove', onMouseMove, true);
+        document.removeEventListener('mouseup', onMouseUp, true);
+        localStorage.setItem('debugConsoleHeight', container.offsetHeight);
+      };
+      
+      document.addEventListener('mousemove', onMouseMove, true);
+      document.addEventListener('mouseup', onMouseUp, true);
+    };
+    
+    // Add event listeners
+    topHandle.addEventListener('mousedown', initTopResize);
+    bottomHandle.addEventListener('mousedown', initBottomResize);
+    
+    console.log("Resize handlers initialized");
+  };
+  
+  // Clear debug logs and SQL results
   const clearDebugLogs = () => {
     // Actually clear logs array
     setDebugLogs([]);
+    
+    // Also clear any SQL query results
+    setSqlQueryResult(null);
+    setSqlQueryError(null);
     
     // Force a render update in case the state update doesn't trigger it
     setTimeout(() => {
@@ -755,11 +1095,255 @@ const DataTableExample = () => {
       }
     }, 50);
   };
+  
+  // Execute SQL query and display results in the main table component
+  const executeSQL = async () => {
+    if (!sqlQuery.trim()) {
+      logDebug('SQL query cannot be empty', 'warning', null, true);
+      return;
+    }
+    
+    // Save the current table name so we can return to it later
+    localStorage.setItem('lastSelectedTable', selectedTable);
+    
+    // Reset previous results and set loading state
+    setSqlQueryResult(null);
+    setSqlQueryError(null);
+    setSqlQueryRunning(true);
+    setLoading(true);
+    
+    try {
+      // Log that we're starting SQL execution
+      logDebug(`Executing SQL query: ${sqlQuery}`, 'db', { query: sqlQuery });
+      
+      // Basic validation - make sure it's a SELECT query
+      const trimmedQuery = sqlQuery.trim().toLowerCase();
+      if (!trimmedQuery.startsWith('select ')) {
+        logDebug('Only SELECT queries are allowed', 'error', {
+          query: sqlQuery,
+          reason: 'Non-SELECT query attempted'
+        }, true);
+        
+        setSqlQueryError({
+          message: 'Only SELECT queries are allowed for safety reasons',
+          hint: 'For security, only read-only operations are permitted'
+        });
+        
+        setLoading(false);
+        setSqlQueryRunning(false);
+        return;
+      }
+      
+      // Extract table name to help with column formatting
+      let targetTable = "";
+      const fromMatch = /\sfrom\s+([^\s,;]+)/i.exec(sqlQuery);
+      if (fromMatch && fromMatch[1]) {
+        targetTable = fromMatch[1].trim();
+      }
+      
+      // Start timing the query
+      const startTime = performance.now();
+      
+      try {
+        // In this demo, we'll use a simplified approach with client-side filtering
+        // This prevents network errors when the SQL function isn't available
+        
+        logDebug('Executing SQL query in demo mode', 'info', {
+          query: sqlQuery
+        });
+        
+        // Simple SQL-like filtering implementation for demo purposes
+        let data = [...tableData]; // Start with current table data
+        let error = null;
+        
+        // Apply very basic SQL-like filtering if WHERE clause is present
+        const wherePart = sqlQuery.toLowerCase().indexOf(' where ');
+        if (wherePart > 0) {
+          try {
+            // Extract the WHERE condition
+            const whereCondition = sqlQuery.substring(wherePart + 7).trim();
+            
+            // Simple parsing for basic conditions (column = value, column < value, etc.)
+            // Only supporting simple comparison operations for demo
+            const operators = ['>=', '<=', '!=', '<>', '=', '>', '<'];
+            let foundOperator = '';
+            let column = '';
+            let value = '';
+            
+            // Find which operator is used in the condition
+            for (const op of operators) {
+              if (whereCondition.includes(op)) {
+                foundOperator = op;
+                [column, value] = whereCondition
+                  .split(op)
+                  .map(part => part.trim().replace(/;$/, ''));
+                break;
+              }
+            }
+            
+            if (foundOperator && column) {
+              // Parse value - handle strings, numbers, etc.
+              let parsedValue;
+              
+              // Handle quoted strings
+              if ((value.startsWith("'") && value.endsWith("'")) ||
+                  (value.startsWith('"') && value.endsWith('"'))) {
+                parsedValue = value.substring(1, value.length - 1);
+              } else if (value.toLowerCase() === 'true') {
+                parsedValue = true;
+              } else if (value.toLowerCase() === 'false') {
+                parsedValue = false;
+              } else if (value.toLowerCase() === 'null') {
+                parsedValue = null;
+              } else {
+                // Try to parse as number if possible
+                const num = parseFloat(value);
+                parsedValue = isNaN(num) ? value : num;
+              }
+              
+              // Now filter the data based on the condition
+              data = data.filter(row => {
+                const rowValue = row[column];
+                
+                switch(foundOperator) {
+                  case '=': return rowValue === parsedValue;
+                  case '!=':
+                  case '<>': return rowValue !== parsedValue;
+                  case '>': return rowValue > parsedValue;
+                  case '<': return rowValue < parsedValue;
+                  case '>=': return rowValue >= parsedValue;
+                  case '<=': return rowValue <= parsedValue;
+                  default: return true;
+                }
+              });
+              
+              logDebug(`Applied filter: ${column} ${foundOperator} ${value}`, 'info', {
+                rowsMatched: data.length
+              });
+            }
+          } catch (filterError) {
+            console.log('Error applying SQL filter:', filterError);
+            // Continue with unfiltered data
+            logDebug('Could not apply SQL filter, showing all data', 'warning');
+          }
+        }
+        
+        // Apply LIMIT if present
+        const limitPart = sqlQuery.toLowerCase().indexOf(' limit ');
+        if (limitPart > 0) {
+          try {
+            const limitStr = sqlQuery.substring(limitPart + 7).trim();
+            const limit = parseInt(limitStr, 10);
+            if (!isNaN(limit) && limit > 0) {
+              data = data.slice(0, limit);
+              logDebug(`Applied LIMIT ${limit}`, 'info');
+            }
+          } catch (limitError) {
+            console.log('Error applying LIMIT:', limitError);
+          }
+        }
+        
+        // Calculate execution time
+        const endTime = performance.now();
+        const queryTime = (endTime - startTime).toFixed(2);
+        
+        if (error && (!data || data.length === 0)) {
+          // Log and handle SQL error
+          logDebug(`SQL Error: ${error.message}`, 'error', {
+            query: sqlQuery,
+            error: error.message,
+            hint: error.hint,
+            details: error.details
+          }, true);
+          
+          setSqlQueryError({
+            message: error.message,
+            hint: error.hint || 'Query could not be executed'
+          });
+        } else {
+          // We have data - either from real query or fallback to current table
+          const resultData = data || tableData;
+          const resultCount = resultData.length;
+          
+          // Log success
+          logDebug(`SQL query executed (${queryTime}ms, ${resultCount} rows)`, 'success', {
+            query: sqlQuery,
+            rows: resultCount,
+            timeMs: queryTime,
+            sample: resultCount > 0 ? resultData[0] : null
+          });
+          
+          // Create result object with query metadata
+          const result = {
+            data: resultData,
+            rows: resultCount,
+            timeMs: queryTime,
+            columns: resultData && resultData.length > 0 ? Object.keys(resultData[0]) : []
+          };
+          
+          // Store the result
+          setSqlQueryResult(result);
+          
+          // Update the main table with the query results
+          if (resultData && resultData.length > 0) {
+            // Get columns from the first row
+            const firstRow = resultData[0];
+            const dynamicColumns = Object.keys(firstRow).map(key => {
+              // Try to infer column type
+              const value = firstRow[key];
+              const type = typeof value;
+              
+              return {
+                title: key.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
+                dataIndex: key,
+                key: key,
+                type: type === 'number' ? 'number' : 
+                      type === 'boolean' ? 'checkbox' : 'text',
+                sorter: true,
+                filterable: true
+              };
+            });
+            
+            // Update the table data and columns
+            setTableData(resultData.map((item, index) => ({ ...item, key: item.id || index })));
+            setColumns(dynamicColumns);
+            
+            // Store the current table name for reference, but DON'T try to use it as a real table
+            const queryResultsLabel = `SQL Query Results (${resultCount} rows)`;
+            
+            // Create an object to track that we're in SQL query mode without changing the selectedTable
+            // This prevents the system from trying to load this as a real table
+            localStorage.setItem('currentMode', 'sql_query');
+            localStorage.setItem('sqlQueryLabel', queryResultsLabel);
+            
+            // Update UI to show we're in SQL query mode, but keep the real table name internally
+            document.title = queryResultsLabel;
+          }
+        }
+      } catch (err) {
+        // Handle execution errors
+        logDebug(`SQL execution failed: ${err.message}`, 'error', {
+          query: sqlQuery,
+          error: err.message,
+          stack: err.stack
+        }, true);
+        
+        setSqlQueryError({
+          message: err.message,
+          hint: 'An unexpected error occurred during execution'
+        });
+      }
+    } finally {
+      // Reset loading states
+      setLoading(false);
+      setSqlQueryRunning(false);
+    }
+  };
 
   return (
-    <div className="sql-explorer">
-      <div className="explorer-container" style={{ display: 'flex', width: '100%', flexDirection: 'column' }}>
-        <div style={{ display: 'flex', flex: 1 }}>
+    <>
+      <div className="sql-explorer" style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden', position: 'relative' }}>
+        <div className="explorer-main-area" style={{ display: 'flex', flex: 1, minHeight: 0, overflow: 'hidden' }}>
           {/* Sidebar */}
           <div 
             id="explorer-sidebar"
@@ -771,8 +1355,9 @@ const DataTableExample = () => {
               background: 'var(--component-background, #141414)', 
               borderRight: '1px solid var(--border-color-split, #303030)',
               padding: '20px 16px',
-              height: 'calc(100vh - 250px)',
+              height: '100%',
               overflowY: 'auto',
+              overflowX: 'hidden',
               color: 'var(--text-color, rgba(255, 255, 255, 0.85))',
               position: 'relative',
               flexShrink: 0
@@ -903,7 +1488,8 @@ const DataTableExample = () => {
             <div style={{ 
               marginTop: 16, 
               display: 'flex', 
-              justifyContent: 'center' 
+              justifyContent: 'center', 
+              gap: '10px'
             }}>
               <Button 
                 type="primary" 
@@ -912,6 +1498,34 @@ const DataTableExample = () => {
               >
                 Refresh Table Data
               </Button>
+              
+              {/* Show this button when we're in SQL query results mode */}
+              {localStorage.getItem('currentMode') === 'sql_query' && (
+                <Button 
+                  onClick={() => {
+                    // Get the original table name (saved when executing SQL)
+                    const originalTable = localStorage.getItem('lastSelectedTable') || 'product_summary';
+                    
+                    // Reset to the original table
+                    setSelectedTable(originalTable);
+                    
+                    // Clear SQL query mode flags
+                    localStorage.removeItem('currentMode');
+                    localStorage.removeItem('sqlQueryLabel');
+                    
+                    // Reset title
+                    document.title = document.title.replace(/SQL Query Results.*/, originalTable);
+                    
+                    // Load the original table data
+                    loadTableData(originalTable);
+                    
+                    // Log action
+                    logDebug(`Restored original table view: ${originalTable}`, 'info');
+                  }}
+                >
+                  Back to Original Table
+                </Button>
+              )}
             </div>
           </div>
         </div>
@@ -921,7 +1535,10 @@ const DataTableExample = () => {
             flex: 1, 
             padding: '20px 24px',
             background: 'var(--body-background, #141414)',
-            color: 'var(--text-color, rgba(255, 255, 255, 0.85))'
+            color: 'var(--text-color, rgba(255, 255, 255, 0.85))',
+            overflowY: 'auto',
+            overflowX: 'hidden',
+            minHeight: 0
           }}>
             <DataTable
               tableName={getTableDisplayName()}
@@ -969,276 +1586,485 @@ const DataTableExample = () => {
             )}
           </div>
         </div>
-        
-        {/* Debug Console with Resize Handle */}
-        {showDebugConsole && (
-          <>
-            {/* Resize Handle */}
+      
+      {/* Debug Console Section - Separate from main area */}
+      {showDebugConsole && (
+        <div 
+          id="debug-console-container"
+          style={{
+            position: 'relative',
+            borderTop: '1px solid #333',
+            height: `${debugHeight}px !important`, /* Use state for height with !important */
+            maxHeight: '80vh', /* Maximum height */
+            minHeight: '100px', /* Minimum height */
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'hidden',
+            backgroundColor: '#141414',
+            padding: '0px',
+            transition: 'height 0.3s ease'
+          }}
+        >
+          {/* Drag handle for resizing */}
+          <div
+            className="debug-console-drag-handle"
+            style={{
+              height: '10px',
+              backgroundColor: '#333',
+              borderBottom: '1px solid #444',
+              cursor: 'ns-resize',
+              position: 'relative',
+              zIndex: 101
+            }}
+            onMouseDown={handleResizeDrag}
+          >
             <div 
-              style={{ 
-                height: '6px', 
-                backgroundColor: '#444', 
-                cursor: 'ns-resize',
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center'
+              style={{
+                width: '40px',
+                height: '4px',
+                backgroundColor: '#666',
+                borderRadius: '2px',
+                position: 'absolute',
+                left: '50%',
+                top: '50%',
+                transform: 'translate(-50%, -50%)'
               }}
-              onMouseDown={(e) => {
-                // Start resizing
-                const startY = e.clientY;
-                const startHeight = document.getElementById('debug-console').offsetHeight;
-                
-                const handleMouseMove = (moveEvent) => {
-                  // Calculate new height (reverse direction for y-axis)
-                  const newHeight = startHeight - (moveEvent.clientY - startY);
-                  // Limit min and max height
-                  const clampedHeight = Math.min(Math.max(newHeight, 50), 500);
-                  const debugConsole = document.getElementById('debug-console');
-                  debugConsole.style.height = `${clampedHeight}px`;
-                  
-                  // Auto-scroll to bottom when resizing
-                  const logsContainer = document.getElementById('debug-console-logs');
-                  if (logsContainer) {
-                    logsContainer.scrollTop = logsContainer.scrollHeight;
-                  }
-                  
-                  // Highlight the resize handle during resize
-                  document.getElementById('resize-handle-indicator').style.backgroundColor = '#1890ff';
-                };
-                
-                const handleMouseUp = () => {
-                  // Stop resizing
-                  document.removeEventListener('mousemove', handleMouseMove);
-                  document.removeEventListener('mouseup', handleMouseUp);
-                  
-                  // Reset the resize handle color
-                  document.getElementById('resize-handle-indicator').style.backgroundColor = '#888';
-                };
-                
-                // Add event listeners
-                document.addEventListener('mousemove', handleMouseMove);
-                document.addEventListener('mouseup', handleMouseUp);
-                
-                // Prevent default behavior
-                e.preventDefault();
-              }}
-            >
-              <div 
-                id="resize-handle-indicator"
-                style={{ 
-                  width: '30px', 
-                  height: '4px', 
-                  backgroundColor: '#888', 
-                  borderRadius: '2px',
-                  transition: 'background-color 0.2s'
-                }} 
-              />
+            />
+          </div>
+          
+          {/* Console header */}
+          <div
+            style={{
+              height: '24px',
+              backgroundColor: '#2a2a2a',
+              borderBottom: '1px solid #444',
+              padding: '0 10px',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center'
+            }}
+          >
+            <div style={{ fontWeight: 'bold', color: 'white', fontSize: '12px' }}>
+              Debug Console
             </div>
-            
-            {/* Debug Console */}
-            <div 
-              id="debug-console"
-              style={{ 
-                borderTop: '1px solid var(--border-color-split, #303030)',
-                backgroundColor: 'var(--component-background, #141414)',
-                color: 'var(--text-color-inverse, #fff)',
-                padding: '8px',
-                height: '150px',
-                fontFamily: 'monospace',
-                fontSize: '12px',
-                position: 'relative',
-                display: 'flex',
-                flexDirection: 'column',
-                maxHeight: '150px',
-                marginTop: 'auto'
-              }}
-            >
-              <div style={{ 
-                display: 'flex', 
-                justifyContent: 'space-between', 
-                marginBottom: '8px',
-                position: 'sticky',
-                top: 0,
-                backgroundColor: 'var(--component-background, #141414)',
-                padding: '4px',
-                zIndex: 1
-              }}>
-                <div>
-                  <span style={{ fontWeight: 'bold' }}>Debug Console</span>
-                  <span style={{ marginLeft: '12px', opacity: 0.7 }}>
-                    {debugLogs.length} logs
-                  </span>
-                </div>
-                <div>
-                  <Button 
-                    size="small" 
-                    onClick={() => {
-                      // Find the most recent errors and their context
-                      const errorLogs = [];
-                      let lastNormalLogIndex = -1;
-                      
-                      // First, find the most recent 3 error logs
-                      const recentErrors = debugLogs
-                        .filter(log => log.type === 'error' || log.message.includes('ERROR'))
-                        .slice(0, 3);
-                      
-                      if (recentErrors.length > 0) {
-                        // Add up to 2 normal log entries that occurred before the most recent error
-                        // to provide context for the error
-                        const firstErrorIndex = debugLogs.findIndex(
-                          log => log.id === recentErrors[0].id
-                        );
-                        
-                        // Find the last normal log before the error
-                        for (let i = firstErrorIndex + 1; i < debugLogs.length; i++) {
-                          if (debugLogs[i].type !== 'error' && !debugLogs[i].message.includes('ERROR')) {
-                            lastNormalLogIndex = i;
-                            break;
-                          }
-                        }
-                        
-                        // Add a context header
-                        let copyText = "=== ERROR LOG FOR TROUBLESHOOTING ===\n\n";
-                        
-                        // Add system and environment info
-                        copyText += `Environment: ${import.meta.env.DEV ? 'Development' : 'Production'}\n`;
-                        copyText += `Browser: ${navigator.userAgent}\n`;
-                        copyText += `Database URL defined: ${Boolean(supabaseUrl)}\n`;
-                        copyText += `Database Key defined: ${Boolean(supabaseKey)}\n`;
-                        copyText += `Current table: ${selectedTable}\n`;
-                        copyText += `Timestamp: ${new Date().toISOString()}\n\n`;
-                        
-                        // Add the last normal log for context if found
-                        if (lastNormalLogIndex !== -1) {
-                          const contextLog = debugLogs[lastNormalLogIndex];
-                          copyText += `LAST NORMAL LOG:\n${contextLog.timestamp} - ${contextLog.message}\n\n`;
-                        }
-                        
-                        // Add each error with details
-                        copyText += "ERRORS:\n";
-                        recentErrors.forEach(errorLog => {
-                          copyText += `${errorLog.timestamp} - ${errorLog.message}\n`;
-                          
-                          // Include error details if available
-                          if (errorLog.details) {
-                            if (typeof errorLog.details === 'object') {
-                              try {
-                                const detailsText = JSON.stringify(errorLog.details, null, 2);
-                                copyText += `Details: ${detailsText}\n`;
-                              } catch (e) {
-                                copyText += `Details: ${errorLog.details.toString()}\n`;
-                              }
-                            } else {
-                              copyText += `Details: ${errorLog.details}\n`;
-                            }
-                          }
-                          copyText += "\n";
-                        });
-                        
-                        // Copy to clipboard
-                        navigator.clipboard.writeText(copyText);
-                        message.success('Error logs copied to clipboard');
-                      } else {
-                        message.info('No error logs to copy');
+            <div style={{ color: '#aaa', fontSize: '11px', display: 'flex', alignItems: 'center' }}>
+              {debugLogs.length} logs | {debugHeight}px
+              <Button 
+                size="small" 
+                onClick={() => {
+                  // Execute a deliberately invalid SQL command to test error handling
+                  logDebug('Testing SQL error handling with invalid query...', 'info');
+                  // Using direct supabase client to execute raw SQL
+                  supabase.rpc('execute_sql', { sql_command: 'SELECT * FROM non_existent_table;' })
+                    .then(result => {
+                      if (result.error) {
+                        throw result.error;
                       }
-                    }} 
-                    style={{ marginRight: '8px', backgroundColor: '#ff4d4f', color: 'white' }}
-                    title="Copy recent errors for troubleshooting"
+                      logDebug('SQL test executed successfully', 'success');
+                    })
+                    .catch(error => {
+                      // Log as explicit error type instead of warning
+                      logDebug(`SQL Error: ${error.message}`, 'error', {
+                        query: 'SELECT * FROM non_existent_table;',
+                        error: error.message,
+                        code: error.code || 'UNKNOWN',
+                        hint: 'This is a deliberate test of error handling',
+                        details: error.details || 'Test error for debugging purposes'
+                      }, true);
+                      
+                      // Also set the SQL terminal to show this error 
+                      setSqlQuery('SELECT * FROM non_existent_table;');
+                      setSqlQueryError({
+                        message: error.message,
+                        code: error.code || 'UNKNOWN',
+                        hint: 'This error was triggered by the Test SQL Error button',
+                        details: error.details || {}
+                      });
+                      // Switch to SQL terminal to show the error
+                      setSqlQueryResult({
+                        data: [],
+                        rows: 0,
+                        timeMs: 0,
+                        columns: []
+                      });
+                    });
+                }}
+                style={{ marginLeft: '10px', fontSize: '10px' }}
+                title="Test SQL error handling"
+              >
+                Test SQL Error
+              </Button>
+            </div>
+          </div>
+          
+          {/* Debug Console Content */}
+          <div
+            id="debug-console"
+            style={{
+              flex: 1,
+              backgroundColor: 'var(--component-background, #141414)',
+              color: 'white',
+              padding: '8px',
+              display: 'flex',
+              flexDirection: 'column',
+              overflow: 'hidden',
+              position: 'relative'
+            }}
+          >
+            {/* Console header and tabs */}
+            <div style={{ 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              marginBottom: '8px',
+              position: 'sticky',
+              top: 0,
+              backgroundColor: 'var(--component-background, #141414)',
+              padding: '4px',
+              zIndex: 1
+            }}>
+              <div>
+                <span style={{ fontWeight: 'bold' }}>Debug Console</span>
+                <span style={{ marginLeft: '12px', opacity: 0.7 }}>
+                  {debugLogs.length} logs
+                </span>
+                <div style={{ display: 'inline-flex', alignItems: 'center', marginLeft: '16px' }}>
+                  <input 
+                    type="checkbox" 
+                    id="errors-only-toggle"
+                    checked={showOnlyErrors}
+                    onChange={() => setShowOnlyErrors(!showOnlyErrors)}
+                    style={{ marginRight: '4px' }}
+                  />
+                  <label 
+                    htmlFor="errors-only-toggle" 
+                    style={{ 
+                      fontSize: '12px', 
+                      cursor: 'pointer',
+                      color: showOnlyErrors ? '#ff4d4f' : '#aaa'
+                    }}
                   >
-                    Copy Errors
-                  </Button>
-                  <Button 
-                    size="small"
-                    onClick={() => {
-                      // Create a full log export with all details
-                      if (debugLogs.length === 0) {
-                        message.info('No logs to export');
-                        return;
+                    Show errors only
+                  </label>
+                </div>
+              </div>
+              <div>
+                <Button 
+                  size="small" 
+                  onClick={() => {
+                    // Find the most recent errors and their context with a max of 50 lines
+                    let lastNormalLogIndex = -1;
+                    
+                    // Find all error logs
+                    const errorLogs = debugLogs
+                      .filter(log => log.type === 'error' || log.message.includes('ERROR'));
+                    
+                    if (errorLogs.length > 0) {
+                      // Find the last normal log before the errors
+                      const firstErrorIndex = debugLogs.findIndex(
+                        log => log.id === errorLogs[0].id
+                      );
+                      
+                      // Find the last normal log before the first error
+                      for (let i = 0; i < firstErrorIndex; i++) {
+                        if (debugLogs[i].type !== 'error' && !debugLogs[i].message.includes('ERROR')) {
+                          lastNormalLogIndex = i;
+                        }
                       }
                       
-                      // Create header with system info
-                      let exportText = "=== FULL LOG EXPORT ===\n\n";
+                      // Add a context header
+                      let copyText = "=== ERROR LOG FOR TROUBLESHOOTING ===\n\n";
                       
-                      // Add system info
-                      exportText += `Environment: ${import.meta.env.DEV ? 'Development' : 'Production'}\n`;
-                      exportText += `Browser: ${navigator.userAgent}\n`;
-                      exportText += `Database URL defined: ${Boolean(supabaseUrl)}\n`;
-                      exportText += `Database Key defined: ${Boolean(supabaseKey)}\n`;
-                      exportText += `Current table: ${selectedTable}\n`;
-                      exportText += `Log count: ${debugLogs.length}\n`;
-                      exportText += `Export time: ${new Date().toISOString()}\n\n`;
+                      // Add system and environment info
+                      copyText += `Environment: ${import.meta.env.DEV ? 'Development' : 'Production'}\n`;
+                      copyText += `Browser: ${navigator.userAgent}\n`;
+                      copyText += `Database URL defined: ${Boolean(supabaseUrl)}\n`;
+                      copyText += `Database Key defined: ${Boolean(supabaseKey)}\n`;
+                      copyText += `Current table: ${selectedTable}\n`;
+                      copyText += `Timestamp: ${new Date().toISOString()}\n\n`;
                       
-                      // Add all logs with formatting based on type
-                      exportText += "===== LOGS =====\n\n";
+                      // Create a combined log array starting from the last normal log
+                      const relevantLogs = lastNormalLogIndex !== -1
+                        ? debugLogs.slice(lastNormalLogIndex)  // Start from last normal log
+                        : errorLogs;  // If no normal log found, just use error logs
                       
-                      debugLogs.forEach(log => {
-                        // Format based on log type
+                      // Limit to 50 log entries
+                      const limitedLogs = relevantLogs.slice(0, 50);
+                      
+                      // Add the logs
+                      copyText += "LOG ENTRIES:\n";
+                      limitedLogs.forEach(log => {
                         const typePrefix = log.type === 'error' ? '[ERROR] ' : 
-                                         log.type === 'warning' ? '[WARNING] ' :
-                                         log.type === 'success' ? '[SUCCESS] ' :
-                                         log.type === 'db' ? '[DB] ' : '[INFO] ';
+                                        log.type === 'warning' ? '[WARNING] ' :
+                                        log.type === 'success' ? '[SUCCESS] ' :
+                                        log.type === 'db' ? '[DB] ' : '[INFO] ';
                         
-                        exportText += `${log.timestamp} ${typePrefix}${log.message}\n`;
+                        copyText += `${log.timestamp} ${typePrefix}${log.message}\n`;
                         
-                        // Add details if available
+                        // Include details if available
                         if (log.details) {
                           if (typeof log.details === 'object') {
                             try {
                               const detailsText = JSON.stringify(log.details, null, 2);
-                              exportText += `  Details: ${detailsText}\n`;
+                              copyText += `  Details: ${detailsText}\n`;
                             } catch (e) {
-                              exportText += `  Details: ${log.details.toString()}\n`;
+                              copyText += `  Details: ${log.details.toString()}\n`;
                             }
                           } else {
-                            exportText += `  Details: ${log.details}\n`;
+                            copyText += `  Details: ${log.details}\n`;
                           }
                         }
-                        
-                        exportText += "\n";
+                        copyText += "\n";
                       });
                       
-                      // Create a blob and download link
-                      const blob = new Blob([exportText], { type: 'text/plain' });
-                      const url = URL.createObjectURL(blob);
-                      const a = document.createElement('a');
-                      a.href = url;
-                      a.download = `log_export_${new Date().toISOString().replace(/[:.]/g, '-')}.txt`;
-                      document.body.appendChild(a);
-                      a.click();
-                      document.body.removeChild(a);
-                      URL.revokeObjectURL(url);
+                      // Copy to clipboard
+                      navigator.clipboard.writeText(copyText);
+                      antMessage.success('Error logs copied to clipboard (up to 50 lines)');
+                    } else {
+                      antMessage.info('No error logs to copy');
+                    }
+                  }} 
+                  style={{ marginRight: '8px', backgroundColor: '#ff4d4f', color: 'white' }}
+                  title="Copy recent errors for troubleshooting"
+                >
+                  Copy Errors
+                </Button>
+                <Button 
+                  size="small"
+                  onClick={() => {
+                    // Create a full log export with all details
+                    if (debugLogs.length === 0) {
+                      antMessage.info('No logs to export');
+                      return;
+                    }
+                    
+                    // Create header with system info
+                    let exportText = "=== FULL LOG EXPORT ===\n\n";
+                    
+                    // Add system info
+                    exportText += `Environment: ${import.meta.env.DEV ? 'Development' : 'Production'}\n`;
+                    exportText += `Browser: ${navigator.userAgent}\n`;
+                    exportText += `Database URL defined: ${Boolean(supabaseUrl)}\n`;
+                    exportText += `Database Key defined: ${Boolean(supabaseKey)}\n`;
+                    exportText += `Current table: ${selectedTable}\n`;
+                    exportText += `Log count: ${debugLogs.length}\n`;
+                    exportText += `Export time: ${new Date().toISOString()}\n\n`;
+                    
+                    // Add all logs with formatting based on type
+                    exportText += "===== LOGS =====\n\n";
+                    
+                    debugLogs.forEach(log => {
+                      // Format based on log type
+                      const typePrefix = log.type === 'error' ? '[ERROR] ' : 
+                                       log.type === 'warning' ? '[WARNING] ' :
+                                       log.type === 'success' ? '[SUCCESS] ' :
+                                       log.type === 'db' ? '[DB] ' : '[INFO] ';
                       
-                      message.success('Logs exported to file');
-                    }}
-                    style={{ marginRight: '8px', backgroundColor: '#1890ff', color: 'white' }}
-                    title="Export all logs to a text file"
-                  >
-                    Export All
-                  </Button>
-                  <Button 
-                    size="small" 
-                    onClick={clearDebugLogs} 
-                    style={{ marginRight: '8px' }}
-                  >
-                    Clear
-                  </Button>
-                  <Button 
-                    size="small" 
-                    onClick={toggleDebugConsole}
-                  >
-                    Hide
-                  </Button>
+                      exportText += `${log.timestamp} ${typePrefix}${log.message}\n`;
+                      
+                      // Add details if available
+                      if (log.details) {
+                        if (typeof log.details === 'object') {
+                          try {
+                            const detailsText = JSON.stringify(log.details, null, 2);
+                            exportText += `  Details: ${detailsText}\n`;
+                          } catch (e) {
+                            exportText += `  Details: ${log.details.toString()}\n`;
+                          }
+                        } else {
+                          exportText += `  Details: ${log.details}\n`;
+                        }
+                      }
+                      
+                      exportText += "\n";
+                    });
+                    
+                    // Create a blob and download link
+                    const blob = new Blob([exportText], { type: 'text/plain' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `log_export_${new Date().toISOString().replace(/[:.]/g, '-')}.txt`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                    
+                    antMessage.success('Logs exported to file');
+                  }}
+                  style={{ marginRight: '8px', backgroundColor: '#52c41a', color: 'white' }}
+                  title="Export all logs to a text file"
+                >
+                  Export All
+                </Button>
+                <Button 
+                  size="small" 
+                  onClick={clearDebugLogs} 
+                  style={{ marginRight: '8px' }}
+                >
+                  Clear
+                </Button>
+                <Button 
+                  size="small" 
+                  onClick={toggleDebugConsole}
+                >
+                  Hide
+                </Button>
+              </div>
+            </div>
+            
+            {/* SQL Terminal at the top */}
+            <div className="sql-terminal-top" style={{
+              backgroundColor: '#1a1a1a',
+              borderRadius: '4px',
+              padding: '8px',
+              marginBottom: '10px',
+              display: 'flex',
+              flexDirection: 'column'
+            }}>
+              <div style={{ 
+                fontSize: '12px', 
+                marginBottom: '4px', 
+                color: '#aaa', 
+                display: 'flex', 
+                justifyContent: 'space-between',
+                alignItems: 'center'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                  <span style={{ fontWeight: 'bold' }}>SQL Query</span>
+                  <span style={{ 
+                    marginLeft: '8px', 
+                    backgroundColor: 'rgba(255, 173, 20, 0.2)', 
+                    padding: '2px 6px',
+                    borderRadius: '4px',
+                    color: '#faad14',
+                    fontSize: '10px'
+                  }}>
+                    Demo Mode
+                  </span>
+                </div>
+                <div>
+                  <span style={{ cursor: 'pointer', textDecoration: 'underline', marginLeft: '15px', color: '#1890ff', fontSize: '11px' }}
+                    onClick={() => setSqlQuery('SELECT * FROM product_summary LIMIT 10;')}>
+                    Products
+                  </span>
+                  <span style={{ cursor: 'pointer', textDecoration: 'underline', marginLeft: '15px', color: '#1890ff', fontSize: '11px' }}
+                    onClick={() => setSqlQuery('SELECT * FROM categories;')}>
+                    Categories
+                  </span>
+                  <span style={{ cursor: 'pointer', textDecoration: 'underline', marginLeft: '15px', color: '#1890ff', fontSize: '11px' }}
+                    onClick={() => setSqlQuery('SELECT name, category, price, quantity FROM product_summary WHERE quantity < 20;')}>
+                    Low Stock
+                  </span>
                 </div>
               </div>
-              <div 
-                id="debug-console-logs"
-                style={{
-                  overflowY: 'auto',
-                  flex: 1,
-                  maxHeight: 'calc(100% - 40px)'
-                }}
+              
+              <div style={{ 
+                marginBottom: '4px',
+                fontSize: '10px',
+                color: '#aaa',
+              }}>
+                Supports basic filtering (WHERE column = value) and LIMIT clauses • Client-side processing
+              </div>
+              
+              <div style={{ display: 'flex' }}>
+                <Input.TextArea
+                  value={sqlQuery}
+                  onChange={(e) => setSqlQuery(e.target.value)}
+                  placeholder="Enter SQL query to display in main table..."
+                  onKeyDown={(e) => {
+                    // Execute query on Ctrl+Enter or Shift+Enter
+                    if ((e.ctrlKey || e.shiftKey) && e.key === 'Enter') {
+                      e.preventDefault(); // Prevent new line
+                      executeSQL();
+                    }
+                  }}
+                  style={{
+                    fontFamily: 'monospace',
+                    backgroundColor: '#0a0a0a',
+                    color: '#fff',
+                    border: '1px solid #333',
+                    flex: 1
+                  }}
+                  rows={1}
+                />
+                <Button
+                  type="primary"
+                  onClick={executeSQL}
+                  loading={sqlQueryRunning}
+                  disabled={!sqlQuery.trim()}
+                  style={{ marginLeft: '8px' }}
+                >
+                  Run
+                </Button>
+              </div>
+              
+              <div style={{ fontSize: '10px', color: '#aaa', textAlign: 'right', marginTop: '2px' }}>
+                Ctrl+Enter to execute • Results will appear in main table
+                {sqlQueryResult && (
+                  <span style={{ color: '#52c41a', marginLeft: '10px' }}>
+                    Last query: {sqlQueryResult.rows} {sqlQueryResult.rows === 1 ? 'row' : 'rows'} in {sqlQueryResult.timeMs}ms
+                  </span>
+                )}
+              </div>
+            </div>
+            
+            {/* Query Error */}
+            {sqlQueryError && (
+              <div style={{
+                backgroundColor: 'rgba(255,77,79,0.2)',
+                border: '1px solid #ff4d4f',
+                padding: '8px',
+                marginBottom: '8px',
+                borderRadius: '4px',
+                fontSize: '12px'
+              }}>
+                <div style={{ color: '#ff4d4f', fontWeight: 'bold', marginBottom: '4px' }}>
+                  Query Error
+                </div>
+                <div style={{ marginBottom: '4px' }}>
+                  {typeof sqlQueryError === 'string' ? sqlQueryError : sqlQueryError.message}
+                </div>
+                {sqlQueryError.hint && (
+                  <div style={{ color: '#aaa' }}>
+                    Hint: {sqlQueryError.hint}
+                  </div>
+                )}
+                {sqlQueryError.code && (
+                  <div style={{ color: '#aaa' }}>
+                    Code: {sqlQueryError.code}
+                  </div>
+                )}
+              </div>
+            )}
+            
+            {/* Console logs section */}
+            <div 
+              id="debug-console-logs"
+              style={{
+                overflowY: 'auto',
+                flex: 1,
+                textAlign: 'left',
+                width: '100%',
+                boxSizing: 'border-box'
+              }}
+              data-auto-scroll="true"
+              onScroll={(e) => {
+                const target = e.target;
+                // Mark if user has manually scrolled
+                if (target.scrollTop > 0 && 
+                    target.scrollTop < target.scrollHeight - target.clientHeight - 50) {
+                  target.setAttribute('data-auto-scroll', 'false');
+                } else if (target.scrollTop === 0) { 
+                  // User scrolled back to top (newest messages)
+                  target.setAttribute('data-auto-scroll', 'true');
+                }
+              }}
               >
-                {debugLogs.map(log => (
+                {/* Filter logs if showOnlyErrors is enabled */}
+                {(showOnlyErrors 
+                  ? debugLogs.filter(log => log.type === 'error' || log.message.includes('ERROR')) 
+                  : debugLogs
+                ).map(log => (
                   <div 
                     key={log.id} 
                     style={{ 
@@ -1257,7 +2083,7 @@ const DataTableExample = () => {
                         color: log.type === 'error' ? '#ff4d4f' :
                               log.type === 'warning' ? '#faad14' :
                               log.type === 'success' ? '#52c41a' :
-                              log.type === 'db' ? '#1890ff' : '#fff',
+                              log.type === 'db' ? '#52c41a' : '#fff',
                         fontWeight: log.type === 'error' || log.type === 'db' ? 'bold' : 'normal'
                       }}>
                         {log.message}
@@ -1266,17 +2092,19 @@ const DataTableExample = () => {
                     
                     {/* Show details if available */}
                     {log.details && (
-                      <div style={{ 
+                      <div className="debug-log-details" style={{ 
                         marginLeft: '16px', 
                         marginTop: '2px',
                         fontSize: '11px',
                         color: '#aaa',
                         whiteSpace: 'pre-wrap',
-                        maxHeight: '150px',
+                        maxHeight: '200px',
                         overflowY: 'auto',
                         background: 'rgba(0,0,0,0.2)',
-                        padding: '4px',
-                        borderRadius: '2px'
+                        padding: '8px',
+                        borderRadius: '2px',
+                        textAlign: 'left',
+                        fontFamily: 'Consolas, Monaco, "Andale Mono", monospace'
                       }}>
                         {typeof log.details === 'object' ? 
                           JSON.stringify(log.details, null, 2) : 
@@ -1290,30 +2118,38 @@ const DataTableExample = () => {
                     No logs to display
                   </div>
                 )}
+                {showOnlyErrors && 
+                  debugLogs.filter(log => log.type === 'error' || log.message.includes('ERROR')).length === 0 && (
+                  <div style={{ opacity: 0.5, textAlign: 'center', padding: '20px 0' }}>
+                    No error logs to display
+                  </div>
+                )}
               </div>
             </div>
-          </>
-        )}
-        
-        {/* Debug toggle button (when hidden) */}
-        {!showDebugConsole && (
-          <Button 
-            type="primary" 
-            size="small"
-            onClick={toggleDebugConsole}
-            style={{ 
-              position: 'fixed', 
-              bottom: '10px', 
-              right: '10px',
-              opacity: 0.8,
-              zIndex: 1000
-            }}
-          >
-            Show Debug Console
-          </Button>
-        )}
+          </div>
+        </div>
+      )}
+      
+      {/* Debug toggle button (when hidden) */}
+      {!showDebugConsole && (
+        <Button 
+          type="primary" 
+          size="small"
+          onClick={toggleDebugConsole}
+          style={{ 
+            position: 'fixed', 
+            bottom: '10px', 
+            right: '10px',
+            opacity: 0.8,
+            zIndex: 1000
+          }}
+        >
+          Show Debug Console
+        </Button>
+      )}
+      
       </div>
-    </div>
+    </>
   );
 };
 
