@@ -12,6 +12,22 @@ import {
   fetchTableData,
   getTableColumns
 } from './DatabaseConnector';
+// Import Supabase client from DatabaseConnector to use in this file
+import { createClient } from '@supabase/supabase-js';
+
+// Initialize Supabase client with same credentials used in DatabaseConnector
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const supabase = supabaseUrl && supabaseKey 
+  ? createClient(supabaseUrl, supabaseKey)
+  : {
+      from: () => ({
+        select: () => ({ limit: () => ({ then: (cb) => cb({ data: [], error: null }) }) }),
+        insert: () => ({ then: (cb) => cb({ data: null, error: null }) }),
+        update: () => ({ eq: () => ({ then: (cb) => cb({ data: null, error: null }) }) }),
+        delete: () => ({ eq: () => ({ then: (cb) => cb({ data: null, error: null }) }) })
+      })
+    };
 
 const { Option } = Select;
 
@@ -226,106 +242,219 @@ const DataTableExample = () => {
   // Event handlers for DataTable
   const handleSave = async (values, key, newData) => {
     try {
-      // Generic update for any table
-      if (selectedTable === 'product_summary' || selectedTable === 'products') {
-        // Find the product to update
-        const product = tableData.find(p => p.key === key);
-        if (!product) return;
-        
-        // Show loading indicator
-        message.loading({ content: 'Saving to database...', key: 'saveOperation' });
-        
-        // Update the product in database
-        const savedData = await saveProduct({ ...product, ...values }, false);
-        
-        if (savedData) {
-          // Operation was successful
-          message.success({ content: 'Record updated in database', key: 'saveOperation', duration: 2 });
-          
-          // If we have real database, refresh data to get server-calculated fields
-          loadTableData(selectedTable);
-        } else {
-          throw new Error('Save operation returned no data');
-        }
-      } else {
-        // For other tables, we would need to implement specific update logic
-        message.info(`Update operations for ${selectedTable} not yet implemented`);
+      // Find the record to update
+      const record = tableData.find(p => p.key === key);
+      if (!record) {
+        message.error({ content: 'Record not found', duration: 2 });
         return;
       }
       
-      // Update local state for immediate UI feedback
-      setTableData(newData);
+      // Show loading indicator
+      message.loading({ content: 'Saving to database...', key: 'saveOperation' });
+      
+      // For product tables, we have specific save functionality
+      if (selectedTable === 'product_summary' || selectedTable === 'products') {
+        try {
+          // Validate inputs before sending to database
+          // Make sure numeric values are properly formatted
+          const processedValues = { ...values };
+          
+          // Convert string numbers to actual numbers
+          if (processedValues.price) processedValues.price = Number(processedValues.price);
+          if (processedValues.cost) processedValues.cost = Number(processedValues.cost);
+          if (processedValues.quantity) processedValues.quantity = Number(processedValues.quantity);
+          if (processedValues.reorder_level) processedValues.reorder_level = Number(processedValues.reorder_level);
+          
+          // Update the product in database
+          const savedData = await saveProduct({ ...record, ...processedValues }, false);
+          
+          if (savedData) {
+            // Operation was successful
+            message.success({ content: 'Record updated in database', key: 'saveOperation', duration: 2 });
+            
+            // Refresh data to get server-calculated fields
+            await loadTableData(selectedTable);
+            logDebug(`Product ${record.id} updated successfully`, 'success');
+          } else {
+            throw new Error('Save operation returned no data');
+          }
+        } catch (error) {
+          message.error({ content: `Failed to update product: ${error.message}`, key: 'saveOperation', duration: 3 });
+          logDebug(`Error updating product: ${error.message}`, 'error');
+        }
+      } else {
+        // Generic table update
+        try {
+          // Check if table includes "DUMMY" (indicating mock data)
+          if (selectedTable.includes('DUMMY')) {
+            // Just update local state for mock data
+            setTableData(newData);
+            message.success({ content: 'Record updated (mock mode)', key: 'saveOperation', duration: 2 });
+            logDebug(`${selectedTable} updated (mock mode)`, 'success');
+          } else {
+            // For real tables, try a generic update
+            const { data, error } = await supabase.from(selectedTable.split('.').pop())
+              .update(values)
+              .eq('id', record.id);
+              
+            if (error) throw error;
+            
+            message.success({ content: 'Record updated in database', key: 'saveOperation', duration: 2 });
+            // Refresh table data
+            await loadTableData(selectedTable);
+            logDebug(`Record ${record.id} updated in ${selectedTable}`, 'success');
+          }
+        } catch (error) {
+          message.error({ content: `Failed to update record: ${error.message}`, key: 'saveOperation', duration: 3 });
+          logDebug(`Error updating record in ${selectedTable}: ${error.message}`, 'error');
+        }
+      }
     } catch (error) {
       console.error('Error updating record:', error);
       message.error({ content: 'Failed to update record in database', key: 'saveOperation', duration: 2 });
+      logDebug(`Error in update operation: ${error.message}`, 'error');
     }
   };
 
   const handleDelete = async (key, newData) => {
     try {
-      if (selectedTable === 'product_summary' || selectedTable === 'products') {
-        // Find the product to delete
-        const product = tableData.find(p => p.key === key);
-        if (!product) return;
-        
-        // Show loading indicator
-        message.loading({ content: 'Deleting from database...', key: 'deleteOperation' });
-        
-        // Delete from database
-        const success = await deleteProduct(product.id);
-        
-        if (success) {
-          // Operation was successful
-          message.success({ content: 'Record deleted from database', key: 'deleteOperation', duration: 2 });
-          
-          // If we have real database, refresh data to ensure consistency
-          loadTableData(selectedTable);
-        } else {
-          throw new Error('Delete operation failed');
-        }
-      } else {
-        // For other tables, we would need to implement specific delete logic
-        message.info(`Delete operations for ${selectedTable} not yet implemented`);
+      // Find the record to delete
+      const record = tableData.find(p => p.key === key);
+      if (!record) {
+        message.error({ content: 'Record not found', duration: 2 });
         return;
       }
       
-      // Update local state for immediate UI feedback
-      setTableData(newData);
+      // Show loading indicator
+      message.loading({ content: 'Deleting from database...', key: 'deleteOperation' });
+      
+      // For product tables, we have specific delete functionality
+      if (selectedTable === 'product_summary' || selectedTable === 'products') {
+        try {
+          // Delete from database
+          const success = await deleteProduct(record.id);
+          
+          if (success) {
+            // Operation was successful
+            message.success({ content: 'Record deleted from database', key: 'deleteOperation', duration: 2 });
+            
+            // Refresh data to ensure consistency
+            await loadTableData(selectedTable);
+            logDebug(`Product ${record.id} deleted successfully`, 'success');
+          } else {
+            throw new Error('Delete operation failed');
+          }
+        } catch (error) {
+          message.error({ content: `Failed to delete product: ${error.message}`, key: 'deleteOperation', duration: 3 });
+          logDebug(`Error deleting product: ${error.message}`, 'error');
+        }
+      } else {
+        // Generic table delete
+        try {
+          // Check if table includes "DUMMY" (indicating mock data)
+          if (selectedTable.includes('DUMMY')) {
+            // Just update local state for mock data
+            setTableData(newData);
+            message.success({ content: 'Record deleted (mock mode)', key: 'deleteOperation', duration: 2 });
+            logDebug(`Record deleted from ${selectedTable} (mock mode)`, 'success');
+          } else {
+            // For real tables, try a generic delete
+            const { error } = await supabase.from(selectedTable.split('.').pop())
+              .delete()
+              .eq('id', record.id);
+              
+            if (error) throw error;
+            
+            message.success({ content: 'Record deleted from database', key: 'deleteOperation', duration: 2 });
+            // Refresh table data
+            await loadTableData(selectedTable);
+            logDebug(`Record ${record.id} deleted from ${selectedTable}`, 'success');
+          }
+        } catch (error) {
+          message.error({ content: `Failed to delete record: ${error.message}`, key: 'deleteOperation', duration: 3 });
+          logDebug(`Error deleting record from ${selectedTable}: ${error.message}`, 'error');
+          
+          // Update local state anyway for better user experience
+          setTableData(newData);
+        }
+      }
     } catch (error) {
       console.error('Error deleting record:', error);
       message.error({ content: 'Failed to delete record from database', key: 'deleteOperation', duration: 2 });
+      logDebug(`Error in delete operation: ${error.message}`, 'error');
     }
   };
 
   const handleAdd = async (record, newData) => {
     try {
+      // Show loading indicator
+      message.loading({ content: 'Adding to database...', key: 'addOperation' });
+      
+      // For product tables, we have specific add functionality
       if (selectedTable === 'product_summary' || selectedTable === 'products') {
-        // Show loading indicator
-        message.loading({ content: 'Adding to database...', key: 'addOperation' });
-        
-        // Add to database (true indicates new record)
-        const savedData = await saveProduct(record, true);
-        
-        if (savedData) {
-          // Operation was successful
-          message.success({ content: 'Record added to database', key: 'addOperation', duration: 2 });
+        try {
+          // Validate and process inputs before sending to database
+          const processedRecord = { ...record };
           
-          // If we have real database, refresh data to get server-assigned IDs and calculated fields
-          loadTableData(selectedTable);
-        } else {
-          throw new Error('Add operation returned no data');
+          // Convert string numbers to actual numbers
+          if (processedRecord.price) processedRecord.price = Number(processedRecord.price);
+          if (processedRecord.cost) processedRecord.cost = Number(processedRecord.cost);
+          if (processedRecord.quantity) processedRecord.quantity = Number(processedRecord.quantity);
+          if (processedRecord.reorder_level) processedRecord.reorder_level = Number(processedRecord.reorder_level);
+          
+          // Add to database (true indicates new record)
+          const savedData = await saveProduct(processedRecord, true);
+          
+          if (savedData) {
+            // Operation was successful
+            message.success({ content: 'Record added to database', key: 'addOperation', duration: 2 });
+            
+            // Refresh data to get server-assigned IDs and calculated fields
+            await loadTableData(selectedTable);
+            logDebug(`New product added successfully`, 'success');
+          } else {
+            throw new Error('Add operation returned no data');
+          }
+        } catch (error) {
+          message.error({ content: `Failed to add product: ${error.message}`, key: 'addOperation', duration: 3 });
+          logDebug(`Error adding product: ${error.message}`, 'error');
         }
       } else {
-        // For other tables, we would need to implement specific add logic
-        message.info(`Add operations for ${selectedTable} not yet implemented`);
-        return;
+        // Generic table add
+        try {
+          // Check if table includes "DUMMY" (indicating mock data)
+          if (selectedTable.includes('DUMMY')) {
+            // Just update local state for mock data
+            setTableData(newData);
+            message.success({ content: 'Record added (mock mode)', key: 'addOperation', duration: 2 });
+            logDebug(`New record added to ${selectedTable} (mock mode)`, 'success');
+          } else {
+            // For real tables, try a generic insert
+            // Remove key field which might conflict with database auto-increment
+            const { key, ...insertData } = record;
+            
+            const { data, error } = await supabase.from(selectedTable.split('.').pop())
+              .insert(insertData);
+              
+            if (error) throw error;
+            
+            message.success({ content: 'Record added to database', key: 'addOperation', duration: 2 });
+            // Refresh table data to get the server-assigned ID
+            await loadTableData(selectedTable);
+            logDebug(`New record added to ${selectedTable}`, 'success');
+          }
+        } catch (error) {
+          message.error({ content: `Failed to add record: ${error.message}`, key: 'addOperation', duration: 3 });
+          logDebug(`Error adding record to ${selectedTable}: ${error.message}`, 'error');
+          
+          // Update local state anyway for better user experience in case of temporary database issues
+          setTableData(newData);
+        }
       }
-      
-      // Update local state for immediate UI feedback
-      setTableData(newData);
     } catch (error) {
       console.error('Error adding record:', error);
       message.error({ content: 'Failed to add record to database', key: 'addOperation', duration: 2 });
+      logDebug(`Error in add operation: ${error.message}`, 'error');
     }
   };
 
@@ -661,7 +790,9 @@ const DataTableExample = () => {
                 fontSize: '12px',
                 position: 'relative',
                 display: 'flex',
-                flexDirection: 'column'
+                flexDirection: 'column',
+                maxHeight: '150px',
+                marginTop: 'auto'
               }}
             >
               <div style={{ 

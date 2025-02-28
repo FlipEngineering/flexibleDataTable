@@ -268,23 +268,67 @@ const DataTable = ({
   };
 
   const renderFormItem = (column) => {
+    // Build validation rules
+    const rules = [];
+    
+    // Required validation
+    if (column.required) {
+      rules.push({ 
+        required: true, 
+        message: `${column.title} is required` 
+      });
+    }
+    
+    // Type-specific validation
     switch (column.type) {
       case 'number':
+        rules.push({ 
+          type: 'number',
+          transform: (value) => Number(value),
+          message: `${column.title} must be a valid number` 
+        });
+        
+        if (column.dataIndex === 'price' || column.dataIndex === 'cost') {
+          rules.push({
+            validator: (_, value) => {
+              if (value < 0) {
+                return Promise.reject(`${column.title} cannot be negative`);
+              }
+              return Promise.resolve();
+            }
+          });
+        }
+        
+        if (column.dataIndex === 'quantity' || column.dataIndex === 'reorder_level') {
+          rules.push({
+            validator: (_, value) => {
+              if (value < 0 || !Number.isInteger(Number(value))) {
+                return Promise.reject(`${column.title} must be a non-negative integer`);
+              }
+              return Promise.resolve();
+            }
+          });
+        }
+        
         return <Form.Item 
           name={column.dataIndex}
           label={column.title}
-          rules={[{ required: column.required }]}
+          rules={rules}
+          tooltip={column.dataIndex === 'price' || column.dataIndex === 'cost' ? 
+            "Enter a non-negative number" : 
+            column.dataIndex === 'quantity' || column.dataIndex === 'reorder_level' ? 
+            "Enter a non-negative integer" : null}
         >
-          <Input type="number" />
+          <Input type="number" disabled={column.readOnly} />
         </Form.Item>;
         
       case 'select':
         return <Form.Item 
           name={column.dataIndex}
           label={column.title}
-          rules={[{ required: column.required }]}
+          rules={rules}
         >
-          <Select>
+          <Select disabled={column.readOnly}>
             {(column.options || []).map(option => (
               <Select.Option key={option.value} value={option.value}>
                 {option.label}
@@ -298,18 +342,45 @@ const DataTable = ({
           name={column.dataIndex}
           label={column.title}
           valuePropName="checked"
-          rules={[{ required: column.required }]}
+          rules={rules}
         >
-          <Checkbox />
+          <Checkbox disabled={column.readOnly} />
         </Form.Item>;
         
+      case 'text':
       default:
+        // Add text-specific validation
+        if (column.dataIndex === 'sku') {
+          rules.push({
+            min: 3,
+            message: 'SKU must be at least 3 characters'
+          });
+        }
+        
+        if (column.dataIndex === 'name') {
+          rules.push({
+            min: 2,
+            message: 'Name must be at least 2 characters'
+          });
+        }
+        
+        if (column.dataIndex === 'email') {
+          rules.push({
+            type: 'email',
+            message: 'Please enter a valid email address'
+          });
+        }
+        
         return <Form.Item 
           name={column.dataIndex}
           label={column.title}
-          rules={[{ required: column.required }]}
+          rules={rules}
+          tooltip={column.dataIndex === 'sku' ? 
+            "Enter a unique product identifier (min 3 chars)" : 
+            column.dataIndex === 'name' ? 
+            "Enter product name (min 2 chars)" : null}
         >
-          <Input />
+          <Input disabled={column.readOnly} />
         </Form.Item>;
     }
   };
