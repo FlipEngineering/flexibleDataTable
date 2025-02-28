@@ -57356,7 +57356,7 @@ class RealtimeClient {
         this.conn = null;
       }
     });
-    __vitePreload(() => import("./browser-a8706cc2.js").then((n2) => n2.b), true ? [] : void 0).then(({ default: WS }) => {
+    __vitePreload(() => import("./browser-4cc14569.js").then((n2) => n2.b), true ? [] : void 0).then(({ default: WS }) => {
       this.conn = new WS(this.endpointURL(), void 0, {
         headers: this.headers
       });
@@ -63439,6 +63439,139 @@ const DataTableExample = () => {
                 ] })
               ] }),
               /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx(
+                  Button$2,
+                  {
+                    size: "small",
+                    onClick: () => {
+                      let lastNormalLogIndex = -1;
+                      const recentErrors = debugLogs.filter((log) => log.type === "error" || log.message.includes("ERROR")).slice(0, 3);
+                      if (recentErrors.length > 0) {
+                        const firstErrorIndex = debugLogs.findIndex(
+                          (log) => log.id === recentErrors[0].id
+                        );
+                        for (let i = firstErrorIndex + 1; i < debugLogs.length; i++) {
+                          if (debugLogs[i].type !== "error" && !debugLogs[i].message.includes("ERROR")) {
+                            lastNormalLogIndex = i;
+                            break;
+                          }
+                        }
+                        let copyText = "=== ERROR LOG FOR TROUBLESHOOTING ===\n\n";
+                        copyText += `Environment: ${"Production"}
+`;
+                        copyText += `Browser: ${navigator.userAgent}
+`;
+                        copyText += `Database URL defined: ${Boolean(supabaseUrl)}
+`;
+                        copyText += `Database Key defined: ${Boolean(supabaseKey)}
+`;
+                        copyText += `Current table: ${selectedTable}
+`;
+                        copyText += `Timestamp: ${(/* @__PURE__ */ new Date()).toISOString()}
+
+`;
+                        if (lastNormalLogIndex !== -1) {
+                          const contextLog = debugLogs[lastNormalLogIndex];
+                          copyText += `LAST NORMAL LOG:
+${contextLog.timestamp} - ${contextLog.message}
+
+`;
+                        }
+                        copyText += "ERRORS:\n";
+                        recentErrors.forEach((errorLog) => {
+                          copyText += `${errorLog.timestamp} - ${errorLog.message}
+`;
+                          if (errorLog.details) {
+                            if (typeof errorLog.details === "object") {
+                              try {
+                                const detailsText = JSON.stringify(errorLog.details, null, 2);
+                                copyText += `Details: ${detailsText}
+`;
+                              } catch (e2) {
+                                copyText += `Details: ${errorLog.details.toString()}
+`;
+                              }
+                            } else {
+                              copyText += `Details: ${errorLog.details}
+`;
+                            }
+                          }
+                          copyText += "\n";
+                        });
+                        navigator.clipboard.writeText(copyText);
+                        message$1.success("Error logs copied to clipboard");
+                      } else {
+                        message$1.info("No error logs to copy");
+                      }
+                    },
+                    style: { marginRight: "8px", backgroundColor: "#ff4d4f", color: "white" },
+                    title: "Copy recent errors for troubleshooting",
+                    children: "Copy Errors"
+                  }
+                ),
+                /* @__PURE__ */ jsxRuntimeExports.jsx(
+                  Button$2,
+                  {
+                    size: "small",
+                    onClick: () => {
+                      if (debugLogs.length === 0) {
+                        message$1.info("No logs to export");
+                        return;
+                      }
+                      let exportText = "=== FULL LOG EXPORT ===\n\n";
+                      exportText += `Environment: ${"Production"}
+`;
+                      exportText += `Browser: ${navigator.userAgent}
+`;
+                      exportText += `Database URL defined: ${Boolean(supabaseUrl)}
+`;
+                      exportText += `Database Key defined: ${Boolean(supabaseKey)}
+`;
+                      exportText += `Current table: ${selectedTable}
+`;
+                      exportText += `Log count: ${debugLogs.length}
+`;
+                      exportText += `Export time: ${(/* @__PURE__ */ new Date()).toISOString()}
+
+`;
+                      exportText += "===== LOGS =====\n\n";
+                      debugLogs.forEach((log) => {
+                        const typePrefix = log.type === "error" ? "[ERROR] " : log.type === "warning" ? "[WARNING] " : log.type === "success" ? "[SUCCESS] " : log.type === "db" ? "[DB] " : "[INFO] ";
+                        exportText += `${log.timestamp} ${typePrefix}${log.message}
+`;
+                        if (log.details) {
+                          if (typeof log.details === "object") {
+                            try {
+                              const detailsText = JSON.stringify(log.details, null, 2);
+                              exportText += `  Details: ${detailsText}
+`;
+                            } catch (e2) {
+                              exportText += `  Details: ${log.details.toString()}
+`;
+                            }
+                          } else {
+                            exportText += `  Details: ${log.details}
+`;
+                          }
+                        }
+                        exportText += "\n";
+                      });
+                      const blob = new Blob([exportText], { type: "text/plain" });
+                      const url2 = URL.createObjectURL(blob);
+                      const a = document.createElement("a");
+                      a.href = url2;
+                      a.download = `log_export_${(/* @__PURE__ */ new Date()).toISOString().replace(/[:.]/g, "-")}.txt`;
+                      document.body.appendChild(a);
+                      a.click();
+                      document.body.removeChild(a);
+                      URL.revokeObjectURL(url2);
+                      message$1.success("Logs exported to file");
+                    },
+                    style: { marginRight: "8px", backgroundColor: "#1890ff", color: "white" },
+                    title: "Export all logs to a text file",
+                    children: "Export All"
+                  }
+                ),
                 /* @__PURE__ */ jsxRuntimeExports.jsx(
                   Button$2,
                   {
