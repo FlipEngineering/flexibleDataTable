@@ -54604,15 +54604,48 @@ const DataTable = ({
     });
   };
   const renderFormItem = (column2) => {
+    const rules2 = [];
+    if (column2.required) {
+      rules2.push({
+        required: true,
+        message: `${column2.title} is required`
+      });
+    }
     switch (column2.type) {
       case "number":
+        rules2.push({
+          type: "number",
+          transform: (value) => Number(value),
+          message: `${column2.title} must be a valid number`
+        });
+        if (column2.dataIndex === "price" || column2.dataIndex === "cost") {
+          rules2.push({
+            validator: (_, value) => {
+              if (value < 0) {
+                return Promise.reject(`${column2.title} cannot be negative`);
+              }
+              return Promise.resolve();
+            }
+          });
+        }
+        if (column2.dataIndex === "quantity" || column2.dataIndex === "reorder_level") {
+          rules2.push({
+            validator: (_, value) => {
+              if (value < 0 || !Number.isInteger(Number(value))) {
+                return Promise.reject(`${column2.title} must be a non-negative integer`);
+              }
+              return Promise.resolve();
+            }
+          });
+        }
         return /* @__PURE__ */ jsxRuntimeExports.jsx(
           Form$1.Item,
           {
             name: column2.dataIndex,
             label: column2.title,
-            rules: [{ required: column2.required }],
-            children: /* @__PURE__ */ jsxRuntimeExports.jsx(Input$1, { type: "number" })
+            rules: rules2,
+            tooltip: column2.dataIndex === "price" || column2.dataIndex === "cost" ? "Enter a non-negative number" : column2.dataIndex === "quantity" || column2.dataIndex === "reorder_level" ? "Enter a non-negative integer" : null,
+            children: /* @__PURE__ */ jsxRuntimeExports.jsx(Input$1, { type: "number", disabled: column2.readOnly })
           }
         );
       case "select":
@@ -54621,8 +54654,8 @@ const DataTable = ({
           {
             name: column2.dataIndex,
             label: column2.title,
-            rules: [{ required: column2.required }],
-            children: /* @__PURE__ */ jsxRuntimeExports.jsx(Select$1, { children: (column2.options || []).map((option) => /* @__PURE__ */ jsxRuntimeExports.jsx(Select$1.Option, { value: option.value, children: option.label }, option.value)) })
+            rules: rules2,
+            children: /* @__PURE__ */ jsxRuntimeExports.jsx(Select$1, { disabled: column2.readOnly, children: (column2.options || []).map((option) => /* @__PURE__ */ jsxRuntimeExports.jsx(Select$1.Option, { value: option.value, children: option.label }, option.value)) })
           }
         );
       case "checkbox":
@@ -54632,18 +54665,38 @@ const DataTable = ({
             name: column2.dataIndex,
             label: column2.title,
             valuePropName: "checked",
-            rules: [{ required: column2.required }],
-            children: /* @__PURE__ */ jsxRuntimeExports.jsx(Checkbox$1, {})
+            rules: rules2,
+            children: /* @__PURE__ */ jsxRuntimeExports.jsx(Checkbox$1, { disabled: column2.readOnly })
           }
         );
+      case "text":
       default:
+        if (column2.dataIndex === "sku") {
+          rules2.push({
+            min: 3,
+            message: "SKU must be at least 3 characters"
+          });
+        }
+        if (column2.dataIndex === "name") {
+          rules2.push({
+            min: 2,
+            message: "Name must be at least 2 characters"
+          });
+        }
+        if (column2.dataIndex === "email") {
+          rules2.push({
+            type: "email",
+            message: "Please enter a valid email address"
+          });
+        }
         return /* @__PURE__ */ jsxRuntimeExports.jsx(
           Form$1.Item,
           {
             name: column2.dataIndex,
             label: column2.title,
-            rules: [{ required: column2.required }],
-            children: /* @__PURE__ */ jsxRuntimeExports.jsx(Input$1, {})
+            rules: rules2,
+            tooltip: column2.dataIndex === "sku" ? "Enter a unique product identifier (min 3 chars)" : column2.dataIndex === "name" ? "Enter product name (min 2 chars)" : null,
+            children: /* @__PURE__ */ jsxRuntimeExports.jsx(Input$1, { disabled: column2.readOnly })
           }
         );
     }
@@ -57303,7 +57356,7 @@ class RealtimeClient {
         this.conn = null;
       }
     });
-    __vitePreload(() => import("./browser-0481af4b.js").then((n2) => n2.b), true ? [] : void 0).then(({ default: WS }) => {
+    __vitePreload(() => import("./browser-a65e57bd.js").then((n2) => n2.b), true ? [] : void 0).then(({ default: WS }) => {
       this.conn = new WS(this.endpointURL(), void 0, {
         headers: this.headers
       });
@@ -61770,17 +61823,17 @@ const testSupabaseCors = async (url2, key) => {
     console.log("ℹ️ This suggests a CORS configuration issue. Add your origin to Supabase allowed origins.");
   }
 };
-const supabase = getSupabaseClient();
-const supabaseUrl = "https://bskffxgprfmjnmwunkck.supabase.co";
-const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJza2ZmeGdwcmZtam5td3Vua2NrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA2OTEzMzcsImV4cCI6MjA1NjI2NzMzN30.BsxrbwLvZLS3NEkm-TK4SlGi2sw7BkmjqCPFsluvFKY";
-testSupabaseCors(supabaseUrl, supabaseKey);
+const supabase$1 = getSupabaseClient();
+const supabaseUrl$1 = "https://bskffxgprfmjnmwunkck.supabase.co";
+const supabaseKey$1 = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJza2ZmeGdwcmZtam5td3Vua2NrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA2OTEzMzcsImV4cCI6MjA1NjI2NzMzN30.BsxrbwLvZLS3NEkm-TK4SlGi2sw7BkmjqCPFsluvFKY";
+testSupabaseCors(supabaseUrl$1, supabaseKey$1);
 const fetchCategories = async () => {
   try {
-    let { data, error } = await supabase.from("categories").select("*").order("name", { ascending: true });
+    let { data, error } = await supabase$1.from("categories").select("*").order("name", { ascending: true });
     if (error) {
       console.log("Trying inventory.categories instead...");
       try {
-        const inventoryResult = await supabase.from("categories").select("*", { schema: "inventory" }).order("name", { ascending: true });
+        const inventoryResult = await supabase$1.from("categories").select("*", { schema: "inventory" }).order("name", { ascending: true });
         if (!inventoryResult.error) {
           data = inventoryResult.data;
           error = null;
@@ -61798,7 +61851,7 @@ const fetchCategories = async () => {
 };
 const fetchProducts = async (filters = {}, orderBy = "name", ascending = true) => {
   try {
-    let query = supabase.from("product_summary").select("*");
+    let query = supabase$1.from("product_summary").select("*");
     if (filters.category_id) {
       query = query.eq("category_id", filters.category_id);
     }
@@ -61810,7 +61863,7 @@ const fetchProducts = async (filters = {}, orderBy = "name", ascending = true) =
     if (error) {
       console.log("Trying inventory.product_summary instead...");
       try {
-        let inventoryQuery = supabase.from("product_summary").select("*", { schema: "inventory" });
+        let inventoryQuery = supabase$1.from("product_summary").select("*", { schema: "inventory" });
         if (filters.category_id) {
           inventoryQuery = inventoryQuery.eq("category_id", filters.category_id);
         }
@@ -61846,8 +61899,8 @@ const searchProducts = async (searchTerm) => {
   try {
     let data, error;
     try {
-      if (typeof supabase.rpc === "function") {
-        const result = await supabase.rpc("search_products", { search_term: searchTerm });
+      if (typeof supabase$1.rpc === "function") {
+        const result = await supabase$1.rpc("search_products", { search_term: searchTerm });
         data = result.data;
         error = result.error;
       } else {
@@ -61958,7 +62011,7 @@ const saveProduct = async (product, isNew = false) => {
     if (isNew) {
       console.log("Creating new product in database:", product);
       const { profit_margin, needs_reorder, ...productData } = product;
-      const { data, error } = await supabase.from("product_summary").insert(productData);
+      const { data, error } = await supabase$1.from("product_summary").insert(productData);
       if (error) {
         console.error("Error inserting product into database:", error);
         throw error;
@@ -61968,7 +62021,7 @@ const saveProduct = async (product, isNew = false) => {
     } else {
       console.log("Updating product in database:", product);
       const { profit_margin, needs_reorder, ...productData } = product;
-      const { data, error } = await supabase.from("product_summary").update(productData).eq("id", product.id);
+      const { data, error } = await supabase$1.from("product_summary").update(productData).eq("id", product.id);
       if (error) {
         console.error("Error updating product in database:", error);
         throw error;
@@ -61985,7 +62038,7 @@ const saveProduct = async (product, isNew = false) => {
 const deleteProduct = async (id2) => {
   try {
     console.log("Deleting product from database, ID:", id2);
-    const { error } = await supabase.from("product_summary").delete().eq("id", id2);
+    const { error } = await supabase$1.from("product_summary").delete().eq("id", id2);
     if (error) {
       console.error("Error deleting product from database:", error);
       throw error;
@@ -62004,8 +62057,8 @@ const fetchAvailableTables = async () => {
     console.log("🔍 Checking database connection and looking for tables...");
     let sessionData, sessionError;
     try {
-      if (typeof ((_a = supabase.auth) == null ? void 0 : _a.getSession) === "function") {
-        const session = await supabase.auth.getSession();
+      if (typeof ((_a = supabase$1.auth) == null ? void 0 : _a.getSession) === "function") {
+        const session = await supabase$1.auth.getSession();
         sessionData = session.data;
         sessionError = session.error;
       } else {
@@ -62024,8 +62077,8 @@ const fetchAvailableTables = async () => {
     console.log("🔍 Querying for tables in all schemas...");
     const accessibleTables = [];
     try {
-      if (typeof supabase.rpc === "function") {
-        const { data: schemaData, error: schemaError } = await supabase.rpc("get_all_tables");
+      if (typeof supabase$1.rpc === "function") {
+        const { data: schemaData, error: schemaError } = await supabase$1.rpc("get_all_tables");
         if (!schemaError && schemaData && schemaData.length > 0) {
           console.log(`✅ Found ${schemaData.length} tables via SQL query`);
           for (const table of schemaData) {
@@ -62060,7 +62113,7 @@ const fetchAvailableTables = async () => {
       try {
         let data, error;
         try {
-          const result = await supabase.from(tableName).select("*", { schema: "inventory" }).limit(1);
+          const result = await supabase$1.from(tableName).select("*", { schema: "inventory" }).limit(1);
           data = result.data;
           error = result.error;
         } catch (e2) {
@@ -62103,7 +62156,7 @@ const fetchAvailableTables = async () => {
         try {
           let data, error;
           try {
-            const result = await supabase.from(tableName).select("*").limit(1);
+            const result = await supabase$1.from(tableName).select("*").limit(1);
             data = result.data;
             error = result.error;
           } catch (e2) {
@@ -62140,14 +62193,14 @@ const fetchTableData = async (tableName) => {
   try {
     const [schema, table] = tableName.includes(".") ? tableName.split(".") : [null, tableName];
     if (!schema) {
-      const { data, error } = await supabase.from(tableName).select("*");
+      const { data, error } = await supabase$1.from(tableName).select("*");
       if (!error) {
         console.log(`✅ Successfully fetched ${(data == null ? void 0 : data.length) || 0} rows from ${tableName} (public schema)`);
         return data;
       }
       console.log(`Trying inventory.${tableName} as fallback...`);
       try {
-        const inventoryResult = await supabase.from(tableName).select("*", { schema: "inventory" });
+        const inventoryResult = await supabase$1.from(tableName).select("*", { schema: "inventory" });
         if (!inventoryResult.error) {
           console.log(`✅ Successfully fetched ${((_a = inventoryResult.data) == null ? void 0 : _a.length) || 0} rows from inventory.${tableName}`);
           return inventoryResult.data;
@@ -62159,7 +62212,7 @@ const fetchTableData = async (tableName) => {
       }
     } else {
       if (schema === "inventory") {
-        const { data, error } = await supabase.from(table).select("*", { schema: "inventory" });
+        const { data, error } = await supabase$1.from(table).select("*", { schema: "inventory" });
         if (error) {
           console.error(`❌ Error fetching data from ${tableName}: ${error.message}`);
           throw new Error(`Could not access table ${tableName}: ${error.message}`);
@@ -62167,7 +62220,7 @@ const fetchTableData = async (tableName) => {
         console.log(`✅ Successfully fetched ${(data == null ? void 0 : data.length) || 0} rows from ${tableName}`);
         return data;
       } else {
-        const { data, error } = await supabase.from(table).select("*", schema === "public" ? void 0 : { schema });
+        const { data, error } = await supabase$1.from(table).select("*", schema === "public" ? void 0 : { schema });
         if (error) {
           console.error(`❌ Error fetching data from ${tableName}: ${error.message}`);
           throw new Error(`Could not access table ${tableName}: ${error.message}`);
@@ -62188,13 +62241,13 @@ const getTableColumns = async (tableName) => {
     const [schema, table] = tableName.includes(".") ? tableName.split(".") : [null, tableName];
     try {
       if (!schema) {
-        const result = await supabase.from(tableName).select("*").limit(1);
+        const result = await supabase$1.from(tableName).select("*").limit(1);
         data = result.data;
         error = result.error;
         if (error) {
           console.log(`Trying inventory.${tableName} for columns...`);
           try {
-            const inventoryResult = await supabase.from(tableName).select("*", { schema: "inventory" }).limit(1);
+            const inventoryResult = await supabase$1.from(tableName).select("*", { schema: "inventory" }).limit(1);
             if (!inventoryResult.error && ((_a = inventoryResult.data) == null ? void 0 : _a.length) > 0) {
               data = inventoryResult.data;
               error = null;
@@ -62203,11 +62256,11 @@ const getTableColumns = async (tableName) => {
           }
         }
       } else if (schema === "inventory") {
-        const result = await supabase.from(table).select("*", { schema: "inventory" }).limit(1);
+        const result = await supabase$1.from(table).select("*", { schema: "inventory" }).limit(1);
         data = result.data;
         error = result.error;
       } else {
-        const result = await supabase.from(table).select("*", schema === "public" ? void 0 : { schema }).limit(1);
+        const result = await supabase$1.from(table).select("*", schema === "public" ? void 0 : { schema }).limit(1);
         data = result.data;
         error = result.error;
       }
@@ -62567,6 +62620,9 @@ INSERT INTO product_summary (sku, name, description, category, price, cost, quan
     }
   );
 };
+const supabaseUrl = "https://bskffxgprfmjnmwunkck.supabase.co";
+const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJza2ZmeGdwcmZtam5td3Vua2NrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA2OTEzMzcsImV4cCI6MjA1NjI2NzMzN30.BsxrbwLvZLS3NEkm-TK4SlGi2sw7BkmjqCPFsluvFKY";
+const supabase = createClient(supabaseUrl, supabaseKey);
 const { Option: Option2 } = Select$1;
 const DataTableExample = () => {
   const [tableData, setTableData] = reactExports.useState([]);
@@ -62737,71 +62793,159 @@ const DataTableExample = () => {
   }, []);
   const handleSave = async (values, key, newData) => {
     try {
-      if (selectedTable === "product_summary" || selectedTable === "products") {
-        const product = tableData.find((p2) => p2.key === key);
-        if (!product)
-          return;
-        message$1.loading({ content: "Saving to database...", key: "saveOperation" });
-        const savedData = await saveProduct({ ...product, ...values }, false);
-        if (savedData) {
-          message$1.success({ content: "Record updated in database", key: "saveOperation", duration: 2 });
-          loadTableData(selectedTable);
-        } else {
-          throw new Error("Save operation returned no data");
-        }
-      } else {
-        message$1.info(`Update operations for ${selectedTable} not yet implemented`);
+      const record = tableData.find((p2) => p2.key === key);
+      if (!record) {
+        message$1.error({ content: "Record not found", duration: 2 });
         return;
       }
-      setTableData(newData);
+      message$1.loading({ content: "Saving to database...", key: "saveOperation" });
+      if (selectedTable === "product_summary" || selectedTable === "products") {
+        try {
+          const processedValues = { ...values };
+          if (processedValues.price)
+            processedValues.price = Number(processedValues.price);
+          if (processedValues.cost)
+            processedValues.cost = Number(processedValues.cost);
+          if (processedValues.quantity)
+            processedValues.quantity = Number(processedValues.quantity);
+          if (processedValues.reorder_level)
+            processedValues.reorder_level = Number(processedValues.reorder_level);
+          const savedData = await saveProduct({ ...record, ...processedValues }, false);
+          if (savedData) {
+            message$1.success({ content: "Record updated in database", key: "saveOperation", duration: 2 });
+            await loadTableData(selectedTable);
+            logDebug(`Product ${record.id} updated successfully`, "success");
+          } else {
+            throw new Error("Save operation returned no data");
+          }
+        } catch (error) {
+          message$1.error({ content: `Failed to update product: ${error.message}`, key: "saveOperation", duration: 3 });
+          logDebug(`Error updating product: ${error.message}`, "error");
+        }
+      } else {
+        try {
+          if (selectedTable.includes("DUMMY")) {
+            setTableData(newData);
+            message$1.success({ content: "Record updated (mock mode)", key: "saveOperation", duration: 2 });
+            logDebug(`${selectedTable} updated (mock mode)`, "success");
+          } else {
+            const { data, error } = await supabase.from(selectedTable.split(".").pop()).update(values).eq("id", record.id);
+            if (error)
+              throw error;
+            message$1.success({ content: "Record updated in database", key: "saveOperation", duration: 2 });
+            await loadTableData(selectedTable);
+            logDebug(`Record ${record.id} updated in ${selectedTable}`, "success");
+          }
+        } catch (error) {
+          message$1.error({ content: `Failed to update record: ${error.message}`, key: "saveOperation", duration: 3 });
+          logDebug(`Error updating record in ${selectedTable}: ${error.message}`, "error");
+        }
+      }
     } catch (error) {
       console.error("Error updating record:", error);
       message$1.error({ content: "Failed to update record in database", key: "saveOperation", duration: 2 });
+      logDebug(`Error in update operation: ${error.message}`, "error");
     }
   };
   const handleDelete = async (key, newData) => {
     try {
-      if (selectedTable === "product_summary" || selectedTable === "products") {
-        const product = tableData.find((p2) => p2.key === key);
-        if (!product)
-          return;
-        message$1.loading({ content: "Deleting from database...", key: "deleteOperation" });
-        const success = await deleteProduct(product.id);
-        if (success) {
-          message$1.success({ content: "Record deleted from database", key: "deleteOperation", duration: 2 });
-          loadTableData(selectedTable);
-        } else {
-          throw new Error("Delete operation failed");
-        }
-      } else {
-        message$1.info(`Delete operations for ${selectedTable} not yet implemented`);
+      const record = tableData.find((p2) => p2.key === key);
+      if (!record) {
+        message$1.error({ content: "Record not found", duration: 2 });
         return;
       }
-      setTableData(newData);
+      message$1.loading({ content: "Deleting from database...", key: "deleteOperation" });
+      if (selectedTable === "product_summary" || selectedTable === "products") {
+        try {
+          const success = await deleteProduct(record.id);
+          if (success) {
+            message$1.success({ content: "Record deleted from database", key: "deleteOperation", duration: 2 });
+            await loadTableData(selectedTable);
+            logDebug(`Product ${record.id} deleted successfully`, "success");
+          } else {
+            throw new Error("Delete operation failed");
+          }
+        } catch (error) {
+          message$1.error({ content: `Failed to delete product: ${error.message}`, key: "deleteOperation", duration: 3 });
+          logDebug(`Error deleting product: ${error.message}`, "error");
+        }
+      } else {
+        try {
+          if (selectedTable.includes("DUMMY")) {
+            setTableData(newData);
+            message$1.success({ content: "Record deleted (mock mode)", key: "deleteOperation", duration: 2 });
+            logDebug(`Record deleted from ${selectedTable} (mock mode)`, "success");
+          } else {
+            const { error } = await supabase.from(selectedTable.split(".").pop()).delete().eq("id", record.id);
+            if (error)
+              throw error;
+            message$1.success({ content: "Record deleted from database", key: "deleteOperation", duration: 2 });
+            await loadTableData(selectedTable);
+            logDebug(`Record ${record.id} deleted from ${selectedTable}`, "success");
+          }
+        } catch (error) {
+          message$1.error({ content: `Failed to delete record: ${error.message}`, key: "deleteOperation", duration: 3 });
+          logDebug(`Error deleting record from ${selectedTable}: ${error.message}`, "error");
+          setTableData(newData);
+        }
+      }
     } catch (error) {
       console.error("Error deleting record:", error);
       message$1.error({ content: "Failed to delete record from database", key: "deleteOperation", duration: 2 });
+      logDebug(`Error in delete operation: ${error.message}`, "error");
     }
   };
   const handleAdd = async (record, newData) => {
     try {
+      message$1.loading({ content: "Adding to database...", key: "addOperation" });
       if (selectedTable === "product_summary" || selectedTable === "products") {
-        message$1.loading({ content: "Adding to database...", key: "addOperation" });
-        const savedData = await saveProduct(record, true);
-        if (savedData) {
-          message$1.success({ content: "Record added to database", key: "addOperation", duration: 2 });
-          loadTableData(selectedTable);
-        } else {
-          throw new Error("Add operation returned no data");
+        try {
+          const processedRecord = { ...record };
+          if (processedRecord.price)
+            processedRecord.price = Number(processedRecord.price);
+          if (processedRecord.cost)
+            processedRecord.cost = Number(processedRecord.cost);
+          if (processedRecord.quantity)
+            processedRecord.quantity = Number(processedRecord.quantity);
+          if (processedRecord.reorder_level)
+            processedRecord.reorder_level = Number(processedRecord.reorder_level);
+          const savedData = await saveProduct(processedRecord, true);
+          if (savedData) {
+            message$1.success({ content: "Record added to database", key: "addOperation", duration: 2 });
+            await loadTableData(selectedTable);
+            logDebug(`New product added successfully`, "success");
+          } else {
+            throw new Error("Add operation returned no data");
+          }
+        } catch (error) {
+          message$1.error({ content: `Failed to add product: ${error.message}`, key: "addOperation", duration: 3 });
+          logDebug(`Error adding product: ${error.message}`, "error");
         }
       } else {
-        message$1.info(`Add operations for ${selectedTable} not yet implemented`);
-        return;
+        try {
+          if (selectedTable.includes("DUMMY")) {
+            setTableData(newData);
+            message$1.success({ content: "Record added (mock mode)", key: "addOperation", duration: 2 });
+            logDebug(`New record added to ${selectedTable} (mock mode)`, "success");
+          } else {
+            const { key, ...insertData } = record;
+            const { data, error } = await supabase.from(selectedTable.split(".").pop()).insert(insertData);
+            if (error)
+              throw error;
+            message$1.success({ content: "Record added to database", key: "addOperation", duration: 2 });
+            await loadTableData(selectedTable);
+            logDebug(`New record added to ${selectedTable}`, "success");
+          }
+        } catch (error) {
+          message$1.error({ content: `Failed to add record: ${error.message}`, key: "addOperation", duration: 3 });
+          logDebug(`Error adding record to ${selectedTable}: ${error.message}`, "error");
+          setTableData(newData);
+        }
       }
-      setTableData(newData);
     } catch (error) {
       console.error("Error adding record:", error);
       message$1.error({ content: "Failed to add record to database", key: "addOperation", duration: 2 });
+      logDebug(`Error in add operation: ${error.message}`, "error");
     }
   };
   const getTableDisplayName = () => {
@@ -63099,7 +63243,9 @@ const DataTableExample = () => {
             fontSize: "12px",
             position: "relative",
             display: "flex",
-            flexDirection: "column"
+            flexDirection: "column",
+            maxHeight: "150px",
+            marginTop: "auto"
           },
           children: [
             /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: {
