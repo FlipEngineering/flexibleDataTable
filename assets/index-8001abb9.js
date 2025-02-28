@@ -27492,10 +27492,10 @@ var OptGroup = function OptGroup2() {
   return null;
 };
 OptGroup.isSelectOptGroup = true;
-var Option$2 = function Option() {
+var Option$1 = function Option() {
   return null;
 };
-Option$2.isSelectOption = true;
+Option$1.isSelectOption = true;
 var Filler = /* @__PURE__ */ reactExports.forwardRef(function(_ref, ref) {
   var height = _ref.height, offsetY = _ref.offsetY, offsetX = _ref.offsetX, children = _ref.children, prefixCls = _ref.prefixCls, onInnerResize = _ref.onInnerResize, innerProps = _ref.innerProps, rtl = _ref.rtl, extra = _ref.extra;
   var outerStyle = {};
@@ -29487,7 +29487,7 @@ var Select$2 = /* @__PURE__ */ reactExports.forwardRef(function(props, ref) {
   })));
 });
 var TypedSelect = Select$2;
-TypedSelect.Option = Option$2;
+TypedSelect.Option = Option$1;
 TypedSelect.OptGroup = OptGroup;
 function getStatusClassNames(prefixCls, status, hasFeedback) {
   return classNames({
@@ -31167,7 +31167,7 @@ const InternalSelect = (props, ref) => {
 const Select = /* @__PURE__ */ reactExports.forwardRef(InternalSelect);
 const PurePanel$5 = genPurePanel$1(Select, "dropdownAlign");
 Select.SECRET_COMBOBOX_MODE_DO_NOT_USE = SECRET_COMBOBOX_MODE_DO_NOT_USE;
-Select.Option = Option$2;
+Select.Option = Option$1;
 Select.OptGroup = OptGroup;
 Select._InternalPanelDoNotUseOrYouWillBeFired = PurePanel$5;
 const Select$1 = Select;
@@ -57303,7 +57303,7 @@ class RealtimeClient {
         this.conn = null;
       }
     });
-    __vitePreload(() => import("./browser-42aa62d1.js").then((n2) => n2.b), true ? [] : void 0).then(({ default: WS }) => {
+    __vitePreload(() => import("./browser-04e63175.js").then((n2) => n2.b), true ? [] : void 0).then(({ default: WS }) => {
       this.conn = new WS(this.endpointURL(), void 0, {
         headers: this.headers
       });
@@ -62290,7 +62290,6 @@ const getTableColumns = async (tableName) => {
     { title: "Name", dataIndex: "name", type: "text", required: true }
   ];
 };
-const { Option: Option$1 } = Select$1;
 const { Title, Text } = Typography$1;
 const TableSelector = ({ selectedTable, onSelectTable }) => {
   var _a, _b, _c, _d;
@@ -62370,12 +62369,12 @@ const TableSelector = ({ selectedTable, onSelectTable }) => {
                 alignItems: "center",
                 padding: "4px",
                 borderRadius: "4px",
-                color: "var(--text-color-secondary, rgba(0, 0, 0, 0.45))",
+                color: "var(--text-color-secondary, rgba(255, 255, 255, 0.45))",
                 transition: "all 0.3s"
               },
               title: "Refresh database tables",
               onMouseEnter: (e2) => e2.currentTarget.style.color = "var(--primary-color, #1890ff)",
-              onMouseLeave: (e2) => e2.currentTarget.style.color = "var(--text-color-secondary, rgba(0, 0, 0, 0.45))",
+              onMouseLeave: (e2) => e2.currentTarget.style.color = "var(--text-color-secondary, rgba(255, 255, 255, 0.45))",
               children: /* @__PURE__ */ jsxRuntimeExports.jsx(ReloadOutlined$1, { spin: loading })
             }
           )
@@ -62385,25 +62384,27 @@ const TableSelector = ({ selectedTable, onSelectTable }) => {
           /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { marginTop: 8 }, children: "Loading tables..." })
         ] }) : /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx(Title, { level: 5, style: { color: "var(--heading-color, rgba(255, 255, 255, 0.85))" }, children: "Select Table" }),
-          tables.length > 0 ? /* @__PURE__ */ jsxRuntimeExports.jsx(
-            Select$1,
+          tables.length > 0 ? /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { marginBottom: 16 }, children: tables.map((table) => /* @__PURE__ */ jsxRuntimeExports.jsx(
+            "div",
             {
-              style: { width: "100%", marginBottom: 16 },
-              placeholder: "Select a table",
-              value: selectedTable,
-              onChange: (value) => {
-                var _a2;
-                onSelectTable(value);
-                message$1.info(`Loading data from ${((_a2 = tables.find((t2) => t2.id === value)) == null ? void 0 : _a2.name) || value} table...`);
+              onClick: () => {
+                onSelectTable(table.id);
+                message$1.info(`Loading data from ${table.name || table.id} table...`);
               },
-              loading,
-              dropdownStyle: {
-                backgroundColor: "var(--component-background, #1f1f1f)",
-                color: "var(--text-color, rgba(255, 255, 255, 0.85))"
+              style: {
+                padding: "10px",
+                borderRadius: "4px",
+                marginBottom: "4px",
+                cursor: "pointer",
+                backgroundColor: selectedTable === table.id ? "var(--primary-color, #1890ff)" : "var(--component-background, #1f1f1f)",
+                color: selectedTable === table.id ? "white" : "var(--text-color, rgba(255, 255, 255, 0.85))",
+                fontWeight: selectedTable === table.id ? "bold" : "normal",
+                border: "1px solid var(--border-color, #303030)"
               },
-              children: tables.map((table) => /* @__PURE__ */ jsxRuntimeExports.jsx(Option$1, { value: table.id, children: /* @__PURE__ */ jsxRuntimeExports.jsx(Tooltip$1, { title: table.description, children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { children: table.name }) }) }, table.id))
-            }
-          ) : /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: {
+              children: /* @__PURE__ */ jsxRuntimeExports.jsx(Tooltip$1, { title: table.description, children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { children: table.name }) })
+            },
+            table.id
+          )) }) : /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: {
             textAlign: "center",
             padding: "20px 0",
             color: "var(--error-color, #ff4d4f)",
@@ -62448,12 +62449,13 @@ const TableSelector = ({ selectedTable, onSelectTable }) => {
               /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { fontWeight: "bold", marginBottom: "4px", color: "#1890ff" }, children: "Quick Setup SQL:" }),
               /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: {
                 padding: "8px",
-                background: "#f5f5f5",
+                background: "#1e1e1e",
                 borderRadius: "4px",
                 fontSize: "11px",
                 textAlign: "left",
                 overflow: "auto",
-                maxHeight: "100px"
+                maxHeight: "100px",
+                color: "#e6e6e6"
               }, children: /* @__PURE__ */ jsxRuntimeExports.jsx("pre", { style: { margin: 0 }, children: `-- Run this SQL in your Supabase SQL Editor
 CREATE TABLE IF NOT EXISTS product_summary (
   id SERIAL PRIMARY KEY,
@@ -62520,11 +62522,11 @@ INSERT INTO product_summary (sku, name, description, category, price, cost, quan
                     "button",
                     {
                       style: {
-                        backgroundColor: "white",
-                        color: "rgba(0, 0, 0, 0.85)",
+                        backgroundColor: "#1e1e1e",
+                        color: "rgba(255, 255, 255, 0.85)",
                         borderRadius: "4px",
                         padding: "4px 15px",
-                        border: "1px solid #d9d9d9",
+                        border: "1px solid #303030",
                         cursor: "pointer",
                         boxShadow: "0 2px 0 rgba(0,0,0,0.045)",
                         height: "32px"
@@ -62817,7 +62819,6 @@ const DataTableExample = () => {
   };
   const clearDebugLogs = () => {
     setDebugLogs([]);
-    logDebug("Debug logs cleared", "info");
   };
   return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "sql-explorer", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "explorer-container", style: { display: "flex", width: "100%", flexDirection: "column" }, children: [
     /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { display: "flex", flex: 1 }, children: [
@@ -62847,7 +62848,7 @@ const DataTableExample = () => {
           }
         ),
         (selectedTable === "product_summary" || selectedTable === "products") && /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { style: { color: "var(--heading-color, rgba(0, 0, 0, 0.85))" }, children: "Filters" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { style: { color: "var(--heading-color, rgba(255, 255, 255, 0.85))" }, children: "Filters" }),
           /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { marginBottom: 16 }, children: [
             /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { marginBottom: 8 }, children: /* @__PURE__ */ jsxRuntimeExports.jsx(
               Input$1,
@@ -62899,12 +62900,12 @@ const DataTableExample = () => {
         /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: {
           margin: "24px 0",
           padding: "16px",
-          background: "var(--item-hover-bg, rgba(0, 0, 0, 0.02))",
+          background: "var(--item-hover-bg, rgba(255, 255, 255, 0.08))",
           borderRadius: "8px",
-          border: "1px solid var(--border-color-split, #f0f0f0)",
-          color: "var(--text-color-secondary, rgba(0, 0, 0, 0.45))"
+          border: "1px solid var(--border-color-split, #303030)",
+          color: "var(--text-color-secondary, rgba(255, 255, 255, 0.45))"
         }, children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { style: { color: "var(--heading-color, rgba(0, 0, 0, 0.85))" }, children: "Database Integration" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { style: { color: "var(--heading-color, rgba(255, 255, 255, 0.85))" }, children: "Database Integration" }),
           /* @__PURE__ */ jsxRuntimeExports.jsx("p", { children: "This component connects to PostgreSQL database with:" }),
           /* @__PURE__ */ jsxRuntimeExports.jsxs("ul", { children: [
             /* @__PURE__ */ jsxRuntimeExports.jsx("li", { children: "Dynamic table selection" }),
