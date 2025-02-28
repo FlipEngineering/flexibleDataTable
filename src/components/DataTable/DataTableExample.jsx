@@ -1072,6 +1072,151 @@ const DataTableExample = () => {
                 <div>
                   <Button 
                     size="small" 
+                    onClick={() => {
+                      // Find the most recent errors and their context
+                      const errorLogs = [];
+                      let lastNormalLogIndex = -1;
+                      
+                      // First, find the most recent 3 error logs
+                      const recentErrors = debugLogs
+                        .filter(log => log.type === 'error' || log.message.includes('ERROR'))
+                        .slice(0, 3);
+                      
+                      if (recentErrors.length > 0) {
+                        // Add up to 2 normal log entries that occurred before the most recent error
+                        // to provide context for the error
+                        const firstErrorIndex = debugLogs.findIndex(
+                          log => log.id === recentErrors[0].id
+                        );
+                        
+                        // Find the last normal log before the error
+                        for (let i = firstErrorIndex + 1; i < debugLogs.length; i++) {
+                          if (debugLogs[i].type !== 'error' && !debugLogs[i].message.includes('ERROR')) {
+                            lastNormalLogIndex = i;
+                            break;
+                          }
+                        }
+                        
+                        // Add a context header
+                        let copyText = "=== ERROR LOG FOR TROUBLESHOOTING ===\n\n";
+                        
+                        // Add system and environment info
+                        copyText += `Environment: ${import.meta.env.DEV ? 'Development' : 'Production'}\n`;
+                        copyText += `Browser: ${navigator.userAgent}\n`;
+                        copyText += `Database URL defined: ${Boolean(supabaseUrl)}\n`;
+                        copyText += `Database Key defined: ${Boolean(supabaseKey)}\n`;
+                        copyText += `Current table: ${selectedTable}\n`;
+                        copyText += `Timestamp: ${new Date().toISOString()}\n\n`;
+                        
+                        // Add the last normal log for context if found
+                        if (lastNormalLogIndex !== -1) {
+                          const contextLog = debugLogs[lastNormalLogIndex];
+                          copyText += `LAST NORMAL LOG:\n${contextLog.timestamp} - ${contextLog.message}\n\n`;
+                        }
+                        
+                        // Add each error with details
+                        copyText += "ERRORS:\n";
+                        recentErrors.forEach(errorLog => {
+                          copyText += `${errorLog.timestamp} - ${errorLog.message}\n`;
+                          
+                          // Include error details if available
+                          if (errorLog.details) {
+                            if (typeof errorLog.details === 'object') {
+                              try {
+                                const detailsText = JSON.stringify(errorLog.details, null, 2);
+                                copyText += `Details: ${detailsText}\n`;
+                              } catch (e) {
+                                copyText += `Details: ${errorLog.details.toString()}\n`;
+                              }
+                            } else {
+                              copyText += `Details: ${errorLog.details}\n`;
+                            }
+                          }
+                          copyText += "\n";
+                        });
+                        
+                        // Copy to clipboard
+                        navigator.clipboard.writeText(copyText);
+                        message.success('Error logs copied to clipboard');
+                      } else {
+                        message.info('No error logs to copy');
+                      }
+                    }} 
+                    style={{ marginRight: '8px', backgroundColor: '#ff4d4f', color: 'white' }}
+                    title="Copy recent errors for troubleshooting"
+                  >
+                    Copy Errors
+                  </Button>
+                  <Button 
+                    size="small"
+                    onClick={() => {
+                      // Create a full log export with all details
+                      if (debugLogs.length === 0) {
+                        message.info('No logs to export');
+                        return;
+                      }
+                      
+                      // Create header with system info
+                      let exportText = "=== FULL LOG EXPORT ===\n\n";
+                      
+                      // Add system info
+                      exportText += `Environment: ${import.meta.env.DEV ? 'Development' : 'Production'}\n`;
+                      exportText += `Browser: ${navigator.userAgent}\n`;
+                      exportText += `Database URL defined: ${Boolean(supabaseUrl)}\n`;
+                      exportText += `Database Key defined: ${Boolean(supabaseKey)}\n`;
+                      exportText += `Current table: ${selectedTable}\n`;
+                      exportText += `Log count: ${debugLogs.length}\n`;
+                      exportText += `Export time: ${new Date().toISOString()}\n\n`;
+                      
+                      // Add all logs with formatting based on type
+                      exportText += "===== LOGS =====\n\n";
+                      
+                      debugLogs.forEach(log => {
+                        // Format based on log type
+                        const typePrefix = log.type === 'error' ? '[ERROR] ' : 
+                                         log.type === 'warning' ? '[WARNING] ' :
+                                         log.type === 'success' ? '[SUCCESS] ' :
+                                         log.type === 'db' ? '[DB] ' : '[INFO] ';
+                        
+                        exportText += `${log.timestamp} ${typePrefix}${log.message}\n`;
+                        
+                        // Add details if available
+                        if (log.details) {
+                          if (typeof log.details === 'object') {
+                            try {
+                              const detailsText = JSON.stringify(log.details, null, 2);
+                              exportText += `  Details: ${detailsText}\n`;
+                            } catch (e) {
+                              exportText += `  Details: ${log.details.toString()}\n`;
+                            }
+                          } else {
+                            exportText += `  Details: ${log.details}\n`;
+                          }
+                        }
+                        
+                        exportText += "\n";
+                      });
+                      
+                      // Create a blob and download link
+                      const blob = new Blob([exportText], { type: 'text/plain' });
+                      const url = URL.createObjectURL(blob);
+                      const a = document.createElement('a');
+                      a.href = url;
+                      a.download = `log_export_${new Date().toISOString().replace(/[:.]/g, '-')}.txt`;
+                      document.body.appendChild(a);
+                      a.click();
+                      document.body.removeChild(a);
+                      URL.revokeObjectURL(url);
+                      
+                      message.success('Logs exported to file');
+                    }}
+                    style={{ marginRight: '8px', backgroundColor: '#1890ff', color: 'white' }}
+                    title="Export all logs to a text file"
+                  >
+                    Export All
+                  </Button>
+                  <Button 
+                    size="small" 
                     onClick={clearDebugLogs} 
                     style={{ marginRight: '8px' }}
                   >
