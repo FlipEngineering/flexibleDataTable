@@ -104,12 +104,12 @@ const TableSelector = ({ selectedTable, onSelectTable }) => {
             alignItems: 'center',
             padding: '4px',
             borderRadius: '4px',
-            color: 'var(--text-color-secondary, rgba(0, 0, 0, 0.45))',
+            color: 'var(--text-color-secondary, rgba(255, 255, 255, 0.45))',
             transition: 'all 0.3s'
           }}
           title="Refresh database tables"
           onMouseEnter={e => e.currentTarget.style.color = 'var(--primary-color, #1890ff)'}
-          onMouseLeave={e => e.currentTarget.style.color = 'var(--text-color-secondary, rgba(0, 0, 0, 0.45))'}
+          onMouseLeave={e => e.currentTarget.style.color = 'var(--text-color-secondary, rgba(255, 255, 255, 0.45))'}
         >
           <ReloadOutlined spin={loading} />
         </div>
@@ -126,28 +126,35 @@ const TableSelector = ({ selectedTable, onSelectTable }) => {
             Select Table
           </Title>
           {tables.length > 0 ? (
-            <Select
-              style={{ width: '100%', marginBottom: 16 }}
-              placeholder="Select a table"
-              value={selectedTable}
-              onChange={(value) => {
-                onSelectTable(value);
-                message.info(`Loading data from ${tables.find(t => t.id === value)?.name || value} table...`);
-              }}
-              loading={loading}
-              dropdownStyle={{ 
-                backgroundColor: 'var(--component-background, #1f1f1f)',
-                color: 'var(--text-color, rgba(255, 255, 255, 0.85))'
-              }}
-            >
+            <div style={{ marginBottom: 16 }}>
               {tables.map(table => (
-                <Option key={table.id} value={table.id}>
+                <div 
+                  key={table.id}
+                  onClick={() => {
+                    onSelectTable(table.id);
+                    message.info(`Loading data from ${table.name || table.id} table...`);
+                  }}
+                  style={{
+                    padding: '10px',
+                    borderRadius: '4px',
+                    marginBottom: '4px',
+                    cursor: 'pointer',
+                    backgroundColor: selectedTable === table.id 
+                      ? 'var(--primary-color, #1890ff)' 
+                      : 'var(--component-background, #1f1f1f)',
+                    color: selectedTable === table.id 
+                      ? 'white' 
+                      : 'var(--text-color, rgba(255, 255, 255, 0.85))',
+                    fontWeight: selectedTable === table.id ? 'bold' : 'normal',
+                    border: '1px solid var(--border-color, #303030)'
+                  }}
+                >
                   <Tooltip title={table.description}>
                     <div>{table.name}</div>
                   </Tooltip>
-                </Option>
+                </div>
               ))}
-            </Select>
+            </div>
           ) : (
             <div style={{ 
               textAlign: 'center', 
@@ -198,12 +205,13 @@ const TableSelector = ({ selectedTable, onSelectTable }) => {
                 </div>
                 <div style={{ 
                   padding: '8px', 
-                  background: '#f5f5f5', 
+                  background: '#1e1e1e', 
                   borderRadius: '4px',
                   fontSize: '11px',
                   textAlign: 'left',
                   overflow: 'auto',
-                  maxHeight: '100px'
+                  maxHeight: '100px',
+                  color: '#e6e6e6'
                 }}>
                   <pre style={{ margin: 0 }}>
 {`-- Run this SQL in your Supabase SQL Editor
@@ -270,11 +278,11 @@ INSERT INTO product_summary (sku, name, description, category, price, cost, quan
                 >
                   <button
                     style={{
-                      backgroundColor: 'white',
-                      color: 'rgba(0, 0, 0, 0.85)',
+                      backgroundColor: '#1e1e1e',
+                      color: 'rgba(255, 255, 255, 0.85)',
                       borderRadius: '4px',
                       padding: '4px 15px',
-                      border: '1px solid #d9d9d9',
+                      border: '1px solid #303030',
                       cursor: 'pointer',
                       boxShadow: '0 2px 0 rgba(0,0,0,0.045)',
                       height: '32px'

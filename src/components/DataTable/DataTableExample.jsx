@@ -349,8 +349,8 @@ const DataTableExample = () => {
   
   // Clear debug logs
   const clearDebugLogs = () => {
+    // Clear logs without adding a new log message
     setDebugLogs([]);
-    logDebug('Debug logs cleared', 'info');
   };
 
   return (
@@ -387,7 +387,7 @@ const DataTableExample = () => {
           {/* Only show filters for product tables */}
           {(selectedTable === 'product_summary' || selectedTable === 'products') && (
             <>
-              <h3 style={{ color: 'var(--heading-color, rgba(0, 0, 0, 0.85))' }}>Filters</h3>
+              <h3 style={{ color: 'var(--heading-color, rgba(255, 255, 255, 0.85))' }}>Filters</h3>
               <div style={{ marginBottom: 16 }}>
                 <div style={{ marginBottom: 8 }}>
                   <Input
@@ -441,12 +441,12 @@ const DataTableExample = () => {
           <div style={{ 
             margin: '24px 0', 
             padding: '16px', 
-            background: 'var(--item-hover-bg, rgba(0, 0, 0, 0.02))', 
+            background: 'var(--item-hover-bg, rgba(255, 255, 255, 0.08))', 
             borderRadius: '8px', 
-            border: '1px solid var(--border-color-split, #f0f0f0)',
-            color: 'var(--text-color-secondary, rgba(0, 0, 0, 0.45))'
+            border: '1px solid var(--border-color-split, #303030)',
+            color: 'var(--text-color-secondary, rgba(255, 255, 255, 0.45))'
           }}>
-            <h3 style={{ color: 'var(--heading-color, rgba(0, 0, 0, 0.85))' }}>Database Integration</h3>
+            <h3 style={{ color: 'var(--heading-color, rgba(255, 255, 255, 0.85))' }}>Database Integration</h3>
             <p>This component connects to PostgreSQL database with:</p>
             <ul>
               <li>Dynamic table selection</li>
