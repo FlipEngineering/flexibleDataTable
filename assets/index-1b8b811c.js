@@ -57356,7 +57356,7 @@ class RealtimeClient {
         this.conn = null;
       }
     });
-    __vitePreload(() => import("./browser-a65e57bd.js").then((n2) => n2.b), true ? [] : void 0).then(({ default: WS }) => {
+    __vitePreload(() => import("./browser-a8706cc2.js").then((n2) => n2.b), true ? [] : void 0).then(({ default: WS }) => {
       this.conn = new WS(this.endpointURL(), void 0, {
         headers: this.headers
       });
@@ -62635,28 +62635,46 @@ const DataTableExample = () => {
   const [columns, setColumns] = reactExports.useState([]);
   const [debugLogs, setDebugLogs] = reactExports.useState([]);
   const [showDebugConsole, setShowDebugConsole] = reactExports.useState(true);
-  const logDebug = (message2, type4 = "info") => {
+  const logDebug = (message2, type4 = "info", details = null) => {
     const timestamp = (/* @__PURE__ */ new Date()).toISOString().split("T")[1].split(".")[0];
     const newLog = {
       id: Date.now(),
       timestamp,
       message: message2,
-      type: type4
-      // 'info', 'success', 'error', 'warning'
+      type: type4,
+      // 'info', 'success', 'error', 'warning', 'db'
+      details
+      // Optional detailed information (like error objects, data payloads, etc.)
     };
-    setDebugLogs((prevLogs) => [newLog, ...prevLogs].slice(0, 50));
+    let formattedDetails = "";
+    if (details) {
+      if (typeof details === "object") {
+        try {
+          formattedDetails = "\n" + JSON.stringify(details, null, 2);
+        } catch (e2) {
+          formattedDetails = "\n[Complex object: " + (details.message || details.toString()) + "]";
+        }
+      } else {
+        formattedDetails = "\n" + details;
+      }
+    }
+    setDebugLogs((prevLogs) => [newLog, ...prevLogs].slice(0, 100));
+    const logPrefix = `[${timestamp}] `;
     switch (type4) {
       case "error":
-        console.error(`[${timestamp}] ${message2}`);
+        console.error(logPrefix + message2, details || "");
         break;
       case "warning":
-        console.warn(`[${timestamp}] ${message2}`);
+        console.warn(logPrefix + message2, details || "");
         break;
       case "success":
-        console.log(`%c[${timestamp}] ${message2}`, "color: green");
+        console.log(`%c${logPrefix}${message2}`, "color: green", details || "");
+        break;
+      case "db":
+        console.log(`%c${logPrefix}${message2}`, "color: blue; font-weight: bold", details || "");
         break;
       default:
-        console.log(`[${timestamp}] ${message2}`);
+        console.log(logPrefix + message2, details || "");
     }
     setTimeout(() => {
       const logsContainer = document.getElementById("debug-console-logs");
@@ -62665,17 +62683,27 @@ const DataTableExample = () => {
       }
     }, 50);
   };
+  const logDB = (operation, target, status, details = null) => {
+    const message2 = `[DB] ${operation} ${target}: ${status}`;
+    const type4 = status === "SUCCESS" ? "success" : status === "ERROR" ? "error" : status === "WARNING" ? "warning" : "db";
+    logDebug(message2, type4, details);
+  };
   reactExports.useEffect(() => {
     const loadTableColumns = async () => {
       setLoading(true);
-      logDebug(`Loading columns for table: ${selectedTable}`, "info");
+      logDB("FETCH", `columns for ${selectedTable}`, "STARTED");
       try {
         const tableColumns = await getTableColumns(selectedTable);
         setColumns(tableColumns);
-        logDebug(`Loaded ${tableColumns.length} columns for ${selectedTable}`, "success");
+        logDB("FETCH", `columns for ${selectedTable}`, "SUCCESS", {
+          count: tableColumns.length,
+          columns: tableColumns.map((col) => col.dataIndex)
+        });
       } catch (error) {
-        const errorMsg = `Error loading table columns: ${error.message}`;
-        logDebug(errorMsg, "error");
+        logDB("FETCH", `columns for ${selectedTable}`, "ERROR", {
+          error: error.message,
+          stack: error.stack
+        });
         message$1.error("Failed to load table structure");
       } finally {
         setLoading(false);
@@ -62687,29 +62715,47 @@ const DataTableExample = () => {
   }, [selectedTable]);
   const loadTableData = async (tableId) => {
     setLoading(true);
-    logDebug(`Loading data from table: ${tableId}`, "info");
+    logDB("FETCH", `data from ${tableId}`, "STARTED");
     try {
       if (tableId === "product_summary" || tableId === "products") {
-        logDebug("Fetching categories for product filtering", "info");
-        const categoriesData = await fetchCategories();
-        setCategories(categoriesData);
-        logDebug(`Loaded ${(categoriesData == null ? void 0 : categoriesData.length) || 0} categories`, "success");
+        logDB("FETCH", "categories for filtering", "STARTED");
+        try {
+          const categoriesData = await fetchCategories();
+          setCategories(categoriesData);
+          logDB("FETCH", "categories", "SUCCESS", {
+            count: (categoriesData == null ? void 0 : categoriesData.length) || 0,
+            categories: (categoriesData == null ? void 0 : categoriesData.map((c2) => c2.name)) || []
+          });
+        } catch (catError) {
+          logDB("FETCH", "categories", "ERROR", {
+            error: catError.message,
+            stack: catError.stack
+          });
+        }
       }
+      const startTime = performance.now();
       const data = await fetchTableData(tableId);
+      const endTime = performance.now();
+      const fetchTime = (endTime - startTime).toFixed(2);
       setTableData(data);
-      const logMsg = `Loaded ${(data == null ? void 0 : data.length) || 0} rows from ${tableId} table`;
-      logDebug(logMsg, "success");
-      if (data && data.length > 0) {
-        const sampleRow = data[0];
-        const fields = Object.keys(sampleRow).join(", ");
-        logDebug(`Table schema: ${fields}`, "info");
-      } else {
-        logDebug(`Table ${tableId} is empty or inaccessible`, "warning");
+      logDB("FETCH", `data from ${tableId}`, "SUCCESS", {
+        count: (data == null ? void 0 : data.length) || 0,
+        fetchTimeMs: fetchTime,
+        tableId,
+        sample: data && data.length > 0 ? { id: data[0].id } : null,
+        fields: data && data.length > 0 ? Object.keys(data[0]) : []
+      });
+      if ((data == null ? void 0 : data.length) === 0) {
+        logDebug(`Table ${tableId} is empty`, "warning");
       }
     } catch (error) {
-      const errorMsg = `Error loading ${tableId} table data: ${error.message}`;
-      logDebug(errorMsg, "error");
-      message$1.error(`Failed to load ${tableId} table data`);
+      logDB("FETCH", `data from ${tableId}`, "ERROR", {
+        error: error.message,
+        stack: error.stack,
+        tableId,
+        url: supabaseUrl.substring(0, 15) + "..."
+      });
+      message$1.error(`Failed to load ${tableId} table data: ${error.message}`);
     } finally {
       setLoading(false);
     }
@@ -62810,17 +62856,36 @@ const DataTableExample = () => {
             processedValues.quantity = Number(processedValues.quantity);
           if (processedValues.reorder_level)
             processedValues.reorder_level = Number(processedValues.reorder_level);
-          const savedData = await saveProduct({ ...record, ...processedValues }, false);
+          const updatePayload = { ...record, ...processedValues };
+          logDB("UPDATE", `product ${record.id}`, "STARTED", {
+            id: record.id,
+            fields: Object.keys(processedValues)
+          });
+          const startTime = performance.now();
+          const savedData = await saveProduct(updatePayload, false);
+          const endTime = performance.now();
+          const updateTime = (endTime - startTime).toFixed(2);
           if (savedData) {
             message$1.success({ content: "Record updated in database", key: "saveOperation", duration: 2 });
+            logDB("UPDATE", `product ${record.id}`, "SUCCESS", {
+              id: record.id,
+              timeMs: updateTime,
+              fields: Object.keys(processedValues),
+              response: savedData
+            });
             await loadTableData(selectedTable);
-            logDebug(`Product ${record.id} updated successfully`, "success");
           } else {
             throw new Error("Save operation returned no data");
           }
         } catch (error) {
           message$1.error({ content: `Failed to update product: ${error.message}`, key: "saveOperation", duration: 3 });
-          logDebug(`Error updating product: ${error.message}`, "error");
+          logDB("UPDATE", `product ${record.id}`, "ERROR", {
+            id: record.id,
+            error: error.message,
+            stack: error.stack,
+            table: selectedTable,
+            fields: Object.keys(values)
+          });
         }
       } else {
         try {
@@ -62829,22 +62894,48 @@ const DataTableExample = () => {
             message$1.success({ content: "Record updated (mock mode)", key: "saveOperation", duration: 2 });
             logDebug(`${selectedTable} updated (mock mode)`, "success");
           } else {
-            const { data, error } = await supabase.from(selectedTable.split(".").pop()).update(values).eq("id", record.id);
+            const tableName = selectedTable.split(".").pop();
+            logDB("UPDATE", `record in ${tableName}`, "STARTED", {
+              id: record.id,
+              table: tableName,
+              fields: Object.keys(values)
+            });
+            const startTime = performance.now();
+            const { data, error } = await supabase.from(tableName).update(values).eq("id", record.id);
+            const endTime = performance.now();
+            const updateTime = (endTime - startTime).toFixed(2);
             if (error)
               throw error;
             message$1.success({ content: "Record updated in database", key: "saveOperation", duration: 2 });
+            logDB("UPDATE", `record in ${tableName}`, "SUCCESS", {
+              id: record.id,
+              timeMs: updateTime,
+              table: tableName,
+              fields: Object.keys(values),
+              response: data
+            });
             await loadTableData(selectedTable);
-            logDebug(`Record ${record.id} updated in ${selectedTable}`, "success");
           }
         } catch (error) {
           message$1.error({ content: `Failed to update record: ${error.message}`, key: "saveOperation", duration: 3 });
-          logDebug(`Error updating record in ${selectedTable}: ${error.message}`, "error");
+          logDB("UPDATE", `record in ${selectedTable}`, "ERROR", {
+            id: record.id,
+            error: error.message,
+            stack: error.stack,
+            table: selectedTable,
+            fields: Object.keys(values),
+            sqlErrorCode: error.code
+          });
         }
       }
     } catch (error) {
       console.error("Error updating record:", error);
       message$1.error({ content: "Failed to update record in database", key: "saveOperation", duration: 2 });
-      logDebug(`Error in update operation: ${error.message}`, "error");
+      logDB("UPDATE", "record", "CRITICAL_ERROR", {
+        error: error.message,
+        stack: error.stack,
+        table: selectedTable
+      });
     }
   };
   const handleDelete = async (key, newData) => {
@@ -62857,17 +62948,35 @@ const DataTableExample = () => {
       message$1.loading({ content: "Deleting from database...", key: "deleteOperation" });
       if (selectedTable === "product_summary" || selectedTable === "products") {
         try {
+          logDB("DELETE", `product ${record.id}`, "STARTED", {
+            id: record.id,
+            product: record.name || "unknown",
+            table: selectedTable
+          });
+          const startTime = performance.now();
           const success = await deleteProduct(record.id);
+          const endTime = performance.now();
+          const deleteTime = (endTime - startTime).toFixed(2);
           if (success) {
             message$1.success({ content: "Record deleted from database", key: "deleteOperation", duration: 2 });
+            logDB("DELETE", `product ${record.id}`, "SUCCESS", {
+              id: record.id,
+              product: record.name || "unknown",
+              timeMs: deleteTime,
+              table: selectedTable
+            });
             await loadTableData(selectedTable);
-            logDebug(`Product ${record.id} deleted successfully`, "success");
           } else {
             throw new Error("Delete operation failed");
           }
         } catch (error) {
           message$1.error({ content: `Failed to delete product: ${error.message}`, key: "deleteOperation", duration: 3 });
-          logDebug(`Error deleting product: ${error.message}`, "error");
+          logDB("DELETE", `product ${record.id}`, "ERROR", {
+            id: record.id,
+            error: error.message,
+            stack: error.stack,
+            table: selectedTable
+          });
         }
       } else {
         try {
@@ -62876,23 +62985,45 @@ const DataTableExample = () => {
             message$1.success({ content: "Record deleted (mock mode)", key: "deleteOperation", duration: 2 });
             logDebug(`Record deleted from ${selectedTable} (mock mode)`, "success");
           } else {
-            const { error } = await supabase.from(selectedTable.split(".").pop()).delete().eq("id", record.id);
+            const tableName = selectedTable.split(".").pop();
+            logDB("DELETE", `record from ${tableName}`, "STARTED", {
+              id: record.id,
+              table: tableName
+            });
+            const startTime = performance.now();
+            const { error } = await supabase.from(tableName).delete().eq("id", record.id);
+            const endTime = performance.now();
+            const deleteTime = (endTime - startTime).toFixed(2);
             if (error)
               throw error;
             message$1.success({ content: "Record deleted from database", key: "deleteOperation", duration: 2 });
+            logDB("DELETE", `record from ${tableName}`, "SUCCESS", {
+              id: record.id,
+              timeMs: deleteTime,
+              table: tableName
+            });
             await loadTableData(selectedTable);
-            logDebug(`Record ${record.id} deleted from ${selectedTable}`, "success");
           }
         } catch (error) {
           message$1.error({ content: `Failed to delete record: ${error.message}`, key: "deleteOperation", duration: 3 });
-          logDebug(`Error deleting record from ${selectedTable}: ${error.message}`, "error");
+          logDB("DELETE", `record from ${selectedTable}`, "ERROR", {
+            id: record.id,
+            error: error.message,
+            stack: error.stack,
+            table: selectedTable,
+            sqlErrorCode: error.code
+          });
           setTableData(newData);
         }
       }
     } catch (error) {
       console.error("Error deleting record:", error);
       message$1.error({ content: "Failed to delete record from database", key: "deleteOperation", duration: 2 });
-      logDebug(`Error in delete operation: ${error.message}`, "error");
+      logDB("DELETE", "record", "CRITICAL_ERROR", {
+        error: error.message,
+        stack: error.stack,
+        table: selectedTable
+      });
     }
   };
   const handleAdd = async (record, newData) => {
@@ -62909,17 +63040,36 @@ const DataTableExample = () => {
             processedRecord.quantity = Number(processedRecord.quantity);
           if (processedRecord.reorder_level)
             processedRecord.reorder_level = Number(processedRecord.reorder_level);
+          logDB("INSERT", "new product", "STARTED", {
+            fields: Object.keys(processedRecord),
+            table: selectedTable,
+            product: processedRecord.name || "unnamed product"
+          });
+          const startTime = performance.now();
           const savedData = await saveProduct(processedRecord, true);
+          const endTime = performance.now();
+          const insertTime = (endTime - startTime).toFixed(2);
           if (savedData) {
             message$1.success({ content: "Record added to database", key: "addOperation", duration: 2 });
+            logDB("INSERT", "new product", "SUCCESS", {
+              timeMs: insertTime,
+              table: selectedTable,
+              product: processedRecord.name || "unnamed product",
+              id: savedData.id || "unknown",
+              response: savedData
+            });
             await loadTableData(selectedTable);
-            logDebug(`New product added successfully`, "success");
           } else {
             throw new Error("Add operation returned no data");
           }
         } catch (error) {
           message$1.error({ content: `Failed to add product: ${error.message}`, key: "addOperation", duration: 3 });
-          logDebug(`Error adding product: ${error.message}`, "error");
+          logDB("INSERT", "new product", "ERROR", {
+            error: error.message,
+            stack: error.stack,
+            table: selectedTable,
+            fields: Object.keys(record)
+          });
         }
       } else {
         try {
@@ -62929,23 +63079,46 @@ const DataTableExample = () => {
             logDebug(`New record added to ${selectedTable} (mock mode)`, "success");
           } else {
             const { key, ...insertData } = record;
-            const { data, error } = await supabase.from(selectedTable.split(".").pop()).insert(insertData);
+            const tableName = selectedTable.split(".").pop();
+            logDB("INSERT", `record into ${tableName}`, "STARTED", {
+              fields: Object.keys(insertData),
+              table: tableName
+            });
+            const startTime = performance.now();
+            const { data, error } = await supabase.from(tableName).insert(insertData);
+            const endTime = performance.now();
+            const insertTime = (endTime - startTime).toFixed(2);
             if (error)
               throw error;
             message$1.success({ content: "Record added to database", key: "addOperation", duration: 2 });
+            logDB("INSERT", `record into ${tableName}`, "SUCCESS", {
+              timeMs: insertTime,
+              table: tableName,
+              fields: Object.keys(insertData),
+              response: data
+            });
             await loadTableData(selectedTable);
-            logDebug(`New record added to ${selectedTable}`, "success");
           }
         } catch (error) {
           message$1.error({ content: `Failed to add record: ${error.message}`, key: "addOperation", duration: 3 });
-          logDebug(`Error adding record to ${selectedTable}: ${error.message}`, "error");
+          logDB("INSERT", `record into ${selectedTable}`, "ERROR", {
+            error: error.message,
+            stack: error.stack,
+            table: selectedTable,
+            sqlErrorCode: error.code,
+            fields: Object.keys(record)
+          });
           setTableData(newData);
         }
       }
     } catch (error) {
       console.error("Error adding record:", error);
       message$1.error({ content: "Failed to add record to database", key: "addOperation", duration: 2 });
-      logDebug(`Error in add operation: ${error.message}`, "error");
+      logDB("INSERT", "record", "CRITICAL_ERROR", {
+        error: error.message,
+        stack: error.stack,
+        table: selectedTable
+      });
     }
   };
   const getTableDisplayName = () => {
@@ -63299,16 +63472,38 @@ const DataTableExample = () => {
                     "div",
                     {
                       style: {
-                        padding: "2px 0",
-                        color: log.type === "error" ? "#ff4d4f" : log.type === "warning" ? "#faad14" : log.type === "success" ? "#52c41a" : "#fff"
+                        padding: "3px 0",
+                        borderBottom: "1px dotted rgba(255,255,255,0.1)",
+                        marginBottom: "3px"
                       },
                       children: [
-                        /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { style: { opacity: 0.7, marginRight: "8px" }, children: [
-                          "[",
-                          log.timestamp,
-                          "]"
+                        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+                          /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { style: {
+                            opacity: 0.7,
+                            marginRight: "8px",
+                            fontSize: "10px"
+                          }, children: [
+                            "[",
+                            log.timestamp,
+                            "]"
+                          ] }),
+                          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { style: {
+                            color: log.type === "error" ? "#ff4d4f" : log.type === "warning" ? "#faad14" : log.type === "success" ? "#52c41a" : log.type === "db" ? "#1890ff" : "#fff",
+                            fontWeight: log.type === "error" || log.type === "db" ? "bold" : "normal"
+                          }, children: log.message })
                         ] }),
-                        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: log.message })
+                        log.details && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: {
+                          marginLeft: "16px",
+                          marginTop: "2px",
+                          fontSize: "11px",
+                          color: "#aaa",
+                          whiteSpace: "pre-wrap",
+                          maxHeight: "150px",
+                          overflowY: "auto",
+                          background: "rgba(0,0,0,0.2)",
+                          padding: "4px",
+                          borderRadius: "2px"
+                        }, children: typeof log.details === "object" ? JSON.stringify(log.details, null, 2) : log.details })
                       ]
                     },
                     log.id
