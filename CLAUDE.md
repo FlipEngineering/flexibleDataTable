@@ -5,8 +5,9 @@ This project is a React-based dynamic data table component with SQL database int
 - Dynamic columns and table selection
 - CRUD operations (Create, Read, Update, Delete)
 - Filtering, sorting, and searching
+- Basic SQL query functionality through debug console
 - Responsive design with dark mode support
-- Debug console for database connections
+- Debug console for database connections and SQL queries
 
 ## Key Commands
 
@@ -60,16 +61,22 @@ git push origin main
 - Logs operations and errors
 - Shows environment information
 - Helps troubleshoot database issues
+- Includes SQL terminal for querying data (in development)
+- Toggle to show only errors in the log
 
 ### Common Issues
 - If the tables are showing mock data (DUMMY), use the refresh button in the table selector
 - If deployment fails, check GitHub Actions logs for errors
 - If database connection fails, verify GitHub repository secrets are set correctly
+- SQL query feature is in development and only supports basic SELECT queries with WHERE and LIMIT clauses
+- When SQL execution fails, check the error message in the debug console for details
+- After running an SQL query, use the "Back to Original Table" button to return to the normal view
 
 ## Important Files
 
 - `/src/components/DataTable/DataTable.jsx` - Core table component
-- `/src/components/DataTable/DatabaseConnector.js` - Supabase connection logic
+- `/src/components/DataTable/DataTableExample.jsx` - Main UI and business logic implementation
+- `/src/components/DataTable/DatabaseConnector.js` - Supabase connection logic and SQL query execution
 - `/src/components/DataTable/TableSelector.jsx` - Database table selector component
 - `/.github/workflows/deploy.yml` - GitHub Actions deployment configuration
 
@@ -81,6 +88,9 @@ git push origin main
 - Add custom views and saved filters
 - Implement data export functionality
 - Add pagination server-side support
+- Complete SQL query functionality with JOIN operations
+- Add query history and saved queries
+- Implement SQL visualization features
 
 ## Deployment Workflow
 

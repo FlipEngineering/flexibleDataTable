@@ -32,6 +32,8 @@ A flexible React table component with SQL database integration, featuring dynami
 - **Filtering & Sorting**: Built into all columns
 - **Formula Support**: Excel-like formulas (SUM, AVG, MIN, MAX, COUNT, IF)
 - **SQL Integration**: Ready to connect to database backends
+- **SQL Query Interface**: Debug console includes SQL terminal for direct data queries (in development)
+- **Debugging Tools**: Enhanced debug console with query testing and error analysis
 
 ## Getting Started
 
@@ -73,15 +75,18 @@ The demo shows an employee database table with various column types and Excel-li
 - **Reorder rows**: Select a row and use the Move Up/Down buttons
 - **Filter data**: Use the filter icon in column headers
 - **Sort data**: Click column headers
+- **Query data with SQL**: Open the debug console and use the SQL terminal (in development)
+- **View query errors**: See detailed error messages and hints in the debug console
 
 ## Project Structure
 
 - `/src/components/DataTable/` - Main component directory
   - `DataTable.jsx` - Core table component
   - `DataTable.css` - Styling
-  - `DataTableExample.jsx` - Inventory management demo
+  - `DataTableExample.jsx` - Inventory management demo with SQL query functionality
   - `FormulaParser.js` - Formula evaluation engine
-  - `DatabaseConnector.js` - Supabase PostgreSQL integration
+  - `DatabaseConnector.js` - Supabase PostgreSQL integration and SQL query execution
+  - `TableSelector.jsx` - Database table selector component
   - `README.md` - Component documentation
 
 ## Database Integration
@@ -129,8 +134,25 @@ The application will start in local development mode with:
 - No base path prefix (so URLs work correctly locally)
 - Source maps for easier debugging
 - Database connections using your local credentials
+- Access to the SQL terminal in the debug console
 
 This approach allows you to develop and test features locally before bundling multiple changes for a single GitHub Pages deployment.
+
+## SQL Query Functionality (In Development)
+
+The debug console now includes an SQL terminal that allows you to run basic SQL queries directly against the data:
+
+- Currently supports basic SELECT queries with WHERE and LIMIT clauses
+- Query results are displayed in the main table component
+- Includes detailed error messages and hints when queries fail
+- "Back to Original Table" button returns to normal table view
+- Example queries are provided to get started
+
+**Note**: This feature is still in development and has the following limitations:
+- Only SELECT queries are supported for security reasons
+- Complex operations like JOINs and GROUP BY are not yet implemented
+- The SQL parser is client-side only and may not match PostgreSQL syntax exactly
+- Large result sets may impact performance
 
 ## License
 
