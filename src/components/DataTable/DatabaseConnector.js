@@ -22,36 +22,43 @@ import { createClient } from '@supabase/supabase-js';
  * - Add .env to .gitignore
  */
 const getSupabaseClient = () => {
-  // Check for environment variables (set during build process)
-  // These values should come from GitHub secrets during deployment
+  // Check for environment variables - prioritize .env.local for local development
+  // These values come from GitHub secrets during deployment or .env.local in development
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
   const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+  const isLocalDev = import.meta.env.VITE_LOCAL_DEV === 'true';
+  const debugMode = import.meta.env.VITE_DEBUG_MODE === 'true';
 
-  // Debug information for connection troubleshooting
-  console.log('Supabase connection check:');
+  // Enhanced debug information for connection troubleshooting
+  console.log('🔌 Supabase connection check:');
   console.log(`- URL defined: ${supabaseUrl ? 'Yes' : 'No'}`);
   console.log(`- Key defined: ${supabaseKey ? 'Yes' : 'No'}`);
+  console.log(`- Environment: ${import.meta.env.DEV ? 'Development' : 'Production'}`);
+  console.log(`- Local dev mode: ${isLocalDev ? 'Yes' : 'No'}`);
+  console.log(`- Debug mode: ${debugMode ? 'Yes' : 'No'}`);
   
-  // Use environment variables from GitHub secrets
+  // Use environment variables from secrets or .env.local
   if (supabaseUrl && supabaseKey) {
-    console.log('✅ Using Supabase client from GitHub secrets');
+    console.log('✅ Using Supabase client from environment variables');
     try {
       const client = createClient(supabaseUrl, supabaseKey, {
-        // Enable debug logs to diagnose issues
-        debug: true,
+        // Enable debug logs based on debug mode setting
+        debug: debugMode || import.meta.env.DEV,
         
-        // Add custom headers to check CORS issues
+        // Add custom headers to help with CORS issues
         headers: {
-          // Recommended for CORS
-          'x-client-info': 'flexibleDataTable'
+          'x-client-info': 'flexibleDataTable',
+          'x-app-version': '1.0.0'
         },
         
         // Add global error handler for debug
         global: {
           fetch: (...args) => {
-            console.log('🔍 Supabase fetch call:', args[0]);
+            if (debugMode) {
+              console.log('🔍 Supabase fetch call:', args[0]);
+            }
             return fetch(...args).then(response => {
-              if (!response.ok) {
+              if (!response.ok && debugMode) {
                 console.error(`❌ Supabase fetch error: ${response.status} - ${response.statusText}`);
               }
               return response;
@@ -70,25 +77,29 @@ const getSupabaseClient = () => {
       
       return client;
     } catch (error) {
-      console.error('Failed to connect with GitHub secrets:', error);
+      console.error('Failed to connect with provided credentials:', error);
     }
   } else {
-    console.log('⚠️ GitHub secrets not available in this environment');
+    console.log('⚠️ Supabase credentials not available in environment variables');
   }
   
   // Check if running in development mode (provide dev fallback)
   const isDev = import.meta.env.DEV;
   if (isDev) {
-    console.log('ℹ️ Running in development mode');
-    // Local development fallback (only if needed) - use .env.local file
-    // In real projects, do not hardcode these values
-    try {
-      return createClient(
-        'https://qejtrhdvnkxdftxmhjhi.supabase.co',
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFlanRyaGR2bmt4ZGZ0eG1oamhpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MDkwNjc4MzIsImV4cCI6MjAyNDY0MzgzMn0.KVFWYAgH6t4qWZonxFXIEJwYL_AYu6R6XkhgGfTlKhw'
-      );
-    } catch (devError) {
-      console.error('Failed to connect with development credentials:', devError);
+    console.log('ℹ️ Running in development mode, checking for fallback credentials');
+    
+    // If we already tried above with .env.local credentials, don't try again
+    if (!supabaseUrl || !supabaseKey) {
+      // Last resort fallback for development if no .env.local file exists
+      try {
+        console.log('ℹ️ Using hardcoded development credentials - ONLY FOR DEV TESTING');
+        return createClient(
+          'https://qejtrhdvnkxdftxmhjhi.supabase.co',
+          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFlanRyaGR2bmt4ZGZ0eG1oamhpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MDkwNjc4MzIsImV4cCI6MjAyNDY0MzgzMn0.KVFWYAgH6t4qWZonxFXIEJwYL_AYu6R6XkhgGfTlKhw'
+        );
+      } catch (devError) {
+        console.error('Failed to connect with development credentials:', devError);
+      }
     }
   }
   

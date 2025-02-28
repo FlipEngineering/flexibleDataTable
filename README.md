@@ -100,6 +100,38 @@ This project now includes a full PostgreSQL database integration via Supabase:
 
 See [SUPABASE_SETUP.md](SUPABASE_SETUP.md) for detailed setup instructions.
 
+## Local Development
+
+To develop and test the application locally without deploying to GitHub Pages (which has a 10 builds per hour limit):
+
+1. Create a `.env.local` file in the project root with the following content:
+
+```
+# Supabase configuration
+VITE_SUPABASE_URL=your_supabase_url
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+
+# Development mode settings
+VITE_LOCAL_DEV=true
+VITE_DEBUG_MODE=true
+```
+
+2. Replace `your_supabase_url` and `your_supabase_anon_key` with your actual Supabase credentials.
+
+3. Run the development server:
+
+```bash
+npm run dev
+```
+
+The application will start in local development mode with:
+- Full debug logging enabled
+- No base path prefix (so URLs work correctly locally)
+- Source maps for easier debugging
+- Database connections using your local credentials
+
+This approach allows you to develop and test features locally before bundling multiple changes for a single GitHub Pages deployment.
+
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
