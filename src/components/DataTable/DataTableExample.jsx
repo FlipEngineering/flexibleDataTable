@@ -43,30 +43,54 @@ const DataTableExample = () => {
   const [debugLogs, setDebugLogs] = useState([]);
   const [showDebugConsole, setShowDebugConsole] = useState(true);
   
-  // Custom debug logger function
-  const logDebug = (message, type = 'info') => {
+  // Enhanced debug logger function with detailed logging
+  const logDebug = (message, type = 'info', details = null) => {
     const timestamp = new Date().toISOString().split('T')[1].split('.')[0];
+    
+    // Create the log entry
     const newLog = {
       id: Date.now(),
       timestamp,
       message,
-      type // 'info', 'success', 'error', 'warning'
+      type, // 'info', 'success', 'error', 'warning', 'db'
+      details // Optional detailed information (like error objects, data payloads, etc.)
     };
-    setDebugLogs(prevLogs => [newLog, ...prevLogs].slice(0, 50)); // Keep last 50 logs
     
-    // Also log to browser console
+    // Format details if they exist
+    let formattedDetails = '';
+    if (details) {
+      if (typeof details === 'object') {
+        try {
+          // Try to stringify the object, but handle circular references
+          formattedDetails = '\n' + JSON.stringify(details, null, 2);
+        } catch (e) {
+          formattedDetails = '\n[Complex object: ' + (details.message || details.toString()) + ']';
+        }
+      } else {
+        formattedDetails = '\n' + details;
+      }
+    }
+    
+    // Update the logs state (newest first)
+    setDebugLogs(prevLogs => [newLog, ...prevLogs].slice(0, 100)); // Keep last 100 logs
+    
+    // Also log to browser console with appropriate formatting
+    const logPrefix = `[${timestamp}] `;
     switch(type) {
       case 'error':
-        console.error(`[${timestamp}] ${message}`);
+        console.error(logPrefix + message, details || '');
         break;
       case 'warning':
-        console.warn(`[${timestamp}] ${message}`);
+        console.warn(logPrefix + message, details || '');
         break;
       case 'success':
-        console.log(`%c[${timestamp}] ${message}`, 'color: green');
+        console.log(`%c${logPrefix}${message}`, 'color: green', details || '');
+        break;
+      case 'db':
+        console.log(`%c${logPrefix}${message}`, 'color: blue; font-weight: bold', details || '');
         break;
       default:
-        console.log(`[${timestamp}] ${message}`);
+        console.log(logPrefix + message, details || '');
     }
     
     // Auto-scroll the debug console to show newest logs
@@ -78,18 +102,33 @@ const DataTableExample = () => {
     }, 50);
   };
   
+  // Database-specific logger
+  const logDB = (operation, target, status, details = null) => {
+    const message = `[DB] ${operation} ${target}: ${status}`;
+    const type = status === 'SUCCESS' ? 'success' : 
+                status === 'ERROR' ? 'error' : 
+                status === 'WARNING' ? 'warning' : 'db';
+    
+    logDebug(message, type, details);
+  };
+  
   // Load table columns when selected table changes
   useEffect(() => {
     const loadTableColumns = async () => {
       setLoading(true);
-      logDebug(`Loading columns for table: ${selectedTable}`, 'info');
+      logDB('FETCH', `columns for ${selectedTable}`, 'STARTED');
       try {
         const tableColumns = await getTableColumns(selectedTable);
         setColumns(tableColumns);
-        logDebug(`Loaded ${tableColumns.length} columns for ${selectedTable}`, 'success');
+        logDB('FETCH', `columns for ${selectedTable}`, 'SUCCESS', {
+          count: tableColumns.length,
+          columns: tableColumns.map(col => col.dataIndex)
+        });
       } catch (error) {
-        const errorMsg = `Error loading table columns: ${error.message}`;
-        logDebug(errorMsg, 'error');
+        logDB('FETCH', `columns for ${selectedTable}`, 'ERROR', {
+          error: error.message,
+          stack: error.stack
+        });
         message.error('Failed to load table structure');
       } finally {
         setLoading(false);
@@ -104,35 +143,59 @@ const DataTableExample = () => {
   // Function to load table data
   const loadTableData = async (tableId) => {
     setLoading(true);
-    logDebug(`Loading data from table: ${tableId}`, 'info');
+    logDB('FETCH', `data from ${tableId}`, 'STARTED');
     try {
       // Load categories for filtering if we're on the products table
       if (tableId === 'product_summary' || tableId === 'products') {
-        logDebug('Fetching categories for product filtering', 'info');
-        const categoriesData = await fetchCategories();
-        setCategories(categoriesData);
-        logDebug(`Loaded ${categoriesData?.length || 0} categories`, 'success');
+        logDB('FETCH', 'categories for filtering', 'STARTED');
+        try {
+          const categoriesData = await fetchCategories();
+          setCategories(categoriesData);
+          logDB('FETCH', 'categories', 'SUCCESS', {
+            count: categoriesData?.length || 0,
+            categories: categoriesData?.map(c => c.name) || []
+          });
+        } catch (catError) {
+          logDB('FETCH', 'categories', 'ERROR', {
+            error: catError.message,
+            stack: catError.stack
+          });
+        }
       }
+      
+      // Start database fetch with detailed timing
+      const startTime = performance.now();
       
       // Load data for the selected table
       const data = await fetchTableData(tableId);
+      const endTime = performance.now();
+      const fetchTime = (endTime - startTime).toFixed(2);
+      
       setTableData(data);
       
-      const logMsg = `Loaded ${data?.length || 0} rows from ${tableId} table`;
-      logDebug(logMsg, 'success');
+      // Record successful fetch with timing and data info
+      logDB('FETCH', `data from ${tableId}`, 'SUCCESS', {
+        count: data?.length || 0,
+        fetchTimeMs: fetchTime,
+        tableId: tableId,
+        sample: data && data.length > 0 ? { id: data[0].id } : null,
+        fields: data && data.length > 0 ? Object.keys(data[0]) : []
+      });
       
-      // Log schema details for debugging
-      if (data && data.length > 0) {
-        const sampleRow = data[0];
-        const fields = Object.keys(sampleRow).join(', ');
-        logDebug(`Table schema: ${fields}`, 'info');
-      } else {
-        logDebug(`Table ${tableId} is empty or inaccessible`, 'warning');
+      // Provide a user-friendly message
+      if (data?.length === 0) {
+        logDebug(`Table ${tableId} is empty`, 'warning');
       }
     } catch (error) {
-      const errorMsg = `Error loading ${tableId} table data: ${error.message}`;
-      logDebug(errorMsg, 'error');
-      message.error(`Failed to load ${tableId} table data`);
+      // Detailed error logging
+      logDB('FETCH', `data from ${tableId}`, 'ERROR', {
+        error: error.message,
+        stack: error.stack,
+        tableId: tableId,
+        url: supabaseUrl ? supabaseUrl.substring(0, 15) + '...' : 'not defined'
+      });
+      
+      message.error(`Failed to load ${tableId} table data: ${error.message}`);
     } finally {
       setLoading(false);
     }
@@ -265,22 +328,51 @@ const DataTableExample = () => {
           if (processedValues.quantity) processedValues.quantity = Number(processedValues.quantity);
           if (processedValues.reorder_level) processedValues.reorder_level = Number(processedValues.reorder_level);
           
+          // Log the update operation start with details
+          const updatePayload = { ...record, ...processedValues };
+          logDB('UPDATE', `product ${record.id}`, 'STARTED', {
+            id: record.id,
+            fields: Object.keys(processedValues)
+          });
+          
+          // Start timing the operation
+          const startTime = performance.now();
+          
           // Update the product in database
-          const savedData = await saveProduct({ ...record, ...processedValues }, false);
+          const savedData = await saveProduct(updatePayload, false);
+          
+          // Calculate time taken
+          const endTime = performance.now();
+          const updateTime = (endTime - startTime).toFixed(2);
           
           if (savedData) {
             // Operation was successful
             message.success({ content: 'Record updated in database', key: 'saveOperation', duration: 2 });
             
+            // Log success with timing details
+            logDB('UPDATE', `product ${record.id}`, 'SUCCESS', {
+              id: record.id,
+              timeMs: updateTime,
+              fields: Object.keys(processedValues),
+              response: savedData
+            });
+            
             // Refresh data to get server-calculated fields
             await loadTableData(selectedTable);
-            logDebug(`Product ${record.id} updated successfully`, 'success');
           } else {
             throw new Error('Save operation returned no data');
           }
         } catch (error) {
           message.error({ content: `Failed to update product: ${error.message}`, key: 'saveOperation', duration: 3 });
-          logDebug(`Error updating product: ${error.message}`, 'error');
+          
+          // Log detailed error information
+          logDB('UPDATE', `product ${record.id}`, 'ERROR', {
+            id: record.id,
+            error: error.message,
+            stack: error.stack,
+            table: selectedTable,
+            fields: Object.keys(values)
+          });
         }
       } else {
         // Generic table update
@@ -293,26 +385,63 @@ const DataTableExample = () => {
             logDebug(`${selectedTable} updated (mock mode)`, 'success');
           } else {
             // For real tables, try a generic update
-            const { data, error } = await supabase.from(selectedTable.split('.').pop())
+            const tableName = selectedTable.split('.').pop();
+            
+            logDB('UPDATE', `record in ${tableName}`, 'STARTED', {
+              id: record.id,
+              table: tableName,
+              fields: Object.keys(values)
+            });
+            
+            const startTime = performance.now();
+            
+            const { data, error } = await supabase.from(tableName)
               .update(values)
               .eq('id', record.id);
+            
+            const endTime = performance.now();
+            const updateTime = (endTime - startTime).toFixed(2);
               
             if (error) throw error;
             
             message.success({ content: 'Record updated in database', key: 'saveOperation', duration: 2 });
+            
+            // Log success with details
+            logDB('UPDATE', `record in ${tableName}`, 'SUCCESS', {
+              id: record.id,
+              timeMs: updateTime,
+              table: tableName,
+              fields: Object.keys(values),
+              response: data
+            });
+            
             // Refresh table data
             await loadTableData(selectedTable);
-            logDebug(`Record ${record.id} updated in ${selectedTable}`, 'success');
           }
         } catch (error) {
           message.error({ content: `Failed to update record: ${error.message}`, key: 'saveOperation', duration: 3 });
-          logDebug(`Error updating record in ${selectedTable}: ${error.message}`, 'error');
+          
+          // Log detailed error information
+          logDB('UPDATE', `record in ${selectedTable}`, 'ERROR', {
+            id: record.id,
+            error: error.message,
+            stack: error.stack,
+            table: selectedTable,
+            fields: Object.keys(values),
+            sqlErrorCode: error.code
+          });
         }
       }
     } catch (error) {
       console.error('Error updating record:', error);
       message.error({ content: 'Failed to update record in database', key: 'saveOperation', duration: 2 });
-      logDebug(`Error in update operation: ${error.message}`, 'error');
+      
+      // Log the overall operation failure
+      logDB('UPDATE', 'record', 'CRITICAL_ERROR', {
+        error: error.message,
+        stack: error.stack,
+        table: selectedTable
+      });
     }
   };
 
@@ -331,22 +460,50 @@ const DataTableExample = () => {
       // For product tables, we have specific delete functionality
       if (selectedTable === 'product_summary' || selectedTable === 'products') {
         try {
+          // Log the delete operation start
+          logDB('DELETE', `product ${record.id}`, 'STARTED', {
+            id: record.id,
+            product: record.name || 'unknown',
+            table: selectedTable
+          });
+          
+          // Start timing the operation
+          const startTime = performance.now();
+          
           // Delete from database
           const success = await deleteProduct(record.id);
+          
+          // Calculate time taken
+          const endTime = performance.now();
+          const deleteTime = (endTime - startTime).toFixed(2);
           
           if (success) {
             // Operation was successful
             message.success({ content: 'Record deleted from database', key: 'deleteOperation', duration: 2 });
             
+            // Log success with timing information
+            logDB('DELETE', `product ${record.id}`, 'SUCCESS', {
+              id: record.id,
+              product: record.name || 'unknown',
+              timeMs: deleteTime,
+              table: selectedTable
+            });
+            
             // Refresh data to ensure consistency
             await loadTableData(selectedTable);
-            logDebug(`Product ${record.id} deleted successfully`, 'success');
           } else {
             throw new Error('Delete operation failed');
           }
         } catch (error) {
           message.error({ content: `Failed to delete product: ${error.message}`, key: 'deleteOperation', duration: 3 });
-          logDebug(`Error deleting product: ${error.message}`, 'error');
+          
+          // Log detailed error information
+          logDB('DELETE', `product ${record.id}`, 'ERROR', {
+            id: record.id,
+            error: error.message,
+            stack: error.stack,
+            table: selectedTable
+          });
         }
       } else {
         // Generic table delete
@@ -359,20 +516,50 @@ const DataTableExample = () => {
             logDebug(`Record deleted from ${selectedTable} (mock mode)`, 'success');
           } else {
             // For real tables, try a generic delete
-            const { error } = await supabase.from(selectedTable.split('.').pop())
+            const tableName = selectedTable.split('.').pop();
+            
+            // Log the delete operation start
+            logDB('DELETE', `record from ${tableName}`, 'STARTED', {
+              id: record.id,
+              table: tableName
+            });
+            
+            // Start timing the operation
+            const startTime = performance.now();
+            
+            const { error } = await supabase.from(tableName)
               .delete()
               .eq('id', record.id);
+            
+            // Calculate time taken
+            const endTime = performance.now();
+            const deleteTime = (endTime - startTime).toFixed(2);
               
             if (error) throw error;
             
             message.success({ content: 'Record deleted from database', key: 'deleteOperation', duration: 2 });
+            
+            // Log success with timing information
+            logDB('DELETE', `record from ${tableName}`, 'SUCCESS', {
+              id: record.id,
+              timeMs: deleteTime,
+              table: tableName
+            });
+            
             // Refresh table data
             await loadTableData(selectedTable);
-            logDebug(`Record ${record.id} deleted from ${selectedTable}`, 'success');
           }
         } catch (error) {
           message.error({ content: `Failed to delete record: ${error.message}`, key: 'deleteOperation', duration: 3 });
-          logDebug(`Error deleting record from ${selectedTable}: ${error.message}`, 'error');
+          
+          // Log detailed error information
+          logDB('DELETE', `record from ${selectedTable}`, 'ERROR', {
+            id: record.id,
+            error: error.message,
+            stack: error.stack,
+            table: selectedTable,
+            sqlErrorCode: error.code
+          });
           
           // Update local state anyway for better user experience
           setTableData(newData);
@@ -381,7 +568,13 @@ const DataTableExample = () => {
     } catch (error) {
       console.error('Error deleting record:', error);
       message.error({ content: 'Failed to delete record from database', key: 'deleteOperation', duration: 2 });
-      logDebug(`Error in delete operation: ${error.message}`, 'error');
+      
+      // Log the overall operation failure
+      logDB('DELETE', 'record', 'CRITICAL_ERROR', {
+        error: error.message,
+        stack: error.stack,
+        table: selectedTable
+      });
     }
   };
 
@@ -402,22 +595,51 @@ const DataTableExample = () => {
           if (processedRecord.quantity) processedRecord.quantity = Number(processedRecord.quantity);
           if (processedRecord.reorder_level) processedRecord.reorder_level = Number(processedRecord.reorder_level);
           
+          // Log the add operation start with details
+          logDB('INSERT', 'new product', 'STARTED', {
+            fields: Object.keys(processedRecord),
+            table: selectedTable,
+            product: processedRecord.name || 'unnamed product'
+          });
+          
+          // Start timing the operation
+          const startTime = performance.now();
+          
           // Add to database (true indicates new record)
           const savedData = await saveProduct(processedRecord, true);
+          
+          // Calculate time taken
+          const endTime = performance.now();
+          const insertTime = (endTime - startTime).toFixed(2);
           
           if (savedData) {
             // Operation was successful
             message.success({ content: 'Record added to database', key: 'addOperation', duration: 2 });
             
+            // Log success with timing details
+            logDB('INSERT', 'new product', 'SUCCESS', {
+              timeMs: insertTime,
+              table: selectedTable,
+              product: processedRecord.name || 'unnamed product',
+              id: savedData.id || 'unknown',
+              response: savedData
+            });
+            
             // Refresh data to get server-assigned IDs and calculated fields
             await loadTableData(selectedTable);
-            logDebug(`New product added successfully`, 'success');
           } else {
             throw new Error('Add operation returned no data');
           }
         } catch (error) {
           message.error({ content: `Failed to add product: ${error.message}`, key: 'addOperation', duration: 3 });
-          logDebug(`Error adding product: ${error.message}`, 'error');
+          
+          // Log detailed error information
+          logDB('INSERT', 'new product', 'ERROR', {
+            error: error.message,
+            stack: error.stack,
+            table: selectedTable,
+            fields: Object.keys(record)
+          });
         }
       } else {
         // Generic table add
@@ -432,20 +654,50 @@ const DataTableExample = () => {
             // For real tables, try a generic insert
             // Remove key field which might conflict with database auto-increment
             const { key, ...insertData } = record;
+            const tableName = selectedTable.split('.').pop();
             
-            const { data, error } = await supabase.from(selectedTable.split('.').pop())
+            // Log the insert operation start
+            logDB('INSERT', `record into ${tableName}`, 'STARTED', {
+              fields: Object.keys(insertData),
+              table: tableName
+            });
+            
+            // Start timing the operation
+            const startTime = performance.now();
+            
+            const { data, error } = await supabase.from(tableName)
               .insert(insertData);
+            
+            // Calculate time taken
+            const endTime = performance.now();
+            const insertTime = (endTime - startTime).toFixed(2);
               
             if (error) throw error;
             
             message.success({ content: 'Record added to database', key: 'addOperation', duration: 2 });
+            
+            // Log success with timing details
+            logDB('INSERT', `record into ${tableName}`, 'SUCCESS', {
+              timeMs: insertTime,
+              table: tableName,
+              fields: Object.keys(insertData),
+              response: data
+            });
+            
             // Refresh table data to get the server-assigned ID
             await loadTableData(selectedTable);
-            logDebug(`New record added to ${selectedTable}`, 'success');
           }
         } catch (error) {
           message.error({ content: `Failed to add record: ${error.message}`, key: 'addOperation', duration: 3 });
-          logDebug(`Error adding record to ${selectedTable}: ${error.message}`, 'error');
+          
+          // Log detailed error information
+          logDB('INSERT', `record into ${selectedTable}`, 'ERROR', {
+            error: error.message,
+            stack: error.stack,
+            table: selectedTable,
+            sqlErrorCode: error.code,
+            fields: Object.keys(record)
+          });
           
           // Update local state anyway for better user experience in case of temporary database issues
           setTableData(newData);
@@ -454,7 +706,13 @@ const DataTableExample = () => {
     } catch (error) {
       console.error('Error adding record:', error);
       message.error({ content: 'Failed to add record to database', key: 'addOperation', duration: 2 });
-      logDebug(`Error in add operation: ${error.message}`, 'error');
+      
+      // Log the overall operation failure
+      logDB('INSERT', 'record', 'CRITICAL_ERROR', {
+        error: error.message,
+        stack: error.stack,
+        table: selectedTable
+      });
     }
   };
 
@@ -839,14 +1097,47 @@ const DataTableExample = () => {
                   <div 
                     key={log.id} 
                     style={{ 
-                      padding: '2px 0',
-                      color: log.type === 'error' ? '#ff4d4f' :
-                            log.type === 'warning' ? '#faad14' :
-                            log.type === 'success' ? '#52c41a' : '#fff'
+                      padding: '3px 0',
+                      borderBottom: '1px dotted rgba(255,255,255,0.1)',
+                      marginBottom: '3px'
                     }}
                   >
-                    <span style={{ opacity: 0.7, marginRight: '8px' }}>[{log.timestamp}]</span>
-                    <span>{log.message}</span>
+                    <div>
+                      <span style={{ 
+                        opacity: 0.7, 
+                        marginRight: '8px',
+                        fontSize: '10px' 
+                      }}>[{log.timestamp}]</span>
+                      <span style={{ 
+                        color: log.type === 'error' ? '#ff4d4f' :
+                              log.type === 'warning' ? '#faad14' :
+                              log.type === 'success' ? '#52c41a' :
+                              log.type === 'db' ? '#1890ff' : '#fff',
+                        fontWeight: log.type === 'error' || log.type === 'db' ? 'bold' : 'normal'
+                      }}>
+                        {log.message}
+                      </span>
+                    </div>
+                    
+                    {/* Show details if available */}
+                    {log.details && (
+                      <div style={{ 
+                        marginLeft: '16px', 
+                        marginTop: '2px',
+                        fontSize: '11px',
+                        color: '#aaa',
+                        whiteSpace: 'pre-wrap',
+                        maxHeight: '150px',
+                        overflowY: 'auto',
+                        background: 'rgba(0,0,0,0.2)',
+                        padding: '4px',
+                        borderRadius: '2px'
+                      }}>
+                        {typeof log.details === 'object' ? 
+                          JSON.stringify(log.details, null, 2) : 
+                          log.details}
+                      </div>
+                    )}
                   </div>
                 ))}
                 {debugLogs.length === 0 && (
